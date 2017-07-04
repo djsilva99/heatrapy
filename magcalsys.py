@@ -30,7 +30,7 @@ class magcalsys_solidstate_1D:
 		rightReservoir_material='Cu', freq=.1, dt=0.01, dx=0.002, stopCriteria=5e-8, solverMode='implicit_k(x)',
 		minCycleNumber=50, maxCycleNumber=10000, demagnetizationSteps=1, magnetizationSteps=1,
 		demagnetizationMode='constant_right', magnetizationMode='constant_left', cyclePoints=25, boundaries=[0,0],
-		note=None, temperatureSensor='default', heatPoints='default', mode='refrigerator'):
+		note=None, temperatureSensor='default', heatPoints='default', mode='refrigerator', version=None):
 
 
 
@@ -82,7 +82,7 @@ class magcalsys_solidstate_1D:
 		print fileName
 		print '------------------------------------------------------'
 		print ''
-		print 'heatconpy version: 1.0'
+		print 'heatconpy version:',version
 		print 'Module: magcalsys_solidstate_1D'
 		if note != None:
 			print ''
