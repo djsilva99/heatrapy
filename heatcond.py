@@ -63,14 +63,14 @@ class heatcond_activemat_1D:
 
 		#loads the data for each material
 		for i in range(len(materials)):
-			tadi = '/usr/lib/python2.7/dist-packages/heatconpy/materials/'+materials[i]+'/'+'tadi.txt'
-			tadd = '/usr/lib/python2.7/dist-packages/heatconpy/materials/'+materials[i]+'/'+'tadd.txt'
-			cpa = '/usr/lib/python2.7/dist-packages/heatconpy/materials/'+materials[i]+'/'+'cpa.txt'
-			cp0 = '/usr/lib/python2.7/dist-packages/heatconpy/materials/'+materials[i]+'/'+'cp0.txt'
-			k0 = '/usr/lib/python2.7/dist-packages/heatconpy/materials/'+materials[i]+'/'+'k0.txt'
-			ka = '/usr/lib/python2.7/dist-packages/heatconpy/materials/'+materials[i]+'/'+'ka.txt'
-			rho0 = '/usr/lib/python2.7/dist-packages/heatconpy/materials/'+materials[i]+'/'+'rho0.txt'
-			rhoa = '/usr/lib/python2.7/dist-packages/heatconpy/materials/'+materials[i]+'/'+'rhoa.txt'	
+			tadi = '/usr/lib/python2.7/dist-packages/heatrapy/materials/'+materials[i]+'/'+'tadi.txt'
+			tadd = '/usr/lib/python2.7/dist-packages/heatrapy/materials/'+materials[i]+'/'+'tadd.txt'
+			cpa = '/usr/lib/python2.7/dist-packages/heatrapy/materials/'+materials[i]+'/'+'cpa.txt'
+			cp0 = '/usr/lib/python2.7/dist-packages/heatrapy/materials/'+materials[i]+'/'+'cp0.txt'
+			k0 = '/usr/lib/python2.7/dist-packages/heatrapy/materials/'+materials[i]+'/'+'k0.txt'
+			ka = '/usr/lib/python2.7/dist-packages/heatrapy/materials/'+materials[i]+'/'+'ka.txt'
+			rho0 = '/usr/lib/python2.7/dist-packages/heatrapy/materials/'+materials[i]+'/'+'rho0.txt'
+			rhoa = '/usr/lib/python2.7/dist-packages/heatrapy/materials/'+materials[i]+'/'+'rhoa.txt'	
 			self.materials[i] = calmatpro.calmatpro(tadi,tadd,cpa,cp0,k0,ka,rho0,rhoa)
 
 		#defines which are the properties of each material point
