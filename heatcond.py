@@ -409,7 +409,7 @@ class heatcond_activemat_1D:
 					break
 
 			# writes the temperature to fileName file if the number of time steps is verified
-			if nw==writeInterval:
+			if nw==writeInterval or nw==1:
 				line = '%f,' % self.timePassed 
 				for i in self.temperature:
 					newLine = '%f,' % i[1]
@@ -421,5 +421,6 @@ class heatcond_activemat_1D:
 				f = open(self.fileName,'a')
 				f.write(line)
 				f.close()
+				
+			if nw==writeInterval:
 				nw=0
-		f.close()
