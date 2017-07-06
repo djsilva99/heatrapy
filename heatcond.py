@@ -28,7 +28,7 @@ class heatcond_activemat_1D:
 
 	def __init__(self, ambTemperature, materials=['Cu'], borders=[1,11], 
 		materialsOrder=[0], dx=0.01, dt=0.1, fileName='data.txt', boundaries=[0,0],
-		Q=[], Q0=[], heatPoints=[1,-2]):
+		Q=[], Q0=[], heatPoints=[1,-2], initialState=False):
 
 
 
@@ -115,7 +115,7 @@ class heatcond_activemat_1D:
 
 		#initializes the state of each point point (True if active and False if unactive), the time, 
 		#	heat flux from the hot side and heat flux from the cold side
-		self.state = [False for i in range(borders[-1]+1)]
+		self.state = [initialState for i in range(borders[-1]+1)]
 		self.timePassed = 0.
 		self.heatLeft = 0.
 		self.heatRight = 0.
