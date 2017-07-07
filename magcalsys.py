@@ -271,7 +271,7 @@ class magcalsys_solidstate_1D:
 					maximumCOP = -(a.heatRight-heatRight)/(-(a.heatLeft-heatLeft)+(a.heatRight-heatRight))
 
 			if restingTimeCold != 0.:
-				a.compute(restingTimeCold*period,int((((1-restingTimeHot-restingTimeCold)*period)/dt)/(cyclePoints/2)),solver=solverMode)
+				a.compute(restingTimeCold*period,int(1/(freq*dt*cyclePoints)),solver=solverMode)
 
 			#updates the error values and prints information for the log file
 			value1=value2
