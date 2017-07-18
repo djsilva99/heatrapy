@@ -157,7 +157,7 @@ class magcalsys_solidstate_1D:
 		maximumCOP = 0.
 
 		#cycle simulation
-		while (abs((value1-value2)/value2)>stopCriteria or i<minCycleNumber or abs((value1-value2)/value2)>=stopCriteria2) and i<maxCycleNumber:
+		while (abs((value1-value2)/value2)>stopCriteria or i<minCycleNumber or abs((value1-value2)/value2)>stopCriteria2) and i<maxCycleNumber:
 
 			stopCriteria2 = abs((value1-value2)/value2)
 			heatLeft=a.heatLeft
