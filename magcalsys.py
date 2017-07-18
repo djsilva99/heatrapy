@@ -246,7 +246,7 @@ class magcalsys_solidstate_1D:
 			#mode 5
 			if demagnetizationMode == 'accelerated_left':
 				for j in range(demagnetizationSteps-1,-1,-1):
-					a.dectivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+					a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
 					delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
 					a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
 
