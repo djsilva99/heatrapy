@@ -308,3 +308,115 @@ class magcalsys_solidstate_1D:
 		print ''
 		print ''
 		print ''
+
+
+
+
+
+class magcalsys_fluidAMR_1D:
+
+
+
+	def __init__(self, fileName, ambTemperature=293, fluid_length=100, 
+		MCM_length=50, rightReservoir_length=15, leftReservoir_length=15, MCM_material='Gd',
+		fluid_material='water', leftReservoir_material='Cu', rightReservoir_material='Cu', freq=.005, 
+		dt=0.01, dx=0.002, stopCriteria=5e-8, solverMode='implicit_k(x)', minCycleNumber=50, 
+		maxCycleNumber=10000, cyclePoints=25, note=None, temperatureSensor='default', boundaries=[293,0],
+		mode='refrigerator', version=None, HEXpositions=5, startingField='magnetization'):
+
+		fileNameMCM=fileName[:-4]+'_MCM.txt'
+		MCM = heatcond.heatcond_activemat_1D(ambTemperature, dx=dx, dt=dt, fileName=fileNameMCM, 
+			materials=[MCM_material], borders=[1,MCM_length+1], materialsOrder=[0],boundaries=[0,0],initialState=True)
+
+		fileNameFluid=fileName[:-4]+'_fluid.txt'
+		fluid = heatcond.heatcond_activemat_1D(ambTemperature, dx=dx, dt=dt, fileName=fileNameFluid, 
+			materials=[fluid_material], borders=[1,fluid_length+1], materialsOrder=[0],boundaries=[0,0])	
+
+		fileNameHHEX=fileName[:-4]+'_HHEX.txt'
+		if boundaries[0] != 0:
+			HHEX = 	heatcond.heatcond_activemat_1D(boundaries[0], dx=dx, dt=dt, fileName=fileNameHHEX, 
+				materials=[leftReservoir_material], borders=[1,leftReservoir_length+1], materialsOrder=[0],
+				boundaries=[boundaries[0],0])
+		else:
+			HHEX = 	heatcond.heatcond_activemat_1D(ambTemperature, dx=dx, dt=dt, fileName=fileNameHHEX, 
+				materials=[leftReservoir_material], borders=[1,leftReservoir_length+1], materialsOrder=[0],
+				boundaries=[0,0])
+
+		fileNameCHEX=fileName[:-4]+'_CHEX.txt'
+		if boundaries[1] != 0:
+			CHEX = 	heatcond.heatcond_activemat_1D(boundaries[1], dx=dx, dt=dt, fileName=fileNameCHEX, 
+				materials=[rightReservoir_material], borders=[1,rightReservoir_length+1], materialsOrder=[0],
+				boundaries=[0,boundaries[1]])
+		else:
+			CHEX = 	heatcond.heatcond_activemat_1D(ambTemperature, dx=dx, dt=dt, fileName=fileNameCHEX, 
+				materials=[rightReservoir_material], borders=[1,rightReservoir_length+1], materialsOrder=[0],
+				boundaries=[0,0])
+
+
+		for l in range(10):
+
+			MCM.deactivate(1,MCM_length+1)
+
+			for i in range(2*HEXpositions):
+
+				#MCM_fluid_interface = range(fluid_length/2-MCM_length/2+i-HEXpositions,fluid_length/2+MCM_length/2+i-HEXpositions)
+				#CHEX_fluid_interface = range(i+fluid_length-3*HEXpositions,i-2*HEXpositions+fluid_length)
+				#HHEX_fluid_interface = range(i,HEXpositions+i)
+
+				for k in range(int(1./(4*freq*HEXpositions*dt))):
+
+					#print i,k
+
+					Q_MCM = [dt*(-MCM.temperature[j][0]+fluid.temperature[i+fluid_length/2-MCM_length/2-HEXpositions+j][0])*(MCM.k[j]+fluid.k[i+fluid_length/2-MCM_length/2-HEXpositions+j])/2. for j in range(MCM_length)]
+					Q_HHEX = [dt*(-HHEX.temperature[j][0]+fluid.temperature[i+j][0])*(HHEX.k[j]+fluid.k[j+i])/2. for j in range(leftReservoir_length)]
+					Q_CHEX = [dt*(-CHEX.temperature[j][0]+fluid.temperature[i+j+fluid_length-2*HEXpositions-rightReservoir_length][0])*(CHEX.k[j]+fluid.k[i+j+fluid_length-2*HEXpositions-rightReservoir_length])/2. for j in range(rightReservoir_length)]
+					fluid_space = int((fluid_length-(2*HEXpositions+leftReservoir_length+rightReservoir_length+MCM_length))/2.)
+					Q_fluid = [0 for j in range(i)] + [dt*(HHEX.temperature[j][0]-fluid.temperature[i+j][0])*(HHEX.k[j]+fluid.k[j+i])/2. for j in range(leftReservoir_length)] + [0 for j in range(fluid_space)] + [dt*(MCM.temperature[j][0]-fluid.temperature[i+fluid_length/2-MCM_length/2-HEXpositions+j][0])*(MCM.k[j]+fluid.k[i+fluid_length/2-MCM_length/2-HEXpositions+j])/2. for j in range(MCM_length)] + [0 for j in range(fluid_space)] + [dt*(CHEX.temperature[j][0]-fluid.temperature[i+j+fluid_length-2*HEXpositions-rightReservoir_length][0])*(CHEX.k[j]+fluid.k[i+j+fluid_length-2*HEXpositions-rightReservoir_length])/2. for j in range(rightReservoir_length)] + [0 for j in range(2*HEXpositions-i)]
+
+					Q_MCM = [(Q_MCM[o],o,o+1) for o in range(len(Q_MCM))]
+					Q_HHEX = [(Q_HHEX[o],o,o+1) for o in range(len(Q_HHEX))]
+					Q_CHEX = [(Q_CHEX[o],o,o+1) for o in range(len(Q_CHEX))]
+					Q_fluid = [(Q_fluid[o],o,o+1) for o in range(len(Q_fluid))]
+
+					MCM.changeHeatPower(Q0=Q_MCM)
+					HHEX.changeHeatPower(Q0=Q_HHEX)
+					CHEX.changeHeatPower(Q0=Q_CHEX)
+					fluid.changeHeatPower(Q0=Q_fluid)
+
+					MCM.compute(dt,1,solver='implicit_k(x)')
+					HHEX.compute(dt,1,solver='implicit_k(x)')
+					CHEX.compute(dt,1,solver='implicit_k(x)')
+					fluid.compute(dt,1,solver='implicit_k(x)')
+
+
+			MCM.activate(1,MCM_length+1)
+
+			for i in range(2*HEXpositions-1,-1,-1):
+
+				#MCM_fluid_interface = range(fluid_length/2-MCM_length/2+i-HEXpositions,fluid_length/2+MCM_length/2+i-HEXpositions)
+				#CHEX_fluid_interface = range(i+fluid_length-3*HEXpositions,i-2*HEXpositions+fluid_length)
+				#HHEX_fluid_interface = range(i,HEXpositions+i)
+
+
+				for k in range(int(1./(4*freq*HEXpositions*dt))):
+
+					Q_MCM = [dt*(-MCM.temperature[j][0]+fluid.temperature[i+fluid_length/2-MCM_length/2-HEXpositions+j][0])*(MCM.k[j]+fluid.k[i+fluid_length/2-MCM_length/2-HEXpositions+j])/2. for j in range(MCM_length)]
+					Q_HHEX = [dt*(-HHEX.temperature[j][0]+fluid.temperature[i+j][0])*(HHEX.k[j]+fluid.k[j+i])/2. for j in range(leftReservoir_length)]
+					Q_CHEX = [dt*(-CHEX.temperature[j][0]+fluid.temperature[i+j+fluid_length-2*HEXpositions-rightReservoir_length][0])*(CHEX.k[j]+fluid.k[i+j+fluid_length-2*HEXpositions-rightReservoir_length])/2. for j in range(rightReservoir_length)]
+					fluid_space = int((fluid_length-(2*HEXpositions+leftReservoir_length+rightReservoir_length+MCM_length))/2.)
+					Q_fluid = [0 for j in range(i)] + [dt*(HHEX.temperature[j][0]-fluid.temperature[i+j][0])*(HHEX.k[j]+fluid.k[j+i])/2. for j in range(leftReservoir_length)] + [0 for j in range(fluid_space)] + [dt*(MCM.temperature[j][0]-fluid.temperature[i+fluid_length/2-MCM_length/2-HEXpositions+j][0])*(MCM.k[j]+fluid.k[i+fluid_length/2-MCM_length/2-HEXpositions+j])/2. for j in range(MCM_length)] + [0 for j in range(fluid_space)] + [dt*(CHEX.temperature[j][0]-fluid.temperature[i+j+fluid_length-2*HEXpositions-rightReservoir_length][0])*(CHEX.k[j]+fluid.k[i+j+fluid_length-2*HEXpositions-rightReservoir_length])/2. for j in range(rightReservoir_length)] + [0 for j in range(2*HEXpositions-i)]
+
+					Q_MCM = [(Q_MCM[o],o,o+1) for o in range(len(Q_MCM))]
+					Q_HHEX = [(Q_HHEX[o],o,o+1) for o in range(len(Q_HHEX))]
+					Q_CHEX = [(Q_CHEX[o],o,o+1) for o in range(len(Q_CHEX))]
+					Q_fluid = [(Q_fluid[o],o,o+1) for o in range(len(Q_fluid))]
+
+					MCM.changeHeatPower(Q0=Q_MCM)
+					HHEX.changeHeatPower(Q0=Q_HHEX)
+					CHEX.changeHeatPower(Q0=Q_CHEX)
+					fluid.changeHeatPower(Q0=Q_fluid)
+
+					MCM.compute(dt,1,solver='implicit_k(x)')
+					HHEX.compute(dt,1,solver='implicit_k(x)')
+					CHEX.compute(dt,1,solver='implicit_k(x)')
+					fluid.compute(dt,1,solver='implicit_k(x)')

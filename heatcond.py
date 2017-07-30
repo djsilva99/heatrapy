@@ -183,7 +183,7 @@ class heatcond_activemat_1D:
 
 
 
-	def changeHeatPower(self, Q, Q0):
+	def changeHeatPower(self, Q=[], Q0=[]):
 
 
 
@@ -317,9 +317,9 @@ class heatcond_activemat_1D:
 					gamma = 4.*self.rho[i]*self.Cp[i]*self.dx*self.dx/self.dt
 
 					a[i][i-1] = self.k[i-1]+self.k[i]
-					a[i][i] = -(gamma+self.k[i+1]+self.k[i-1]+2.*self.k[i])
+					a[i][i] = -(gamma+self.k[i+1]+self.k[i-1]+2.*self.k[i]-2*self.dt*self.dt*self.Q[i])
 					a[i][i+1] = self.k[i+1]+self.k[i]
-					b[i] = -(self.k[i+1]+self.k[i])*self.temperature[i+1][0]+(-gamma+self.k[i+1]+self.k[i-1]+2.*self.k[i])*self.temperature[i][0]-(self.k[i-1]+self.k[i])*self.temperature[i-1][0]-4.*self.dx*self.dx*(self.Q0[i]-self.Q[i]*self.ambTemperature)
+					b[i] = -(self.k[i+1]+self.k[i])*self.temperature[i+1][0]+(-gamma+self.k[i+1]+self.k[i-1]+2.*self.k[i]-2*self.dt*self.dt*self.Q[i])*self.temperature[i][0]-(self.k[i-1]+self.k[i])*self.temperature[i-1][0]-4.*self.dx*self.dx*(self.Q0[i]-self.Q[i]*self.ambTemperature)
 
 				x=linalg.solve(a,b)
 
