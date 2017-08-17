@@ -154,7 +154,6 @@ class magcalsys_solidstate_1D:
 		stopCriteria2=0.
 		maximumPower=0.
 		maximumWorkingPower = 0.
-		maximumCOP = 0.
 
 		#cycle simulation
 		while (abs((value1-value2)/value2)>stopCriteria or i<minCycleNumber or abs((value1-value2)/value2)>stopCriteria2) and i<maxCycleNumber:
@@ -261,14 +260,16 @@ class magcalsys_solidstate_1D:
 			if mode=='heat_pump':
 				if -(a.heatLeft-heatLeft)/period>maximumPower:
 					maximumPower=-(a.heatLeft-heatLeft)/period
+
+				if -((a.heatLeft-heatLeft)-(a.heatRight-heatRight))/period>maximumWorkingPower:
 					maximumWorkingPower = -((a.heatLeft-heatLeft)-(a.heatRight-heatRight))/period
-					maximumCOP = -(a.heatLeft-heatLeft)/(-(a.heatLeft-heatLeft)+(a.heatRight-heatRight))
 
 			if mode=='refrigerator':
 				if -(a.heatRight-heatRight)/period>maximumPower:
 					maximumPower=-(a.heatRight-heatRight)/period
+
+				if -((a.heatLeft-heatLeft)-(a.heatRight-heatRight))/period>maximumWorkingPower:
 					maximumWorkingPower = -((a.heatLeft-heatLeft)-(a.heatRight-heatRight))/period
-					maximumCOP = -(a.heatRight-heatRight)/(-(a.heatLeft-heatLeft)+(a.heatRight-heatRight))
 
 			if restingTimeCold != 0.:
 				a.compute(restingTimeCold*period,int(1/(freq*dt*cyclePoints)),solver=solverMode)
@@ -294,13 +295,7 @@ class magcalsys_solidstate_1D:
 		print 'Final cycle error:', abs((value1-value2)/value2)
 		print 'Maximum thermal power (W):', maximumPower
 		print 'Maximum working power (W)', maximumWorkingPower
-		print 'Maximum COP:', maximumCOP
 		print 'No load temperature span (K):', -a.temperature[rightTemperatureSensor][1]+a.temperature[leftTemperatureSensor][1]
-		print 'Working power at no load temperature span (W):', -((a.heatLeft-heatLeft)-(a.heatRight-heatRight))/period
-		if mode=='heat_pump':
-			print 'COP at no load temperature span:', -(a.heatLeft-heatLeft)/(-(a.heatLeft-heatLeft)+(a.heatRight-heatRight))
-		if mode=='refrigerator':
-			print 'COP at no load temperature span:', -(a.heatRight-heatRight)/(-(a.heatLeft-heatLeft)+(a.heatRight-heatRight))
 		print 'Final time (s):', a.timePassed
 		print 'Simulation duration:', hours+':'+minutes+':'+seconds
 		print ''
