@@ -147,6 +147,12 @@ class magcalsys_solidstate_1D:
 			rightTemperatureSensor=temperatureSensor[1]
 			leftTemperatureSensor=temperatureSensor[0]
 
+		if rightTemperatureSensor==0:
+			rightTemperatureSensor=-1
+
+		if leftTemperatureSensor==0:
+			leftTemperatureSensor=1
+
 		value1=ambTemperature
 		value2=ambTemperature
 		i=0
@@ -163,7 +169,8 @@ class magcalsys_solidstate_1D:
 			heatRight=a.heatRight
 
 
-			if i !=0 or startingField=='magnetization':
+			if startingField=='magnetization':
+			#if i !=0 or startingField=='magnetization':
 
 			#magnetization and computation
 
@@ -171,7 +178,7 @@ class magcalsys_solidstate_1D:
 				if magnetizationMode == 'constant_right':
 					for j in range(magnetizationSteps):
 						if restingTimeHot != 0.:
-							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/(magnetizationSteps-1)+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/(magnetizationSteps)+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
 							if j!=0:
 								a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/(magnetizationSteps-1),int(1/(freq*dt*cyclePoints)),solver=solverMode)
 						else:
@@ -251,83 +258,259 @@ class magcalsys_solidstate_1D:
 
 
 
-			#demagnetization and computation
+				#demagnetization and computation
 
-			#mode 1
-			if demagnetizationMode == 'constant_right':
-				for j in range(demagnetizationSteps):
-					if restingTimeCold != 0.:
-						a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						if j != demagnetizationSteps-1:
-							a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/(demagnetizationSteps-1),int(1/(freq*dt*cyclePoints)),solver=solverMode)
-					else:
-						a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/demagnetizationSteps,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+				#mode 1
+				if demagnetizationMode == 'constant_right':
+					for j in range(demagnetizationSteps):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/(demagnetizationSteps-1),int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/demagnetizationSteps,int(1/(freq*dt*cyclePoints)),solver=solverMode)
 
-			#mode 2
-			if demagnetizationMode == 'accelerated_right':
-				for j in range(demagnetizationSteps):
-					if restingTimeCold != 0.:
-						a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						if j != demagnetizationSteps-1:
-							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(j+1)-np.sqrt(j))
+				#mode 2
+				if demagnetizationMode == 'accelerated_right':
+					for j in range(demagnetizationSteps):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(j+1)-np.sqrt(j))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(j+1)-np.sqrt(j))
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
 							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
-					else:
-						delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(j+1)-np.sqrt(j))
-						a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
 
-			#mode 3
-			if demagnetizationMode == 'decelerated_right':
-				for j in range(demagnetizationSteps):
-					if restingTimeCold != 0.:
-						a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						if j != demagnetizationSteps-1:
-							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
+				#mode 3
+				if demagnetizationMode == 'decelerated_right':
+					for j in range(demagnetizationSteps):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
 							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
-					else:
-						a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
-						a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
 
 
-			#mode 4
-			if demagnetizationMode == 'constant_left':
-				for j in range(demagnetizationSteps-1,-1,-1):
-					if restingTimeCold != 0.:
-						a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						if j != demagnetizationSteps-1:
-							a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/(demagnetizationSteps-1),int(1/(freq*dt*cyclePoints)),solver=solverMode)
-					else:
-						a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/demagnetizationSteps,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+				#mode 4
+				if demagnetizationMode == 'constant_left':
+					for j in range(demagnetizationSteps-1,-1,-1):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/(demagnetizationSteps-1),int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/demagnetizationSteps,int(1/(freq*dt*cyclePoints)),solver=solverMode)
 
 
-			#mode 5
-			if demagnetizationMode == 'accelerated_left':
-				for j in range(demagnetizationSteps-1,-1,-1):
-					if restingTimeCold != 0.:
-						a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						if j != demagnetizationSteps-1:
-							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
+				#mode 5
+				if demagnetizationMode == 'accelerated_left':
+					for j in range(demagnetizationSteps-1,-1,-1):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
 							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
-					else:
-						a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
-						a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
 
-			#mode 6
-			if demagnetizationMode == 'decelerated_left':
-				for j in range(demagnetizationSteps-1,-1,-1):
-					if restingTimeCold != 0.:
-						a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						if j != demagnetizationSteps-1:
-							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(j+1)-np.sqrt(j))
+				#mode 6
+				if demagnetizationMode == 'decelerated_left':
+					for j in range(demagnetizationSteps-1,-1,-1):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(j+1)-np.sqrt(j))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(j+1)-np.sqrt(j))
 							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
-					else:
-						a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
-						delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(j+1)-np.sqrt(j))
-						a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+				if restingTimeCold != 0.:
+					a.compute(restingTimeCold*period,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+
+			if startingField=='demagnetization':
+
+
+
+				#demagnetization and computation
+
+				#mode 1
+				if demagnetizationMode == 'constant_right':
+					for j in range(demagnetizationSteps):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/(demagnetizationSteps-1),int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/demagnetizationSteps,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+				#mode 2
+				if demagnetizationMode == 'accelerated_right':
+					for j in range(demagnetizationSteps):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(j+1)-np.sqrt(j))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(j+1)-np.sqrt(j))
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+				#mode 3
+				if demagnetizationMode == 'decelerated_right':
+					for j in range(demagnetizationSteps):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
+							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+
+				#mode 4
+				if demagnetizationMode == 'constant_left':
+					for j in range(demagnetizationSteps-1,-1,-1):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/(demagnetizationSteps-1),int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+ j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/demagnetizationSteps,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+
+				#mode 5
+				if demagnetizationMode == 'accelerated_left':
+					for j in range(demagnetizationSteps-1,-1,-1):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(demagnetizationSteps-j)-np.sqrt(demagnetizationSteps-j-1))
+							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+				#mode 6
+				if demagnetizationMode == 'decelerated_left':
+					for j in range(demagnetizationSteps-1,-1,-1):
+						if restingTimeCold != 0.:
+							a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							if j != demagnetizationSteps-1:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps-1)))*(np.sqrt(j+1)-np.sqrt(j))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.deactivate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/demagnetizationSteps+1)
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(demagnetizationSteps)))*(np.sqrt(j+1)-np.sqrt(j))
+							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+				if restingTimeCold != 0.:
+					a.compute(restingTimeCold*period,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+			#magnetization and computation
+
+				#mode 1
+				if magnetizationMode == 'constant_right':
+					for j in range(magnetizationSteps):
+						if restingTimeHot != 0.:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/(magnetizationSteps)+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							if j!=0:
+								a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/(magnetizationSteps-1),int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/magnetizationSteps,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+				#mode 2
+				if magnetizationMode == 'accelerated_right':
+					for j in range(magnetizationSteps):
+						if restingTimeHot != 0.:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							if j!=0:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(magnetizationSteps-1)))*(np.sqrt(j+1)-np.sqrt(j))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(magnetizationSteps)))*(np.sqrt(j+1)-np.sqrt(j))
+							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+				#mode 3
+				if magnetizationMode == 'decelerated_right':
+					for j in range(magnetizationSteps):
+						if restingTimeHot != 0.:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							if j!=0:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(magnetizationSteps-1)))*(np.sqrt(magnetizationSteps-j)-np.sqrt(magnetizationSteps-j-1))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(magnetizationSteps)))*(np.sqrt(magnetizationSteps-j)-np.sqrt(magnetizationSteps-j-1))
+							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+
+				#mode 4
+				if magnetizationMode == 'constant_left':
+					for j in range(magnetizationSteps-1,-1,-1):
+						if restingTimeHot != 0.:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							if j!=0:
+								a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/(magnetizationSteps-1),int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							a.compute(((1-restingTimeHot-restingTimeCold)*period/2.)/magnetizationSteps,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+
+				#mode 5
+				if magnetizationMode == 'accelerated_left':
+					for j in range(magnetizationSteps-1,-1,-1):
+						if restingTimeHot != 0.:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							if j!=0:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(magnetizationSteps-1)))*(np.sqrt(magnetizationSteps-j)-np.sqrt(magnetizationSteps-j-1))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(magnetizationSteps-1)))*(np.sqrt(magnetizationSteps-j)-np.sqrt(magnetizationSteps-j-1))
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+
+				#mode 6
+				if magnetizationMode == 'decelerated_left':
+					for j in range(magnetizationSteps-1,-1,-1):
+						if restingTimeHot != 0.:
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							if j!=0:
+								delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(magnetizationSteps-1)))*(np.sqrt(j+1)-np.sqrt(j))
+								a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+						else:
+							delta_t = (1/(2*(1./(1.-restingTimeHot-restingTimeCold))*freq*np.sqrt(magnetizationSteps-1)))*(np.sqrt(j+1)-np.sqrt(j))
+							a.activate(leftReservoir_length+j*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1,leftReservoir_length+(j+1)*(leftThermalSwitch_length+MCM_length+rightThermalSwitch_length)/magnetizationSteps+1)
+							a.compute(delta_t,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+
+				if restingTimeHot != 0.:
+					a.compute(restingTimeHot*period,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+
+
+
+
 
 
 			if mode=='heat_pump':
@@ -344,12 +527,22 @@ class magcalsys_solidstate_1D:
 				if -((a.heatLeft-heatLeft)-(a.heatRight-heatRight))/period>maximumWorkingPower:
 					maximumWorkingPower = -((a.heatLeft-heatLeft)-(a.heatRight-heatRight))/period
 
-			if restingTimeCold != 0.:
-				a.compute(restingTimeCold*period,int(1/(freq*dt*cyclePoints)),solver=solverMode)
+			if mode=='refrigerator-energetics':
+				# if -(a.heatRight-heatRight)/period>maximumPower:
+				coolingPower=-(a.heatRight-heatRight)/period
+				workingPower = -((a.heatLeft-heatLeft)-(a.heatRight-heatRight))/period
+				COP = coolingPower/workingPower
+				print (a.heatLeft-heatLeft),(a.heatRight-heatRight)
+
+			if mode=='heat_pump-energetics':
+				# if -(a.heatRight-heatRight)/period>maximumPower:
+				heatingPower=-(a.heatLeft-heatLeft)/period
+				workingPower = -((a.heatLeft-heatLeft)-(a.heatRight-heatRight))/period
+				COP = heatingPower/workingPower
 
 			#updates the error values and prints information for the log file
 			value1=value2
-			value2=a.temperature[-5][1]
+			value2=a.temperature[rightTemperatureSensor][1]
 			i=1+i
 
 		#prints more information for the log file
@@ -362,13 +555,48 @@ class magcalsys_solidstate_1D:
 		minutes = '%02d' % minutes
 		seconds = '%02d' % seconds
 
+
+		fileTemperature=open(fileName)
+		lines=fileTemperature.readlines()
+		final_temperature_right=0.
+		for o in range(len(lines)-cyclePoints):
+			lines.pop(0)
+		#print len(lines)
+		for o in range(cyclePoints):
+			final_temperature_right=float(lines[o].split(',')[rightTemperatureSensor-2])/cyclePoints+final_temperature_right
+		fileTemperature.close()
+
+		fileTemperature=open(fileName)
+		lines=fileTemperature.readlines()
+		final_temperature_left=0.
+		for o in range(len(lines)-cyclePoints):
+			lines.pop(0)
+		for o in range(cyclePoints):
+			final_temperature_left=float(lines[o].split(',')[leftTemperatureSensor+1])/cyclePoints+final_temperature_left
+		fileTemperature.close()
+
+
+
 		print '------------------------------------------------------'
 		print ''
 		print 'Number of cycles:', i
 		print 'Final cycle error:', abs((value1-value2)/value2)
-		print 'Maximum thermal power (W):', maximumPower
-		print 'Maximum working power (W)', maximumWorkingPower
-		print 'No load temperature span (K):', -a.temperature[rightTemperatureSensor][1]+a.temperature[leftTemperatureSensor][1]
+		if mode=='refrigerator':
+			print 'Maximum cooling power (W):', maximumPower
+			print 'Maximum working power (W)', maximumWorkingPower
+			print 'No load temperature span (K):', -final_temperature_right+final_temperature_left#-final_temperature+a.temperature[leftTemperatureSensor][1]#-a.temperature[rightTemperatureSensor][1]+a.temperature[leftTemperatureSensor][1]
+		if mode=='heat_pump':
+			print 'Maximum heating power (W):', maximumPower
+			print 'Maximum working power (W)', maximumWorkingPower
+			print 'No load temperature span (K):', final_temperature_right-final_temperature_left#a.temperature[leftTemperatureSensor][1]#-a.temperature[rightTemperatureSensor][1]+a.temperature[leftTemperatureSensor][1]
+		if mode=='refrigerator-energetics':
+			print 'Cooling power (W):', coolingPower
+			print 'Working power (W):', workingPower
+			print 'COP:', COP
+		if mode=='heat_pump-energetics':
+			print 'Heating power (W):', heatingPower
+			print 'Working power (W):', workingPower
+			print 'COP:', COP
 		print 'Final time (s):', a.timePassed
 		print 'Simulation duration:', hours+':'+minutes+':'+seconds
 		print ''
