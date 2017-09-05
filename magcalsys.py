@@ -147,11 +147,11 @@ class magcalsys_solidstate_1D:
 			rightTemperatureSensor=temperatureSensor[1]
 			leftTemperatureSensor=temperatureSensor[0]
 
-		if rightTemperatureSensor==0:
-			rightTemperatureSensor=-1
+		#if rightTemperatureSensor==0:
+		#	rightTemperatureSensor=-1
 
-		if leftTemperatureSensor==0:
-			leftTemperatureSensor=1
+		#if leftTemperatureSensor==0:
+		#	leftTemperatureSensor=1
 
 		value1=ambTemperature
 		value2=ambTemperature
@@ -545,6 +545,42 @@ class magcalsys_solidstate_1D:
 			value2=a.temperature[rightTemperatureSensor][1]
 			i=1+i
 
+		#calculates final temperatures
+		before_final_cycle_time=a.timePassed-1./freq
+		time_accumulated=0.
+		fileTemperature=open(fileName)
+		lines=fileTemperature.readlines()
+		final_temperature_right=0.
+		o=1
+		while float(lines[o].split(',')[0])<before_final_cycle_time:
+			lines.pop(0)
+			o=o+1
+		for o in range(1,len(lines)):
+			time_before=float(lines[o-1].split(',')[0])
+			time_now=float(lines[o].split(',')[0])
+			final_temperature_right=(time_now-time_before)*float(lines[o].split(',')[rightTemperatureSensor-2])+final_temperature_right
+			time_accumulated=time_accumulated+(time_now-time_before)
+		final_temperature_right=final_temperature_right/time_accumulated
+		fileTemperature.close()
+
+		before_final_cycle_time=a.timePassed-1./freq
+		time_accumulated=0.
+		fileTemperature=open(fileName)
+		lines=fileTemperature.readlines()
+		final_temperature_left=0.
+		o=1
+		while float(lines[o].split(',')[0])<before_final_cycle_time:
+			lines.pop(0)
+			o=o+1
+		for o in range(1,len(lines)):
+			time_before=float(lines[o-1].split(',')[0])
+			time_now=float(lines[o].split(',')[0])
+			final_temperature_left=(time_now-time_before)*float(lines[o].split(',')[leftTemperatureSensor+1])+final_temperature_left
+			time_accumulated=time_accumulated+(time_now-time_before)
+		final_temperature_left=final_temperature_left/time_accumulated
+		fileTemperature.close()
+
+
 		#prints more information for the log file
 		endTime =time.time()
 		simulationTime = endTime-startTime
@@ -554,28 +590,6 @@ class magcalsys_solidstate_1D:
 		hours = '%02d' % hours
 		minutes = '%02d' % minutes
 		seconds = '%02d' % seconds
-
-
-		fileTemperature=open(fileName)
-		lines=fileTemperature.readlines()
-		final_temperature_right=0.
-		for o in range(len(lines)-cyclePoints):
-			lines.pop(0)
-		#print len(lines)
-		for o in range(cyclePoints):
-			final_temperature_right=float(lines[o].split(',')[rightTemperatureSensor-2])/cyclePoints+final_temperature_right
-		fileTemperature.close()
-
-		fileTemperature=open(fileName)
-		lines=fileTemperature.readlines()
-		final_temperature_left=0.
-		for o in range(len(lines)-cyclePoints):
-			lines.pop(0)
-		for o in range(cyclePoints):
-			final_temperature_left=float(lines[o].split(',')[leftTemperatureSensor+1])/cyclePoints+final_temperature_left
-		fileTemperature.close()
-
-
 
 		print '------------------------------------------------------'
 		print ''
