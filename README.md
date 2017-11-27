@@ -23,7 +23,7 @@ Validated features:
     3. [power source](#heatcond-power)
     4. [compute](#heatcond-compute)
     5. [example](#heatcond-example)
-4. [magcalsys module](#heatcond)
+4. [magcalsys module](#magcalsys)
 
 
 ## 1. Instalation <a name="instalation"></a>
@@ -130,7 +130,7 @@ foo.compute(timeInterval, writeInterval, solver='explicit_k(x)',
 This method computes the system for `timeInterval`, and writes into `fileName` every `writeInterval` time steps. Four different `solver` can be used: `'explicit_general'`, `'explicit_k(x)'`, `'implicit_general'`, and `'implicit_k(x)'`. If `modeTemp` is True, the `timeInterval` is no longer applied the computation stops when the temperature of `modeTempPoint` index changes `numFlag` relative to the initial value.
 
 
-#### v. example <a name="example"></a>
+#### v. example <a name="heatcond-example"></a>
 
 The following example computes a simple 1-dimensional model with 0.5 m of gadolinium (Gd). The system is initial at 293 K. One end of the system is at a fixed temperature of 300 K, while the other end is insulated. The used time step is 1 second, and the used space step is 0.05 m, so that the overal number of space points is 10. The system is initialy deactivated. To create the model we initialize the object `example`:
 
