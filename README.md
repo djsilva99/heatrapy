@@ -7,7 +7,6 @@ To simulate magnetocaloric operating systems use the magcalsys class. For visual
 author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.1.1 (alpha)
 
 Validated features:
-
 - [x] temperature computation of heatcond models
 - [ ] computation of heatcond models with heat source
 - [x] temperature computation of magcalsys models
@@ -48,7 +47,7 @@ This module contains classes to extract the physical properties from the materia
 
 **calmatpro**
 
-Extracts and interpolate the physical properties density (rho), specific heat (cp), adiabatic change of temperature (tad), and thermal conductivity (k), giving the temperature. The current database includes: Gd, Cu, MnO, idealTS_cold, idealTS_hot, and water.
+Extracts and interpolate the physical properties density (rho), specific heat (cp), adiabatic change of temperature (tad), and thermal conductivity (k), giving the temperature. The current database includes: Gd, Cu, idealTS_cold, idealTS_hot, and water.
 
 **heatcond**
 
@@ -170,9 +169,10 @@ example_visualization.verticalPlot([0], [0], [[3]],y_title='temperature (K)')
 ```
 
 This code will output the following time-dependent temperature plot:
-
-![resSwitch-screenshot](https://github.com/danieljosesilva/heatrapy/blob/master/img/example.png)
-
+<center>
+<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/example.png" alt="Drawing" style="width: 80%;"/>
+</center>
+As expected the temperature will tend to the 300 K fixed temperature. The activation of the material at 30000 s makes the temperature to jump to ~ 302 K.
 
 ## 4. magcalsys <a name="magcalsys"></a>
 
