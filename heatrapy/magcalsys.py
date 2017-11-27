@@ -79,6 +79,7 @@ class magcalsys_solidstate_1D:
             flux for the hot end (first term) and cold end (second term)
         mode: mode used for the power calculations (e.g. COP) performed at
             the end of the simulation
+        version: heatrapy version (default is None)
 
         """
 
@@ -685,7 +686,7 @@ class magcalsys_solidstate_1D:
                                       1)
                             a.deactivate(first, second)
                             if j != demagnetizationSteps - 1:
-                                totalsteps = magnetizationSteps - 1
+                                totalsteps = demagnetizationSteps - 1
                                 delta_t = ((1 / (2 * (1. / (1. -
                                                             restingTimeHot -
                                                             restingTimeCold)) *
@@ -736,7 +737,7 @@ class magcalsys_solidstate_1D:
                                       1)
                             a.deactivate(first, second)
                             if j != demagnetizationSteps - 1:
-                                totalsteps = magnetizationSteps - 1
+                                totalsteps = demagnetizationSteps - 1
                                 delta_t = ((1 / (2 * (1. / (1. -
                                                             restingTimeHot -
                                                             restingTimeCold)) *
@@ -984,7 +985,7 @@ class magcalsys_solidstate_1D:
                                       1)
                             a.deactivate(first, second)
                             if j != demagnetizationSteps - 1:
-                                totalsteps = magnetizationSteps - 1
+                                totalsteps = demagnetizationSteps - 1
                                 delta_t = ((1 / (2 * (1. / (1. -
                                                             restingTimeHot -
                                                             restingTimeCold)) *
@@ -1035,7 +1036,7 @@ class magcalsys_solidstate_1D:
                                       1)
                             a.deactivate(first, second)
                             if j != demagnetizationSteps - 1:
-                                totalsteps = magnetizationSteps - 1
+                                totalsteps = demagnetizationSteps - 1
                                 delta_t = ((1 / (2 * (1. / (1. -
                                                             restingTimeHot -
                                                             restingTimeCold)) *

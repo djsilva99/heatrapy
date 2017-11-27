@@ -4,13 +4,7 @@ This package is a module for simulating heat transfer processes. At the moment, 
 To simulate magnetocaloric operating systems use the magcalsys class. For visualizing the produced data use the python library <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a>.
 
 
-author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.1.1 (alpha)
-
-Validated features:
-- [x] temperature computation of heatcond models
-- [ ] computation of heatcond models with heat source
-- [x] temperature computation of magcalsys models
-- [ ] output powers and COPs for magcalsys models
+author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.1.1
 
 
 ## Table of contents
@@ -135,7 +129,7 @@ This method computes the system for `timeInterval`, and writes into `fileName` e
 The following example computes a simple 1-dimensional model with 0.5 m of gadolinium (Gd). The system is initial at 293 K. One end of the system is at a fixed temperature of 300 K, while the other end is insulated. The used time step is 1 second, and the used space step is 0.05 m, so that the overal number of space points is 10. The system is initialy deactivated. To create the model we initialize the object `example`:
 
 ```python
-example = heatcond.heatcond_activemat_1D(293, materials=['Gd'], borders=[1,11], 
+example = ht.heatcond.heatcond_activemat_1D(293, materials=['Gd'], borders=[1,11], 
                                          materialsOrder=[0], dx=0.05, dt=1.,
                                          fileName='example.txt', boundaries=[300,0],
                                          Q=[], Q0=[], initialState=False)
@@ -144,19 +138,19 @@ example = heatcond.heatcond_activemat_1D(293, materials=['Gd'], borders=[1,11],
 Then we compute the system for 30000 s, write the output values every 300 s, using the 'implicit_k(x)' solver:
 
 ```python
-example.compute(30000,300,solver='implicit_k(x)')
+example.compute(30000, 300, solver='implicit_k(x)')
 ```
 
 Àfterwards we activate the whole system:
 
 ```python
-example.activate(1,10)
+example.activate(1, 10)
 ```
 
 and we compute the system for 30000 s one more time:
 
 ```python
-example.compute(30000,300,solver='implicit_k(x)')
+example.compute(30000, 300, solver='implicit_k(x)')
 ```
 
 The output data is stored in file example.txt. To visualize the temperature as a function of time for the point index 3 we use the <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a> library and write:
@@ -165,7 +159,7 @@ The output data is stored in file example.txt. To visualize the temperature as a
 import physplotlib as pp
 example_visualization = pp.statplot()
 example_visualization.loadFile('example.txt')
-example_visualization.verticalPlot([0], [0], [[3]],y_title='temperature (K)')
+example_visualization.verticalPlot([0], [0], [[3]], y_title='temperature (K)')
 ```
 
 This code will output the following time-dependent temperature plot:
@@ -228,4 +222,5 @@ The input variables are the following:
 * `temperatureSensor`: list of two space indexes used to determine the temperature span at the end of the simulation. The first term is the sensor at the hot end and the second at the cold end
 * `heatPoints`: list of two space indexes used to determine the heat flux for the hot end (first term) and cold end (second term)
 * `mode`: mode used for the power calculations (e.g. COP) performed at the end of the simulation
+* `version`: heatrapy version (default is None)
 
