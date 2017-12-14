@@ -840,7 +840,7 @@ class magcalsys_solidstate_1D:
                                       1)
                             a.deactivate(first, second)
                             if j != demagnetizationSteps - 1:
-                                totalsteps = magnetizationSteps - 1
+                                totalsteps = demagnetizationSteps - 1
                                 delta_t = ((1 / (2 * (1. / (1. -
                                                             restingTimeHot -
                                                             restingTimeCold)) *
@@ -851,7 +851,7 @@ class magcalsys_solidstate_1D:
                                 a.compute(delta_t, write_interval,
                                           solver=solverMode)
                         else:
-                            totalsteps = magnetizationSteps
+                            totalsteps = demagnetizationSteps
                             delta_t = ((1 / (2 * (1. / (1. -
                                                         restingTimeHot -
                                                         restingTimeCold)) *
@@ -889,7 +889,7 @@ class magcalsys_solidstate_1D:
                                       1)
                             a.deactivate(first, second)
                             if j != demagnetizationSteps - 1:
-                                totalsteps = magnetizationSteps - 1
+                                totalsteps = demagnetizationSteps - 1
                                 delta_t = ((1 / (2 * (1. / (1. -
                                                             restingTimeHot -
                                                             restingTimeCold)) *
