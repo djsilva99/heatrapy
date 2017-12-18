@@ -4,7 +4,7 @@ This package is a module for simulating heat transfer processes. At the moment, 
 To simulate magnetocaloric operating systems use the magcalsys class. For visualizing the produced data use the python library <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a>.
 
 
-author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.1.2
+author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.1.3
 
 
 ## Table of contents
