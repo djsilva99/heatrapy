@@ -1,4 +1,5 @@
 # heatrapy
+<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" style="width: 10%;"/>
 
 This package is a module for simulating heat transfer processes. At the moment, it is focused on heat conduction, and includes a subpackage for computing magnetocaloric systems. The heatcond_activemat_1D class can be used to simulate conduction of heat in 1 dimension.
 To simulate magnetocaloric operating systems use the magcalsys class. For visualizing the produced data use the python library <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a>.
