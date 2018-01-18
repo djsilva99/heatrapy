@@ -11,7 +11,7 @@ author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.1.4
 
 ## Table of contents
 
-1. [Instalation](#instalation)
+1. [Installation](#installation)
 2. [Introduction](#introduction)
 3. [heatcond module](#heatcond)
     1. [creation of the model](#heatcond-model)
@@ -22,7 +22,7 @@ author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.1.4
 4. [magcalsys module](#magcalsys)
 
 
-## 1. Instalation <a name="instalation"></a>
+## 1. Installation <a name="installation"></a>
 
 To install simply use the pip package manager:
 
