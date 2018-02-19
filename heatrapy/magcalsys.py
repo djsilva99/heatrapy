@@ -137,8 +137,14 @@ class magcalsys_solidstate_1D:
         startTime = time.time()
 
         if heatPoints == 'default':
-            leftHeatSensor = leftReservoir_length - 3
-            rightHeatSensor = -rightReservoir_length + 3
+            if leftReservoir_length - 3 > 0:
+                leftHeatSensor = leftReservoir_length - 3
+            else:
+                leftHeatSensor = 2
+            if -rightReservoir_length + 3 < 0:
+                rightHeatSensor = -rightReservoir_length + 3
+            else:
+                rightHeatSensor = -2
         else:
             leftHeatSensor = heatPoints[0]
             rightHeatSensor = heatPoints[1]
@@ -936,3 +942,552 @@ class magcalsys_solidstate_1D:
         print ''
         print ''
         print ''
+
+
+class magcalsys_fluidAMR_1D:
+
+    """magcalsys_fluidAMR_1D class
+    computes the thermal processes for 1-dimensional AMR systems that uses
+    fluids as heat exchanger.
+    """
+
+    def __init__(self, fileName, ambTemperature=293, fluid_length=100,
+                 MCM_length=20, rightReservoir_length=3,
+                 leftReservoir_length=3, MCM_material='Gd',
+                 fluid_material='water', leftReservoir_material='Cu',
+                 rightReservoir_material='Cu', freq=1., dt=0.01, dx=0.004,
+                 stopCriteria=1e-4, solverMode='implicit_k(x)',
+                 minCycleNumber=10, maxCycleNumber=2000, cyclePoints=25,
+                 note=None, boundaries=((2,0),(3,0)),
+                 mode='heat_pump', version=None, 
+                 leftHEXpositions=15, rightHEXpositions=15,
+                 startingField='magnetization', h=5000000.,
+                 temperatureSensor=[3,-3], demagnetizationSteps=1,
+                 magnetizationSteps=1, demagnetizationMode='constant_right',
+                 magnetizationMode='constant_left',
+                 restingTimeHot='default', restingTimeCold='default',
+                 type_study='no load', velocity=.2, mod_freq='default'):#=('/home/daniel/Desktop/freq.txt',10)):
+
+        if startingField=='demagnetization':
+            initialState=True
+        else:
+            initialState=False
+
+        cycle_number = 0
+
+        AMR = heatcond.system_objects(number_objects=4,
+                                    materials=[fluid_material, MCM_material,
+                                                leftReservoir_material,
+                                                rightReservoir_material],
+                                    objects_length=[fluid_length, MCM_length,
+                                                    leftReservoir_length,
+                                                    rightReservoir_length],
+                                    ambTemperature=293, dx=dx, dt=dt,
+                                    fileName=fileName,initialState=initialState,
+                                    boundaries=boundaries)
+                                
+        # half_steps_cycle = (fluid_length - leftHEXpositions - rightHEXpositions - MCM_length - 
+        #             leftReservoir_length - rightReservoir_length)               
+        # time_step = (1 / (2. * freq)) / half_steps_cycle
+        write_interval = cyclePoints/2
+
+        steps = int(velocity / (2 * freq * dx))
+        # print steps
+        time_step = (1 / (2. * freq)) / steps
+
+        if int(time_step / dt) == 0:
+            print 'dt or frequency too low'
+            
+        if write_interval > int(time_step / dt):
+            write_interval = 1#int(time_step / dt)
+            
+        # information for the log file
+        print ''
+        print ''
+        print '######################################################'
+        print ''
+        print '------------------------------------------------------'
+        print fileName
+        print '------------------------------------------------------'
+        print ''
+        print 'heatconpy version:', version
+        print 'Module: magcalsys_fluidAMR_1D'
+        if note is not None:
+            print ''
+            print 'Note:', note
+        print ''
+        print 'Mode:', mode
+        print 'fluid:', fluid_material+' ('+ str(fluid_length*dx)+')'
+        print 'MCM:', MCM_material+' ('+ str(MCM_length*dx)+')'
+        print 'left reservoir:', leftReservoir_material+' ('+ str(leftReservoir_length*dx)+')'
+        print 'right reservoir:', rightReservoir_material+' ('+ str(rightReservoir_length*dx)+')'
+        print 'distance between MCM and left HEX:', leftHEXpositions*dx
+        print 'distance between MCM and right HEX:', rightHEXpositions*dx
+        print 'dx (m):', dx
+        print 'dt (s):', dt
+        print 'Frequency (Hz):', freq
+        print 'Hot resting time ratio:', restingTimeHot
+        print 'Cold resting time ratio:', restingTimeCold
+        print 'Solver:', solverMode
+        print 'Magnetization mode:', magnetizationMode
+        print 'Magnetization steps:', magnetizationSteps
+        print 'Demagnetization mode:', demagnetizationMode
+        print 'Demagnetization steps:', demagnetizationSteps
+        print 'Starting Field:', startingField
+        print 'Boundaries:', boundaries
+        print 'Ambient temperature (K):', ambTemperature
+        print 'Stop criteria:', stopCriteria
+        print 'Time:', time.ctime()
+        print ''
+
+        startTime = time.time()
+
+        if type_study == 'no load':
+
+            value1 = AMR.objects[0].temperature[temperatureSensor[0]][0]
+            value2 = AMR.objects[0].temperature[temperatureSensor[1]][0]
+
+            if startingField=='magnetization':
+
+                condition = True
+                while condition:
+
+                    value1 = AMR.objects[0].temperature[temperatureSensor[0]][0]
+                    value2 = AMR.objects[0].temperature[temperatureSensor[1]][0]
+
+                    if mod_freq != 'default':
+                        #print 'ok'
+                        temperature_sensor = AMR.objects[1].temperature[mod_freq[1]][0]
+                        input = open(mod_freq[0], 'r')
+                        s = input.readlines()
+                        xMod = []
+                        yMod = []
+                        for line in s:
+                            pair = line.split(',')
+                            xMod.append(float(pair[0]))
+                            yMod.append(float(pair[1]))
+                        input.close()
+                        freq = np.interp(temperature_sensor, xMod, yMod)
+                        print freq, AMR.objects[1].temperature[mod_freq[1]][0]
+                        steps = int(velocity / (2 * freq * dx))
+                        time_step = (1 / (2. * freq)) / steps
+                        if int(time_step / dt) == 0:
+                            print 'dt or frequency too low'                         
+                        if write_interval > int(time_step / dt):
+                            write_interval = 1#int(time_step / dt)
+
+                    #MAGNETIZATION
+
+                    #MCE
+                    AMR.objects[1].activate(1,MCM_length+1)
+
+                    for n in range(steps):
+
+                        #contacts
+                        contacts = set()
+
+                        init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(leftReservoir_length):
+                            contacts.add(((0, i+n+init_pos), (2, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(MCM_length):
+                            contacts.add(((0, i+init_pos+n), (1, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(rightReservoir_length):
+                            contacts.add(((0, i+init_pos+n), (3, i+1), h))
+
+                        AMR.contacts = contacts
+
+                        #compute
+                        AMR.compute(time_step,write_interval)
+
+                    #DEMAGNETIZATION
+
+                    #MCE
+                    AMR.objects[1].deactivate(1,MCM_length+1)
+
+                    for n in range(steps):
+
+                        #contacts
+                        contacts = set()
+
+                        init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(leftReservoir_length):
+                            contacts.add(((0, i+init_pos-n), (2, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(MCM_length):
+                            contacts.add(((0, i+init_pos-n), (1, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(rightReservoir_length):
+                            contacts.add(((0, i+init_pos-n), (3, i+1), h))
+
+                        AMR.contacts = contacts
+
+                        #compute
+                        AMR.compute(time_step,write_interval)
+
+                    if value1 == value2:
+                        condition = True
+                    else:
+                        condition = (cycle_number < minCycleNumber or (abs(abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0]) - abs(value1-value2)))/abs(value1-value2) > stopCriteria) and cycle_number<maxCycleNumber
+
+                    cycle_number = cycle_number + 1
+                    #print ''
+                    #print AMR.objects[0].Q0_ref
+
+            else:
+                condition = True
+                while condition:
+
+                    value1 = AMR.objects[0].temperature[temperatureSensor[0]][0]
+                    value2 = AMR.objects[0].temperature[temperatureSensor[1]][0]
+
+                    if mod_freq != 'default':
+                        #print 'ok'
+                        temperature_sensor = AMR.objects[1].temperature[mod_freq[1]][0]
+                        input = open(mod_freq[0], 'r')
+                        s = input.readlines()
+                        xMod = []
+                        yMod = []
+                        for line in s:
+                            pair = line.split(',')
+                            xMod.append(float(pair[0]))
+                            yMod.append(float(pair[1]))
+                        input.close()
+                        freq = np.interp(temperature_sensor, xMod, yMod)
+                        print freq, AMR.objects[1].temperature[mod_freq[1]][0]
+                        steps = int(velocity / (2 * freq * dx))
+                        time_step = (1 / (2. * freq)) / steps
+                        if int(time_step / dt) == 0:
+                            print 'dt or frequency too low'                         
+                        if write_interval > int(time_step / dt):
+                            write_interval = 1#int(time_step / dt)
+
+                    #DEMAGNETIZATION
+
+                    #MCE
+                    AMR.objects[1].deactivate(1,MCM_length+1)
+
+                    for n in range(steps):
+
+                        #contacts
+                        contacts = set()
+
+                        init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(leftReservoir_length):
+                            contacts.add(((0, i+init_pos-n), (2, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(MCM_length):
+                            contacts.add(((0, i+init_pos-n), (1, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(rightReservoir_length):
+                            contacts.add(((0, i+init_pos-n), (3, i+1), h))
+
+                        AMR.contacts = contacts
+
+                        #compute
+                        AMR.compute(time_step,write_interval)
+
+                    #MAGNETIZATION
+
+                    #MCE
+                    AMR.objects[1].activate(1,MCM_length+1)
+
+                    for n in range(steps):
+
+                        #contacts
+                        contacts = set()
+
+                        init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(leftReservoir_length):
+                            contacts.add(((0, i+n+init_pos), (2, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(MCM_length):
+                            contacts.add(((0, i+init_pos+n), (1, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(rightReservoir_length):
+                            contacts.add(((0, i+init_pos+n), (3, i+1), h))
+
+                        AMR.contacts = contacts
+
+                        #compute
+                        AMR.compute(time_step,write_interval)
+
+                    if value1 == value2:
+                        condition = True
+                    else:
+                        condition = (cycle_number < minCycleNumber or (abs(abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0]) - abs(value1-value2)))/abs(value1-value2) > stopCriteria) and cycle_number<maxCycleNumber
+                    cycle_number = cycle_number + 1
+
+            endTime = time.time()
+            simulationTime = endTime - startTime
+            hours = int(simulationTime / 3600)
+            minutes = int((simulationTime - hours * 3600) / 60)
+            seconds = int(simulationTime - hours * 3600 - (minutes * 60))
+            hours = '%02d' % hours
+            minutes = '%02d' % minutes
+            seconds = '%02d' % seconds
+
+            print '------------------------------------------------------'
+            print ''
+            print 'Number of cycles:', cycle_number
+            print 'Final cycle error:', (abs(abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0]) - abs(value1-value2)))#/abs(value1-value2)
+            if mode == 'refrigerator':
+                if type_study == 'no load':
+                    temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
+                    print 'No load temperature span (K):', temperature_span
+                if type_study == 'fixed temperature span':
+                    cooling_power = (-AMR.q2+q2)*freq
+                    working_power = (AMR.q2-q2+AMR.q1-q1)*freq
+                    COP = cooling_power/working_power
+                    print 'Cooling power (W):', cooling_power
+                    print 'Working power (W)', working_power
+                    print 'COP:', COP
+            if mode == 'heat_pump':
+                if type_study == 'no load':
+                    temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
+                    print 'No load temperature span (K):', temperature_span
+                if type_study == 'fixed temperature span':
+                    heating_power = (AMR.q1-q1)*freq
+                    working_power = (AMR.q2-q2+AMR.q1-q1)*freq
+                    print 'Heating power (W):', heating_power
+                    print 'Working power (W)', working_power
+                    print 'COP:', heating_power/working_power
+            print 'Final time (s):', AMR.objects[0].timePassed
+            print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
+            print ''
+            print '------------------------------------------------------'
+            print ''
+            print ''
+            print ''
+
+
+
+        if type_study == 'fixed temperature span':
+
+            value1 = AMR.objects[2].Q0[leftReservoir_length/2]
+
+            if startingField=='magnetization':
+
+                while (cycle_number < minCycleNumber or abs(AMR.objects[2].Q0[leftReservoir_length/2]-value1)/value1 > stopCriteria) and cycle_number<maxCycleNumber:
+
+                    value1 = AMR.objects[2].Q0[leftReservoir_length/2]
+                    q1 = AMR.q1
+                    q2 = AMR.q2
+
+                    if mod_freq != 'default':
+                        #print 'ok'
+                        temperature_sensor = AMR.objects[1].temperature[mod_freq[1]][0]
+                        input = open(mod_freq[0], 'r')
+                        s = input.readlines()
+                        xMod = []
+                        yMod = []
+                        for line in s:
+                            pair = line.split(',')
+                            xMod.append(float(pair[0]))
+                            yMod.append(float(pair[1]))
+                        input.close()
+                        freq = np.interp(temperature_sensor, xMod, yMod)
+                        print freq, AMR.objects[1].temperature[mod_freq[1]][0]
+                        steps = int(velocity / (2 * freq * dx))
+                        time_step = (1 / (2. * freq)) / steps
+                        if int(time_step / dt) == 0:
+                            print 'dt or frequency too low'                         
+                        if write_interval > int(time_step / dt):
+                            write_interval = 1#int(time_step / dt)
+
+                    #MAGNETIZATION
+
+                    #MCE
+                    AMR.objects[1].activate(1,MCM_length+1)
+
+                    for n in range(steps):
+
+                        #contacts
+                        contacts = set()
+
+                        init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(leftReservoir_length):
+                            contacts.add(((0, i+n+init_pos), (2, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(MCM_length):
+                            contacts.add(((0, i+init_pos+n), (1, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(rightReservoir_length):
+                            contacts.add(((0, i+init_pos+n), (3, i+1), h))
+
+                        AMR.contacts = contacts
+
+                        #compute
+                        AMR.compute(time_step,write_interval)
+
+                    #DEMAGNETIZATION
+
+                    #MCE
+                    AMR.objects[1].deactivate(1,MCM_length+1)
+
+                    for n in range(steps):
+
+                        #contacts
+                        contacts = set()
+
+                        init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(leftReservoir_length):
+                            contacts.add(((0, i+init_pos-n), (2, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(MCM_length):
+                            contacts.add(((0, i+init_pos-n), (1, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(rightReservoir_length):
+                            contacts.add(((0, i+init_pos-n), (3, i+1), h))
+
+                        AMR.contacts = contacts
+
+                        #compute
+                        AMR.compute(time_step,write_interval)
+
+                    cycle_number = cycle_number + 1
+                
+            else:
+
+                while (cycle_number < minCycleNumber or abs(AMR.objects[2].Q0[leftReservoir_length/2]-value1)/value1 > stopCriteria) and cycle_number<maxCycleNumber:
+
+                    value1 = AMR.objects[2].Q0[leftReservoir_length/2]
+                    q1 = AMR.q1
+                    q2 = AMR.q2
+
+                    if mod_freq != 'default':
+                        #print 'ok'
+                        temperature_sensor = AMR.objects[1].temperature[mod_freq[1]][0]
+                        input = open(mod_freq[0], 'r')
+                        s = input.readlines()
+                        xMod = []
+                        yMod = []
+                        for line in s:
+                            pair = line.split(',')
+                            xMod.append(float(pair[0]))
+                            yMod.append(float(pair[1]))
+                        input.close()
+                        freq = np.interp(temperature_sensor, xMod, yMod)
+                        print freq, AMR.objects[1].temperature[mod_freq[1]][0]
+                        steps = int(velocity / (2 * freq * dx))
+                        time_step = (1 / (2. * freq)) / steps
+                        if int(time_step / dt) == 0:
+                            print 'dt or frequency too low'                         
+                        if write_interval > int(time_step / dt):
+                            write_interval = 1#int(time_step / dt)
+
+                    #DEMAGNETIZATION
+
+                    #MCE
+                    AMR.objects[1].deactivate(1,MCM_length+1)
+
+                    for n in range(steps):
+
+                        #contacts
+                        contacts = set()
+
+                        init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(leftReservoir_length):
+                            contacts.add(((0, i+init_pos-n), (2, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(MCM_length):
+                            contacts.add(((0, i+init_pos-n), (1, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                        for i in range(rightReservoir_length):
+                            contacts.add(((0, i+init_pos-n), (3, i+1), h))
+
+                        AMR.contacts = contacts
+
+                        #compute
+                        AMR.compute(time_step,write_interval)
+
+                    #MAGNETIZATION
+
+                    #MCE
+                    AMR.objects[1].activate(1,MCM_length+1)
+
+                    for n in range(steps):
+
+                        #contacts
+                        contacts = set()
+
+                        init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(leftReservoir_length):
+                            contacts.add(((0, i+n+init_pos), (2, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(MCM_length):
+                            contacts.add(((0, i+init_pos+n), (1, i+1), h))
+
+                        init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                        for i in range(rightReservoir_length):
+                            contacts.add(((0, i+init_pos+n), (3, i+1), h))
+
+                        AMR.contacts = contacts
+
+                        #compute
+                        AMR.compute(time_step,write_interval)
+                    
+                    cycle_number = cycle_number + 1
+
+            endTime = time.time()
+            simulationTime = endTime - startTime
+            hours = int(simulationTime / 3600)
+            minutes = int((simulationTime - hours * 3600) / 60)
+            seconds = int(simulationTime - hours * 3600 - (minutes * 60))
+            hours = '%02d' % hours
+            minutes = '%02d' % minutes
+            seconds = '%02d' % seconds
+
+            print '------------------------------------------------------'
+            print ''
+            print 'Number of cycles:', cycle_number
+            print 'Final cycle error:', abs(AMR.objects[2].Q0[leftReservoir_length/2]-value1)/value1
+            if mode == 'refrigerator':
+                if type_study == 'no load':
+                    temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
+                    print 'No load temperature span (K):', temperature_span
+                if type_study == 'fixed temperature span':
+                    cooling_power = (-AMR.q2+q2)/freq
+                    working_power = (AMR.q2-q2+AMR.q1-q1)/freq
+                    COP = cooling_power/working_power
+                    print 'Cooling power (W):', cooling_power
+                    print 'Working power (W)', working_power
+                    print 'COP:', COP
+            if mode == 'heat_pump':
+                if type_study == 'no load':
+                    temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
+                    print 'No load temperature span (K):', temperature_span
+                if type_study == 'fixed temperature span':
+                    heating_power = (AMR.q1-q1)/freq
+                    working_power = (AMR.q2-q2+AMR.q1-q1)/freq
+                    print 'Heating power (W):', heating_power
+                    print 'Working power (W)', working_power
+                    print 'COP:', heating_power/working_power
+            print 'Final time (s):', AMR.objects[0].timePassed
+            print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
+            print ''
+            print '------------------------------------------------------'
+            print ''
+            print ''
+            print ''
+        
+
+if __name__ == "__main__":
+
+    a=magcalsys_fluidAMR_1D('test')
