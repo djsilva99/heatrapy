@@ -26,7 +26,7 @@ class magcalsys_solidstate_1D:
     def __init__(self, fileName, ambTemperature=293,
                  leftThermalSwitch_length=10, rightThermalSwitch_length=10,
                  MCM_length=50, rightReservoir_length=15,
-                 leftReservoir_length=15, MCM_material='Gd',
+                 leftReservoir_length=15, MCM_material=((0.05,'Gd'),(0.05,'Cu')),#='Gd',
                  leftThermalSwitch_material='idealTS_hot',
                  rightThermalSwitch_material='idealTS_cold',
                  leftReservoir_material='Cu', rightReservoir_material='Cu',
@@ -107,7 +107,7 @@ class magcalsys_solidstate_1D:
         print ''
         print 'Mode:', mode
         print 'System:', leftReservoir_material + '/' + \
-            leftThermalSwitch_material + '/' + MCM_material + '/' + \
+            leftThermalSwitch_material + '/MCM material/' + \
             rightThermalSwitch_material + '/' + rightReservoir_material
         print 'Dimensions (m):', str(dx * leftReservoir_length) + '/' + \
             str(dx * leftThermalSwitch_length) + '/' + str(dx * MCM_length) + \
@@ -116,6 +116,7 @@ class magcalsys_solidstate_1D:
         print 'Number of points:', str(leftReservoir_length) + '/' + \
             str(leftThermalSwitch_length) + '/' + str(MCM_length) + '/' + \
             str(rightThermalSwitch_length) + '/' + str(rightReservoir_length)
+        print 'MCM material:', MCM_material
         print 'dx (m):', dx
         print 'dt (s):', dt
         print 'Frequency (Hz):', freq
@@ -157,7 +158,7 @@ class magcalsys_solidstate_1D:
         # initializes the object for the simulation
 
         materials = [leftReservoir_material, leftThermalSwitch_material,
-                     MCM_material, rightThermalSwitch_material,
+                     MCM_material[0][1], rightThermalSwitch_material,
                      rightReservoir_material]
 
         lRl = leftReservoir_length
@@ -179,6 +180,31 @@ class magcalsys_solidstate_1D:
                                            boundaries=boundaries,
                                            heatPoints=heatPoints,
                                            initialState=initialState)
+
+        k=leftReservoir_length+leftThermalSwitch_length
+        for i in range(len(MCM_material)):
+            import calmatpro
+            import os
+            tadi = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'tadi.txt'
+            tadd = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'tadd.txt'
+            cpa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'cpa.txt'
+            cp0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'cp0.txt'
+            k0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'k0.txt'
+            ka = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'ka.txt'
+            rho0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'rho0.txt'
+            rhoa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'rhoa.txt'
+            a.materials.append(calmatpro.calmatpro(tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa))
+            for j in range(k,k+int(MCM_material[i][0]/dx+1)):
+                a.materialsIndex[j]=len(a.materials)-1
+            k = k+int(MCM_material[i][0]/dx)
 
         # defines some variable for the cycles
         if temperatureSensor == 'default':
@@ -953,7 +979,7 @@ class magcalsys_fluidAMR_1D:
 
     def __init__(self, fileName, ambTemperature=293, fluid_length=100,
                  MCM_length=20, rightReservoir_length=3,
-                 leftReservoir_length=3, MCM_material='Gd',
+                 leftReservoir_length=3, MCM_material=((0.04,'Gd'),(0.04,'Cu')),#'Gd',
                  fluid_material='water', leftReservoir_material='Cu',
                  rightReservoir_material='Cu', freq=1., dt=0.001, dx=0.004,
                  stopCriteria=1e-4, solverMode='implicit_k(x)',
@@ -961,12 +987,14 @@ class magcalsys_fluidAMR_1D:
                  note=None, boundaries=((2,0),(3,0)),
                  mode='heat_pump', version=None, 
                  leftHEXpositions=15, rightHEXpositions=15,
-                 startingField='magnetization', h=5000000.,
+                 startingField='magnetization', #h=5000000.,
                  temperatureSensor=[3,-3], demagnetizationSteps=5,
-                 magnetizationSteps=5, demagnetizationMode='constant_right',
+                 magnetizationSteps=1, demagnetizationMode='constant_right',
                  magnetizationMode='constant_left',
-                 restingTimeHot=0.1, restingTimeCold=0.1,
-                 applied_static_field_time_ratio=(0.,0.),removed_static_field_time_ratio=(0.,0.),
+                 #mcm_cascade = (1,(0.08,'Gd')),
+                 applied_static_field_time_ratio=(0.,0.),removed_static_field_time_ratio=(0.25,0.25),
+                 h_mcm_fluid=5000000, h_leftreservoir_fluid=5000000, h_rightreservoir_fluid=5000000,
+                 mcm_discontinuity=[2,0.016],#='default'#=[3,0.008]
                  type_study='no load', velocity=.2, mod_freq='default'):#=('/home/daniel/Desktop/freq.txt',10)):
 
         if startingField=='demagnetization':
@@ -975,9 +1003,8 @@ class magcalsys_fluidAMR_1D:
             initialState=False
 
         cycle_number = 0
-
         AMR = heatcond.system_objects(number_objects=4,
-                                    materials=[fluid_material, MCM_material,
+                                    materials=[fluid_material, MCM_material[0][1],
                                                 leftReservoir_material,
                                                 rightReservoir_material],
                                     objects_length=[fluid_length, MCM_length,
@@ -986,14 +1013,66 @@ class magcalsys_fluidAMR_1D:
                                     ambTemperature=293, dx=dx, dt=dt,
                                     fileName=fileName,initialState=initialState,
                                     boundaries=boundaries)
-                                
-        # half_steps_cycle = (fluid_length - leftHEXpositions - rightHEXpositions - MCM_length - 
-        #             leftReservoir_length - rightReservoir_length)               
-        # time_step = (1 / (2. * freq)) / half_steps_cycle
-        write_interval = cyclePoints/2
 
+        k=1
+        for i in range(len(MCM_material)):
+            import calmatpro
+            import os
+            tadi = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'tadi.txt'
+            tadd = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'tadd.txt'
+            cpa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'cpa.txt'
+            cp0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'cp0.txt'
+            k0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'k0.txt'
+            ka = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'ka.txt'
+            rho0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'rho0.txt'
+            rhoa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/' + MCM_material[i][1] + '/' + 'rhoa.txt'
+            AMR.objects[1].materials.append(calmatpro.calmatpro(tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa))
+            for j in range(k,k+int(MCM_material[i][0]/dx)):
+                AMR.objects[1].materialsIndex[j]=len(AMR.objects[1].materials)-1
+            k = k+int(MCM_material[i][0]/dx)
+
+        if mcm_discontinuity != 'default':
+            import calmatpro
+            import os
+            tadi = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/vaccum/tadi.txt'
+            tadd = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/vaccum/tadd.txt'
+            cpa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/vaccum/cpa.txt'
+            cp0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/vaccum/cp0.txt'
+            k0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/vaccum/k0.txt'
+            ka = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/vaccum/ka.txt'
+            rho0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/vaccum/rho0.txt'
+            rhoa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/materials/vaccum/rhoa.txt'
+            AMR.objects[1].materials.append(calmatpro.calmatpro(tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa))
+
+            j=1
+            for i in range(1,len(AMR.objects[1].temperature)-1):
+                if i < j*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx))  and i >= j*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)-int(mcm_discontinuity[1]/(2*dx)):
+                    AMR.objects[1].materialsIndex[i]=len(AMR.objects[1].materials)-1
+                if i == j*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx)) and j < mcm_discontinuity[0]:
+                    j=j+1
+
+        print AMR.objects[1].materialsIndex
+        print ''
+        print AMR.objects[1].materials
+                                
+        write_interval = cyclePoints/2
         steps = int(velocity / (2 * freq * dx))
-        # print steps
         time_step = (1 / (2. * freq)) / steps
 
         if int(time_step / dt) == 0:
@@ -1018,17 +1097,24 @@ class magcalsys_fluidAMR_1D:
             print 'Note:', note
         print ''
         print 'Mode:', mode
-        print 'fluid:', fluid_material+' ('+ str(fluid_length*dx)+')'
-        print 'MCM:', MCM_material+' ('+ str(MCM_length*dx)+')'
-        print 'left reservoir:', leftReservoir_material+' ('+ str(leftReservoir_length*dx)+')'
-        print 'right reservoir:', rightReservoir_material+' ('+ str(rightReservoir_length*dx)+')'
-        print 'distance between MCM and left HEX:', leftHEXpositions*dx
-        print 'distance between MCM and right HEX:', rightHEXpositions*dx
+        print 'Fluid:', fluid_material+' ('+ str(fluid_length*dx)+')'
+        print 'MCM material:', MCM_material
+        print 'Left reservoir:', leftReservoir_material+' ('+ str(leftReservoir_length*dx)+')'
+        print 'Right reservoir:', rightReservoir_material+' ('+ str(rightReservoir_length*dx)+')'
+        print 'Distance between MCM and left HEX:', leftHEXpositions*dx
+        print 'Distance between MCM and right HEX:', rightHEXpositions*dx
         print 'dx (m):', dx
         print 'dt (s):', dt
         print 'Frequency (Hz):', freq
-        print 'Hot resting time ratio:', restingTimeHot
-        print 'Cold resting time ratio:', restingTimeCold
+        if mcm_discontinuity == 'default':
+            print 'Discontinuity: None'
+        else:
+            print 'Discontinuity:', mcm_discontinuity
+        print 'MCM - fluid heat transfer coefficient:', h_mcm_fluid
+        print 'Left reservoir - fluid heat transfer coefficient:', h_leftreservoir_fluid
+        print 'Right reservoir - fluid heat transfer coefficient:', h_rightreservoir_fluid
+        print 'Applied field static time ratios:', applied_static_field_time_ratio
+        print 'Removed field static time ratios:', removed_static_field_time_ratio
         print 'Solver:', solverMode
         print 'Magnetization mode:', magnetizationMode
         print 'Magnetization steps:', magnetizationSteps
@@ -1090,25 +1176,33 @@ class magcalsys_fluidAMR_1D:
 
                         init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
                         for i in range(leftReservoir_length):
-                            contacts.add(((0, i+n+init_pos), (2, i+1), h))
+                            contacts.add(((0, i+n+init_pos), (2, i+1), h_leftreservoir_fluid))
 
-                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
-                        for i in range(MCM_length):
-                            contacts.add(((0, i+init_pos+n), (1, i+1), h))
+                        if mcm_discontinuity == 'default':
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                            for i in range(MCM_length):
+                                contacts.add(((0, i+init_pos+n), (1, i+1), h_mcm_fluid))
+                        else:
+                            p=1
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                            for i in range(MCM_length):
+                                if not (i+1 < p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx))  and i+1 >= p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)-int(mcm_discontinuity[1]/(2*dx))):
+                                    contacts.add(((0, i+init_pos+n), (1, i+1), h_mcm_fluid))
+                                if i+1 == p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx)) and p < mcm_discontinuity[0]:
+                                    p=p+1
 
                         init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
                         for i in range(rightReservoir_length):
-                            contacts.add(((0, i+init_pos+n), (3, i+1), h))
+                            contacts.add(((0, i+init_pos+n), (3, i+1), h_rightreservoir_fluid))
 
                         AMR.contacts = contacts
-                        
+
+
                         if n*time_step < applied_static_field_time_ratio[0]/2:
                             AMR.compute(time_step, write_interval, solver=solverMode)
-                            print 'before',time_step,n
 
                         elif n*time_step > 1/(2.*freq) - applied_static_field_time_ratio[1]/2:
                             AMR.compute(time_step, write_interval, solver=solverMode)
-                            print 'after',time_step,n
                         else:
 
                             #MCE
@@ -1132,7 +1226,6 @@ class magcalsys_fluidAMR_1D:
                                         else:
                                             delta_t = time_step
                                         AMR.compute(delta_t, write_interval, solver=solverMode)
-                                        print 'during',delta_t,j,n
                                         time_passed = time_passed + delta_t
                                         cond = False
                                         flag=True
@@ -1152,7 +1245,6 @@ class magcalsys_fluidAMR_1D:
                                             flag=True
                                         previous_time = delta_t
                                         AMR.compute(delta_t, write_interval, solver=solverMode)
-                                        print 'during',delta_t,j,n
                                         if j < magnetizationSteps:
                                             cond = True
                                         else:
@@ -1373,16 +1465,12 @@ class magcalsys_fluidAMR_1D:
                                         else:
                                             cond = False
 
-                    print ''
                     #DEMAGNETIZATION
 
                     j=0
                     time_passed = 0.
                     if demagnetizationMode == 'constant_left' or demagnetizationMode == 'accelerated_left' or demagnetizationMode == 'decelerated_left':
                         j=demagnetizationSteps - 1
-
-                    #MCE
-                    #AMR.objects[1].deactivate(1,MCM_length+1)
 
                     for n in range(steps):
 
@@ -1391,28 +1479,34 @@ class magcalsys_fluidAMR_1D:
 
                         init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
                         for i in range(leftReservoir_length):
-                            contacts.add(((0, i+init_pos-n), (2, i+1), h))
+                            contacts.add(((0, i+init_pos-n), (2, i+1), h_leftreservoir_fluid))
 
-                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
-                        for i in range(MCM_length):
-                            contacts.add(((0, i+init_pos-n), (1, i+1), h))
+                        if mcm_discontinuity == 'default':
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                            for i in range(MCM_length):
+                                contacts.add(((0, i+init_pos-n), (1, i+1), h_mcm_fluid))
+                        else:
+                            p=1
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                            for i in range(MCM_length):
+                                if not (i+1 < p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx))  and i+1 >= p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)-int(mcm_discontinuity[1]/(2*dx))):
+                                    contacts.add(((0, i+init_pos-n), (1, i+1), h_mcm_fluid))
+                                if i+1 == p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx)) and p < mcm_discontinuity[0]:
+                                    p=p+1
 
                         init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
                         for i in range(rightReservoir_length):
-                            contacts.add(((0, i+init_pos-n), (3, i+1), h))
+                            contacts.add(((0, i+init_pos-n), (3, i+1), h_rightreservoir_fluid))
 
                         AMR.contacts = contacts
-
-                        #compute
-                        #AMR.compute(time_step,write_interval)
+                        #print AMR.contactFilter(1)
+                        #print AMR.objects[1].materialsIndex
 
                         if n*time_step < removed_static_field_time_ratio[0]/2:
                             AMR.compute(time_step, write_interval, solver=solverMode)
-                            print 'before',time_step,n
 
                         elif n*time_step > 1/(2.*freq) - removed_static_field_time_ratio[1]/2:
                             AMR.compute(time_step, write_interval, solver=solverMode)
-                            print 'after',time_step,n
                         else:
 
                             #MCE
@@ -1436,7 +1530,6 @@ class magcalsys_fluidAMR_1D:
                                         else:
                                             delta_t = time_step
                                         AMR.compute(delta_t, write_interval, solver=solverMode)
-                                        print 'during',delta_t,j,n
                                         time_passed = time_passed + delta_t
                                         cond = False
                                         flag=True
@@ -1456,7 +1549,6 @@ class magcalsys_fluidAMR_1D:
                                             flag=True
                                         previous_time = delta_t
                                         AMR.compute(delta_t, write_interval, solver=solverMode)
-                                        print 'during',delta_t,j,n
                                         if j < demagnetizationSteps:
                                             cond = True
                                         else:
@@ -1677,28 +1769,14 @@ class magcalsys_fluidAMR_1D:
                                         else:
                                             cond = False
 
-
-
-
-
-
-
-
-
-
-
-
-
                     if value1 == value2:
                         condition = True
                     else:
                         condition = (cycle_number < minCycleNumber or (abs(abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0]) - abs(value1-value2)))/abs(value1-value2) > stopCriteria) and cycle_number<maxCycleNumber
 
                     cycle_number = cycle_number + 1
-                    #print ''
-                    #print AMR.objects[0].Q0_ref
 
-            else:
+            elif startingField=='demagnetization':
                 condition = True
                 while condition:
 
@@ -1706,7 +1784,6 @@ class magcalsys_fluidAMR_1D:
                     value2 = AMR.objects[0].temperature[temperatureSensor[1]][0]
 
                     if mod_freq != 'default':
-                        #print 'ok'
                         temperature_sensor = AMR.objects[1].temperature[mod_freq[1]][0]
                         input = open(mod_freq[0], 'r')
                         s = input.readlines()
@@ -1718,18 +1795,17 @@ class magcalsys_fluidAMR_1D:
                             yMod.append(float(pair[1]))
                         input.close()
                         freq = np.interp(temperature_sensor, xMod, yMod)
-                        print freq, AMR.objects[1].temperature[mod_freq[1]][0]
                         steps = int(velocity / (2 * freq * dx))
                         time_step = (1 / (2. * freq)) / steps
                         if int(time_step / dt) == 0:
                             print 'dt or frequency too low'                         
                         if write_interval > int(time_step / dt):
-                            write_interval = 1#int(time_step / dt)
+                            write_interval = 1
 
-                    #DEMAGNETIZATION
-
-                    #MCE
-                    AMR.objects[1].deactivate(1,MCM_length+1)
+                    j=0
+                    time_passed = 0.
+                    if demagnetizationMode == 'constant_left' or demagnetizationMode == 'accelerated_left' or demagnetizationMode == 'decelerated_left':
+                        j=demagnetizationSteps - 1
 
                     for n in range(steps):
 
@@ -1738,25 +1814,299 @@ class magcalsys_fluidAMR_1D:
 
                         init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
                         for i in range(leftReservoir_length):
-                            contacts.add(((0, i+init_pos-n), (2, i+1), h))
+                            contacts.add(((0, i+init_pos-n), (2, i+1), h_leftreservoir_fluid))
 
-                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
-                        for i in range(MCM_length):
-                            contacts.add(((0, i+init_pos-n), (1, i+1), h))
+                        if mcm_discontinuity == 'default':
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                            for i in range(MCM_length):
+                                contacts.add(((0, i+init_pos-n), (1, i+1), h_mcm_fluid))
+                        else:
+                            p=1
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                            for i in range(MCM_length):
+                                if not (i+1 < p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx))  and i+1 >= p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)-int(mcm_discontinuity[1]/(2*dx))):
+                                    contacts.add(((0, i+init_pos-n), (1, i+1), h_mcm_fluid))
+                                if i+1 == p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx)) and p < mcm_discontinuity[0]:
+                                    p=p+1
 
                         init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
                         for i in range(rightReservoir_length):
-                            contacts.add(((0, i+init_pos-n), (3, i+1), h))
+                            contacts.add(((0, i+init_pos-n), (3, i+1), h_rightreservoir_fluid))
 
                         AMR.contacts = contacts
 
-                        #compute
-                        AMR.compute(time_step,write_interval)
+                        if n*time_step < removed_static_field_time_ratio[0]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
+
+                        elif n*time_step > 1/(2.*freq) - removed_static_field_time_ratio[1]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
+                        else:
+
+                            #MCE
+
+                            #MODE 1
+                            if demagnetizationMode == 'constant_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < demagnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 2
+                            if demagnetizationMode == 'accelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < demagnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+                            
+                            #MODE 3
+                            if demagnetizationMode == 'decelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < demagnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 4
+                            if demagnetizationMode == 'constant_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==demagnetizationSteps - 1:
+                                    time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 5
+                            if demagnetizationMode == 'accelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==demagnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 6
+                            if demagnetizationMode == 'decelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==demagnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
 
                     #MAGNETIZATION
-
-                    #MCE
-                    AMR.objects[1].activate(1,MCM_length+1)
+                    j=0
+                    time_passed = 0.
+                    if magnetizationMode == 'constant_left' or magnetizationMode == 'accelerated_left' or magnetizationMode == 'decelerated_left':
+                        j=magnetizationSteps - 1
 
                     for n in range(steps):
 
@@ -1765,68 +2115,351 @@ class magcalsys_fluidAMR_1D:
 
                         init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
                         for i in range(leftReservoir_length):
-                            contacts.add(((0, i+n+init_pos), (2, i+1), h))
+                            contacts.add(((0, i+n+init_pos), (2, i+1), h_rightreservoir_fluid))
 
-                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
-                        for i in range(MCM_length):
-                            contacts.add(((0, i+init_pos+n), (1, i+1), h))
+                        if mcm_discontinuity == 'default':
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                            for i in range(MCM_length):
+                                contacts.add(((0, i+init_pos+n), (1, i+1), h_mcm_fluid))
+                        else:
+                            p=1
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                            for i in range(MCM_length):
+                                if not (i+1 < p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx))  and i+1 >= p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)-int(mcm_discontinuity[1]/(2*dx))):
+                                    contacts.add(((0, i+init_pos+n), (1, i+1), h_mcm_fluid))
+                                if i+1 == p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx)) and p < mcm_discontinuity[0]:
+                                    p=p+1
 
                         init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
                         for i in range(rightReservoir_length):
-                            contacts.add(((0, i+init_pos+n), (3, i+1), h))
+                            contacts.add(((0, i+init_pos+n), (3, i+1), h_leftreservoir_fluid))
 
                         AMR.contacts = contacts
+                        
+                        if n*time_step < applied_static_field_time_ratio[0]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
 
-                        #compute
-                        AMR.compute(time_step,write_interval)
+                        elif n*time_step > 1/(2.*freq) - applied_static_field_time_ratio[1]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
+
+                        else:
+
+                            #MCE
+
+                            #MODE 1
+                            if magnetizationMode == 'constant_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < magnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 2
+                            if magnetizationMode == 'accelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < magnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+                            
+                            #MODE 3
+                            if magnetizationMode == 'decelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < magnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 4
+                            if magnetizationMode == 'constant_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==magnetizationSteps - 1:
+                                    time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 5
+                            if magnetizationMode == 'accelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==magnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 6
+                            if magnetizationMode == 'decelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==magnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
 
                     if value1 == value2:
                         condition = True
                     else:
                         condition = (cycle_number < minCycleNumber or (abs(abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0]) - abs(value1-value2)))/abs(value1-value2) > stopCriteria) and cycle_number<maxCycleNumber
+
                     cycle_number = cycle_number + 1
 
-            endTime = time.time()
-            simulationTime = endTime - startTime
-            hours = int(simulationTime / 3600)
-            minutes = int((simulationTime - hours * 3600) / 60)
-            seconds = int(simulationTime - hours * 3600 - (minutes * 60))
-            hours = '%02d' % hours
-            minutes = '%02d' % minutes
-            seconds = '%02d' % seconds
+            else:
+                print 'incorrect startingField'
 
-            print '------------------------------------------------------'
-            print ''
-            print 'Number of cycles:', cycle_number
-            print 'Final cycle error:', (abs(abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0]) - abs(value1-value2)))#/abs(value1-value2)
-            if mode == 'refrigerator':
-                if type_study == 'no load':
-                    temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
-                    print 'No load temperature span (K):', temperature_span
-                if type_study == 'fixed temperature span':
-                    cooling_power = (-AMR.q2+q2)*freq
-                    working_power = (AMR.q2-q2+AMR.q1-q1)*freq
-                    COP = cooling_power/working_power
-                    print 'Cooling power (W):', cooling_power
-                    print 'Working power (W)', working_power
-                    print 'COP:', COP
-            if mode == 'heat_pump':
-                if type_study == 'no load':
-                    temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
-                    print 'No load temperature span (K):', temperature_span
-                if type_study == 'fixed temperature span':
-                    heating_power = (AMR.q1-q1)*freq
-                    working_power = (AMR.q2-q2+AMR.q1-q1)*freq
-                    print 'Heating power (W):', heating_power
-                    print 'Working power (W)', working_power
-                    print 'COP:', heating_power/working_power
-            print 'Final time (s):', AMR.objects[0].timePassed
-            print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
-            print ''
-            print '------------------------------------------------------'
-            print ''
-            print ''
-            print ''
+
+            if startingField=='magnetization' or startingField=='demagnetization':
+                endTime = time.time()
+                simulationTime = endTime - startTime
+                hours = int(simulationTime / 3600)
+                minutes = int((simulationTime - hours * 3600) / 60)
+                seconds = int(simulationTime - hours * 3600 - (minutes * 60))
+                hours = '%02d' % hours
+                minutes = '%02d' % minutes
+                seconds = '%02d' % seconds
+
+                print '------------------------------------------------------'
+                print ''
+                print 'Number of cycles:', cycle_number
+                print 'Final cycle error:', (abs(abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0]) - abs(value1-value2)))#/abs(value1-value2)
+                if mode == 'refrigerator':
+                    if type_study == 'no load':
+                        temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
+                        print 'No load temperature span (K):', temperature_span
+                    if type_study == 'fixed temperature span':
+                        cooling_power = (-AMR.q2+q2)*freq
+                        working_power = (AMR.q2-q2+AMR.q1-q1)*freq
+                        COP = cooling_power/working_power
+                        print 'Cooling power (W):', cooling_power
+                        print 'Working power (W)', working_power
+                        print 'COP:', COP
+                if mode == 'heat_pump':
+                    if type_study == 'no load':
+                        temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
+                        print 'No load temperature span (K):', temperature_span
+                    if type_study == 'fixed temperature span':
+                        heating_power = (AMR.q1-q1)*freq
+                        working_power = (AMR.q2-q2+AMR.q1-q1)*freq
+                        print 'Heating power (W):', heating_power
+                        print 'Working power (W)', working_power
+                        print 'COP:', heating_power/working_power
+                print 'Final time (s):', AMR.objects[0].timePassed
+                print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
+                print ''
+                print '------------------------------------------------------'
+                print ''
+                print ''
+                print ''
+
+            else:
+                print 'simulation not complete'
 
 
 
@@ -1836,14 +2469,15 @@ class magcalsys_fluidAMR_1D:
 
             if startingField=='magnetization':
 
-                while (cycle_number < minCycleNumber or abs(AMR.objects[2].Q0[leftReservoir_length/2]-value1)/value1 > stopCriteria) and cycle_number<maxCycleNumber:
+                condition = True
+
+                while condition:
 
                     value1 = AMR.objects[2].Q0[leftReservoir_length/2]
                     q1 = AMR.q1
                     q2 = AMR.q2
 
                     if mod_freq != 'default':
-                        #print 'ok'
                         temperature_sensor = AMR.objects[1].temperature[mod_freq[1]][0]
                         input = open(mod_freq[0], 'r')
                         s = input.readlines()
@@ -1855,7 +2489,6 @@ class magcalsys_fluidAMR_1D:
                             yMod.append(float(pair[1]))
                         input.close()
                         freq = np.interp(temperature_sensor, xMod, yMod)
-                        print freq, AMR.objects[1].temperature[mod_freq[1]][0]
                         steps = int(velocity / (2 * freq * dx))
                         time_step = (1 / (2. * freq)) / steps
                         if int(time_step / dt) == 0:
@@ -1865,8 +2498,10 @@ class magcalsys_fluidAMR_1D:
 
                     #MAGNETIZATION
 
-                    #MCE
-                    AMR.objects[1].activate(1,MCM_length+1)
+                    j=0
+                    time_passed = 0.
+                    if magnetizationMode == 'constant_left' or magnetizationMode == 'accelerated_left' or magnetizationMode == 'decelerated_left':
+                        j=magnetizationSteps - 1
 
                     for n in range(steps):
 
@@ -1875,25 +2510,300 @@ class magcalsys_fluidAMR_1D:
 
                         init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
                         for i in range(leftReservoir_length):
-                            contacts.add(((0, i+n+init_pos), (2, i+1), h))
+                            contacts.add(((0, i+n+init_pos), (2, i+1), h_leftreservoir_fluid))
 
-                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
-                        for i in range(MCM_length):
-                            contacts.add(((0, i+init_pos+n), (1, i+1), h))
+                        if mcm_discontinuity == 'default':
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                            for i in range(MCM_length):
+                                contacts.add(((0, i+init_pos+n), (1, i+1), h_mcm_fluid))
+                        else:
+                            p=1
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                            for i in range(MCM_length):
+                                if not (i+1 < p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx))  and i+1 >= p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)-int(mcm_discontinuity[1]/(2*dx))):
+                                    contacts.add(((0, i+init_pos+n), (1, i+1), h_mcm_fluid))
+                                if i+1 == p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx)) and p < mcm_discontinuity[0]:
+                                    p=p+1
 
                         init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
                         for i in range(rightReservoir_length):
-                            contacts.add(((0, i+init_pos+n), (3, i+1), h))
+                            contacts.add(((0, i+init_pos+n), (3, i+1), h_rightreservoir_fluid))
 
                         AMR.contacts = contacts
 
-                        #compute
-                        AMR.compute(time_step,write_interval)
+                        if n*time_step < applied_static_field_time_ratio[0]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
+
+                        elif n*time_step > 1/(2.*freq) - applied_static_field_time_ratio[1]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
+                        else:
+
+                            #MCE
+
+                            #MODE 1
+                            if magnetizationMode == 'constant_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < magnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 2
+                            if magnetizationMode == 'accelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < magnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+                            
+                            #MODE 3
+                            if magnetizationMode == 'decelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < magnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 4
+                            if magnetizationMode == 'constant_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==magnetizationSteps - 1:
+                                    time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 5
+                            if magnetizationMode == 'accelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==magnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 6
+                            if magnetizationMode == 'decelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==magnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
 
                     #DEMAGNETIZATION
 
-                    #MCE
-                    AMR.objects[1].deactivate(1,MCM_length+1)
+                    j=0
+                    time_passed = 0.
+                    if demagnetizationMode == 'constant_left' or demagnetizationMode == 'accelerated_left' or demagnetizationMode == 'decelerated_left':
+                        j=demagnetizationSteps - 1
 
                     for n in range(steps):
 
@@ -1902,33 +2812,306 @@ class magcalsys_fluidAMR_1D:
 
                         init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
                         for i in range(leftReservoir_length):
-                            contacts.add(((0, i+init_pos-n), (2, i+1), h))
+                            contacts.add(((0, i+init_pos-n), (2, i+1), h_leftreservoir_fluid))
 
-                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
-                        for i in range(MCM_length):
-                            contacts.add(((0, i+init_pos-n), (1, i+1), h))
+                        if mcm_discontinuity == 'default':
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                            for i in range(MCM_length):
+                                contacts.add(((0, i+init_pos-n), (1, i+1), h_mcm_fluid))
+                        else:
+                            p=1
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                            for i in range(MCM_length):
+                                if not (i+1 < p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx))  and i+1 >= p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)-int(mcm_discontinuity[1]/(2*dx))):
+                                    contacts.add(((0, i+init_pos-n), (1, i+1), h_mcm_fluid))
+                                if i+1 == p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx)) and p < mcm_discontinuity[0]:
+                                    p=p+1
 
                         init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
                         for i in range(rightReservoir_length):
-                            contacts.add(((0, i+init_pos-n), (3, i+1), h))
+                            contacts.add(((0, i+init_pos-n), (3, i+1), h_rightreservoir_fluid))
 
                         AMR.contacts = contacts
 
-                        #compute
-                        AMR.compute(time_step,write_interval)
+                        if n*time_step < removed_static_field_time_ratio[0]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
 
+                        elif n*time_step > 1/(2.*freq) - removed_static_field_time_ratio[1]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
+                        else:
+
+                            #MCE
+
+                            #MODE 1
+                            if demagnetizationMode == 'constant_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < demagnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 2
+                            if demagnetizationMode == 'accelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < demagnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+                            
+                            #MODE 3
+                            if demagnetizationMode == 'decelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < demagnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 4
+                            if demagnetizationMode == 'constant_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==demagnetizationSteps - 1:
+                                    time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 5
+                            if demagnetizationMode == 'accelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==demagnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 6
+                            if demagnetizationMode == 'decelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==demagnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                    condition = (cycle_number < minCycleNumber or abs(AMR.objects[2].Q0[leftReservoir_length/2]-value1)/value1 > stopCriteria) and cycle_number<maxCycleNumber
                     cycle_number = cycle_number + 1
                 
-            else:
-
-                while (cycle_number < minCycleNumber or abs(AMR.objects[2].Q0[leftReservoir_length/2]-value1)/value1 > stopCriteria) and cycle_number<maxCycleNumber:
+            elif startingField=='demagnetization':
+                condition = True
+                while condition:
 
                     value1 = AMR.objects[2].Q0[leftReservoir_length/2]
                     q1 = AMR.q1
                     q2 = AMR.q2
 
                     if mod_freq != 'default':
-                        #print 'ok'
                         temperature_sensor = AMR.objects[1].temperature[mod_freq[1]][0]
                         input = open(mod_freq[0], 'r')
                         s = input.readlines()
@@ -1940,18 +3123,17 @@ class magcalsys_fluidAMR_1D:
                             yMod.append(float(pair[1]))
                         input.close()
                         freq = np.interp(temperature_sensor, xMod, yMod)
-                        print freq, AMR.objects[1].temperature[mod_freq[1]][0]
                         steps = int(velocity / (2 * freq * dx))
                         time_step = (1 / (2. * freq)) / steps
                         if int(time_step / dt) == 0:
                             print 'dt or frequency too low'                         
                         if write_interval > int(time_step / dt):
-                            write_interval = 1#int(time_step / dt)
+                            write_interval = 1
 
-                    #DEMAGNETIZATION
-
-                    #MCE
-                    AMR.objects[1].deactivate(1,MCM_length+1)
+                    j=0
+                    time_passed = 0.
+                    if demagnetizationMode == 'constant_left' or demagnetizationMode == 'accelerated_left' or demagnetizationMode == 'decelerated_left':
+                        j=demagnetizationSteps - 1
 
                     for n in range(steps):
 
@@ -1960,25 +3142,302 @@ class magcalsys_fluidAMR_1D:
 
                         init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
                         for i in range(leftReservoir_length):
-                            contacts.add(((0, i+init_pos-n), (2, i+1), h))
+                            contacts.add(((0, i+init_pos-n), (2, i+1), h_leftreservoir_fluid))
 
-                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
-                        for i in range(MCM_length):
-                            contacts.add(((0, i+init_pos-n), (1, i+1), h))
+                        if mcm_discontinuity == 'default':
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                            for i in range(MCM_length):
+                                contacts.add(((0, i+init_pos-n), (1, i+1), h_mcm_fluid))
+                        else:
+                            p=1
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
+                            for i in range(MCM_length):
+                                if not (i+1 < p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx))  and i+1 >= p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)-int(mcm_discontinuity[1]/(2*dx))):
+                                    contacts.add(((0, i+init_pos-n), (1, i+1), h_mcm_fluid))
+                                if i+1 == p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx)) and p < mcm_discontinuity[0]:
+                                    p=p+1
 
                         init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 + steps/2
                         for i in range(rightReservoir_length):
-                            contacts.add(((0, i+init_pos-n), (3, i+1), h))
+                            contacts.add(((0, i+init_pos-n), (3, i+1), h_rightreservoir_fluid))
 
                         AMR.contacts = contacts
 
                         #compute
-                        AMR.compute(time_step,write_interval)
+                        #AMR.compute(time_step,write_interval)
+
+                        if n*time_step < removed_static_field_time_ratio[0]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
+
+                        elif n*time_step > 1/(2.*freq) - removed_static_field_time_ratio[1]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
+                        else:
+
+                            #MCE
+
+                            #MODE 1
+                            if demagnetizationMode == 'constant_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < demagnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 2
+                            if demagnetizationMode == 'accelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < demagnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+                            
+                            #MODE 3
+                            if demagnetizationMode == 'decelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < demagnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 4
+                            if demagnetizationMode == 'constant_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==demagnetizationSteps - 1:
+                                    time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = time_interval = ((1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1]) * 1 / (2. * freq)) / demagnetizationSteps
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 5
+                            if demagnetizationMode == 'accelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==demagnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(demagnetizationSteps - j) - np.sqrt(demagnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 6
+                            if demagnetizationMode == 'decelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==demagnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < demagnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < demagnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - removed_static_field_time_ratio[0] - removed_static_field_time_ratio[1])) * freq * np.sqrt(demagnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / demagnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / demagnetizationSteps + 1)
+                                            AMR.objects[1].deactivate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
 
                     #MAGNETIZATION
-
-                    #MCE
-                    AMR.objects[1].activate(1,MCM_length+1)
+                    j=0
+                    time_passed = 0.
+                    if magnetizationMode == 'constant_left' or magnetizationMode == 'accelerated_left' or magnetizationMode == 'decelerated_left':
+                        j=magnetizationSteps - 1
 
                     for n in range(steps):
 
@@ -1987,66 +3446,351 @@ class magcalsys_fluidAMR_1D:
 
                         init_pos = fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
                         for i in range(leftReservoir_length):
-                            contacts.add(((0, i+n+init_pos), (2, i+1), h))
+                            contacts.add(((0, i+n+init_pos), (2, i+1), h_leftreservoir_fluid))
 
-                        init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
-                        for i in range(MCM_length):
-                            contacts.add(((0, i+init_pos+n), (1, i+1), h))
+                        if mcm_discontinuity == 'default':
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                            for i in range(MCM_length):
+                                contacts.add(((0, i+init_pos+n), (1, i+1), h_mcm_fluid))
+                        else:
+                            p=1
+                            init_pos = leftReservoir_length+leftHEXpositions+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
+                            for i in range(MCM_length):
+                                if not (i+1 < p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx))  and i+1 >= p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)-int(mcm_discontinuity[1]/(2*dx))):
+                                    contacts.add(((0, i+init_pos+n), (1, i+1), h_mcm_fluid))
+                                if i+1 == p*len(AMR.objects[1].temperature)/(mcm_discontinuity[0]+1)+int(mcm_discontinuity[1]/(2*dx)) and p < mcm_discontinuity[0]:
+                                    p=p+1
 
                         init_pos = leftReservoir_length+leftHEXpositions+rightHEXpositions+MCM_length+fluid_length / 2 - (leftReservoir_length+leftHEXpositions+MCM_length+rightHEXpositions+rightReservoir_length) / 2 - steps/2
                         for i in range(rightReservoir_length):
-                            contacts.add(((0, i+init_pos+n), (3, i+1), h))
+                            contacts.add(((0, i+init_pos+n), (3, i+1), h_rightreservoir_fluid))
 
                         AMR.contacts = contacts
+                        
+                        if n*time_step < applied_static_field_time_ratio[0]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
 
-                        #compute
-                        AMR.compute(time_step,write_interval)
-                    
+                        elif n*time_step > 1/(2.*freq) - applied_static_field_time_ratio[1]/2:
+                            AMR.compute(time_step, write_interval, solver=solverMode)
+                        else:
+
+                            #MCE
+
+                            #MODE 1
+                            if magnetizationMode == 'constant_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < magnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 2
+                            if magnetizationMode == 'accelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < magnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+                            
+                            #MODE 3
+                            if magnetizationMode == 'decelerated_right':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==0:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j+1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j < magnetizationSteps:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 4
+                            if magnetizationMode == 'constant_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==magnetizationSteps - 1:
+                                    time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = time_interval = ((1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1]) * 1 / (2. * freq)) / magnetizationSteps
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 5
+                            if magnetizationMode == 'accelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==magnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(magnetizationSteps - j) - np.sqrt(magnetizationSteps - j - 1)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                            #MODE 6
+                            if magnetizationMode == 'decelerated_left':
+                                cond = True
+                                previous_time=0.
+                                flag = True
+                                if j==magnetizationSteps - 1:
+                                    time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                while cond:
+                                    if (time_interval-time_passed) > time_step:
+                                        if time_passed==0. and j < magnetizationSteps:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                        else:
+                                            delta_t = time_step
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        time_passed = time_passed + delta_t
+                                        cond = False
+                                        flag=True
+                                    else:
+                                        if time_passed==0. and j < magnetizationSteps and flag:
+                                            time_interval = ((1 / (2 * (1. / (1. - applied_static_field_time_ratio[0] - applied_static_field_time_ratio[1])) * freq * np.sqrt(magnetizationSteps))) * (np.sqrt(j + 1) - np.sqrt(j)))
+                                            first = (j * MCM_length / magnetizationSteps + 1)
+                                            second = ((j+1) * MCM_length / magnetizationSteps + 1)
+                                            AMR.objects[1].activate(first, second)
+                                            j=j-1
+                                            delta_t = time_step-previous_time
+                                            flag = False
+                                            time_passed = delta_t
+                                        else:
+                                            delta_t = time_interval-time_passed
+                                            time_passed = 0.
+                                            flag=True
+                                        previous_time = delta_t
+                                        AMR.compute(delta_t, write_interval, solver=solverMode)
+                                        if j >= 0:
+                                            cond = True
+                                        else:
+                                            cond = False
+
+                    condition = (cycle_number < minCycleNumber or abs(AMR.objects[2].Q0[leftReservoir_length/2]-value1)/value1 > stopCriteria) and cycle_number<maxCycleNumber
+
                     cycle_number = cycle_number + 1
 
-            endTime = time.time()
-            simulationTime = endTime - startTime
-            hours = int(simulationTime / 3600)
-            minutes = int((simulationTime - hours * 3600) / 60)
-            seconds = int(simulationTime - hours * 3600 - (minutes * 60))
-            hours = '%02d' % hours
-            minutes = '%02d' % minutes
-            seconds = '%02d' % seconds
+            else:
+                print 'incorrect startingField'
 
-            print '------------------------------------------------------'
-            print ''
-            print 'Number of cycles:', cycle_number
-            print 'Final cycle error:', abs(AMR.objects[2].Q0[leftReservoir_length/2]-value1)/value1
-            if mode == 'refrigerator':
-                if type_study == 'no load':
-                    temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
-                    print 'No load temperature span (K):', temperature_span
-                if type_study == 'fixed temperature span':
-                    cooling_power = (-AMR.q2+q2)/freq
-                    working_power = (AMR.q2-q2+AMR.q1-q1)/freq
-                    COP = cooling_power/working_power
-                    print 'Cooling power (W):', cooling_power
-                    print 'Working power (W)', working_power
-                    print 'COP:', COP
-            if mode == 'heat_pump':
-                if type_study == 'no load':
-                    temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
-                    print 'No load temperature span (K):', temperature_span
-                if type_study == 'fixed temperature span':
-                    heating_power = (AMR.q1-q1)/freq
-                    working_power = (AMR.q2-q2+AMR.q1-q1)/freq
-                    print 'Heating power (W):', heating_power
-                    print 'Working power (W)', working_power
-                    print 'COP:', heating_power/working_power
-            print 'Final time (s):', AMR.objects[0].timePassed
-            print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
-            print ''
-            print '------------------------------------------------------'
-            print ''
-            print ''
-            print ''
+
+            if startingField=='magnetization' or startingField=='demagnetization':
+
+                endTime = time.time()
+                simulationTime = endTime - startTime
+                hours = int(simulationTime / 3600)
+                minutes = int((simulationTime - hours * 3600) / 60)
+                seconds = int(simulationTime - hours * 3600 - (minutes * 60))
+                hours = '%02d' % hours
+                minutes = '%02d' % minutes
+                seconds = '%02d' % seconds
+
+                print '------------------------------------------------------'
+                print ''
+                print 'Number of cycles:', cycle_number
+                print 'Final cycle error:', abs(AMR.objects[2].Q0[leftReservoir_length/2]-value1)/value1
+                if mode == 'refrigerator':
+                    if type_study == 'no load':
+                        temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
+                        print 'No load temperature span (K):', temperature_span
+                    if type_study == 'fixed temperature span':
+                        cooling_power = (-AMR.q2+q2)/freq
+                        working_power = (AMR.q2-q2+AMR.q1-q1)/freq
+                        COP = cooling_power/working_power
+                        print 'Cooling power (W):', cooling_power
+                        print 'Working power (W)', working_power
+                        print 'COP:', COP
+                if mode == 'heat_pump':
+                    if type_study == 'no load':
+                        temperature_span = abs(AMR.objects[2].temperature[leftReservoir_length/2][0]-AMR.objects[3].temperature[rightReservoir_length/2][0])
+                        print 'No load temperature span (K):', temperature_span
+                    if type_study == 'fixed temperature span':
+                        heating_power = (AMR.q1-q1)/freq
+                        working_power = (AMR.q2-q2+AMR.q1-q1)/freq
+                        print 'Heating power (W):', heating_power
+                        print 'Working power (W)', working_power
+                        print 'COP:', heating_power/working_power
+                print 'Final time (s):', AMR.objects[0].timePassed
+                print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
+                print ''
+                print '------------------------------------------------------'
+                print ''
+                print ''
+                print ''
+
+            else:
+                print 'simulation not complete'
         
 
 if __name__ == "__main__":
 
-    a=magcalsys_fluidAMR_1D('test')
+    #a=magcalsys_fluidAMR_1D('test')
+    magcalsys_solidstate_1D('test.txt')

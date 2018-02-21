@@ -194,6 +194,12 @@ class system_objects:
                 for j in range(len(self.objects[i[0]].temperature)):
                     self.objects[i[0]].temperature[j]=[i[1],i[1]]
 
+    def contactFilter(self, object):
+        filtered = [x for x in self.contacts if (x[0][0]==object or x[1][0]==object)]
+        return set(filtered)
+
+        self.contacts.add(contact)
+
     def contactChange(self, contact):
 
         self.contacts.add(contact)
@@ -775,8 +781,8 @@ class heatcond_activemat_1D:
             if solver == 'implicit_k(x)':
 
                 # initializes the matrixes for the equation systems
-                a = zeros((self.numPoints, self.numPoints))
-                b = zeros(self.numPoints)
+                a = np.zeros((self.numPoints, self.numPoints))
+                b = np.zeros(self.numPoints)
 
                 # left boundary
                 a[0][0] = 1
@@ -813,7 +819,7 @@ class heatcond_activemat_1D:
                         4. * self.dx * self.dx * \
                         (self.Q0[i] - self.Q[i] * self.ambTemperature)
 
-                x = linalg.solve(a, b)
+                x = np.linalg.solve(a, b)
 
                 # updates the temperature list
                 for i in range(self.numPoints):
