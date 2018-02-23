@@ -24,21 +24,23 @@ class magcalsys_solidstate_1D:
     """
 
     def __init__(self, fileName, ambTemperature=293,
-                 leftThermalSwitch_length=10, rightThermalSwitch_length=10,
-                 MCM_length=50, rightReservoir_length=15,
-                 leftReservoir_length=15, MCM_material=((0.05,'Gd'),(0.05,'Cu')),#='Gd',
+                 leftThermalSwitch_length=5, rightThermalSwitch_length=5,
+                 MCM_length=20, rightReservoir_length=5,
+                 leftReservoir_length=5, MCM_material=((0.002,'Gd'),),#((0.05,'Gd'),(0.05,'Cu')),#='Gd',
                  leftThermalSwitch_material='idealTS_hot',
                  rightThermalSwitch_material='idealTS_cold',
                  leftReservoir_material='Cu', rightReservoir_material='Cu',
-                 freq=.1, dt=0.01, dx=0.002, stopCriteria=5e-8,
-                 solverMode='implicit_k(x)', minCycleNumber=50,
-                 maxCycleNumber=10000, demagnetizationSteps=1,
+                 freq=.02, dt=.1, dx=0.002, stopCriteria=5e-3,
+                 solverMode='implicit_k(x)', minCycleNumber=20,
+                 maxCycleNumber=200, demagnetizationSteps=1,
                  magnetizationSteps=1, demagnetizationMode='constant_right',
                  magnetizationMode='constant_left', cyclePoints=25,
-                 boundaries=[0, 0], note=None, temperatureSensor='default',
+                 boundaries=[293, 293], note=None, temperatureSensor='default',
                  heatPoints='default', mode='refrigerator', version=None,
                  restingTimeHot='default', restingTimeCold='default',
-                 startingField='magnetization'):
+                 startingField='magnetization', type_study='fixed temperature span',
+                 h_left=50000., h_right=50000.,
+                 mod_freq='default'):#=('/home/daniel/Desktop/freq.txt',90)):
         """loads the data and computes.
 
         fileName: file name where the temperature and heat flux are saved
@@ -117,12 +119,15 @@ class magcalsys_solidstate_1D:
             str(leftThermalSwitch_length) + '/' + str(MCM_length) + '/' + \
             str(rightThermalSwitch_length) + '/' + str(rightReservoir_length)
         print 'MCM material:', MCM_material
+        print 'Left heat transfer coefficient (W /(m2 K)):', h_left
+        print 'Right heat transfer coefficient (W /(m2 K)):', h_right
         print 'dx (m):', dx
         print 'dt (s):', dt
         print 'Frequency (Hz):', freq
         print 'Hot resting time ratio:', restingTimeHot
         print 'Cold resting time ratio:', restingTimeCold
         print 'Solver:', solverMode
+        print 'Frequency modulation:', mod_freq
         print 'Magnetization mode:', magnetizationMode
         print 'Magnetization steps:', magnetizationSteps
         print 'Demagnetization mode:', demagnetizationMode
@@ -179,7 +184,9 @@ class magcalsys_solidstate_1D:
                                            materialsOrder=[0, 1, 2, 3, 4],
                                            boundaries=boundaries,
                                            heatPoints=heatPoints,
-                                           initialState=initialState)
+                                           initialState=initialState,
+                                           h_left=50000.,
+                                           h_right=50000.)
 
         k=leftReservoir_length+leftThermalSwitch_length
         for i in range(len(MCM_material)):
@@ -231,6 +238,21 @@ class magcalsys_solidstate_1D:
             stopCriteria2 = abs((value1 - value2) / value2)
             heatLeft = a.heatLeft
             heatRight = a.heatRight
+
+            if mod_freq != 'default':
+                temperature_sensor = a.temperature[mod_freq[1]][0]
+                input = open(mod_freq[0], 'r')
+                s = input.readlines()
+                xMod = []
+                yMod = []
+                for line in s:
+                    pair = line.split(',')
+                    xMod.append(float(pair[0]))
+                    yMod.append(float(pair[1]))
+                input.close()
+                freq = np.interp(temperature_sensor, xMod, yMod)
+                period = (1. / freq)
+
 
             if startingField == 'magnetization':
 
@@ -847,41 +869,6 @@ class magcalsys_solidstate_1D:
                           int(1 / (freq * dt * cyclePoints)),
                           solver=solverMode)
 
-            if mode == 'heat_pump':
-                if -(a.heatLeft - heatLeft) / period > maximumPower:
-                    maximumPower = -(a.heatLeft - heatLeft) / period
-
-                working_power = -((a.heatLeft - heatLeft) -
-                                  (a.heatRight - heatRight)) / period
-                if working_power > maximumWorkingPower:
-                    maximumWorkingPower = - \
-                        ((a.heatLeft - heatLeft) -
-                         (a.heatRight - heatRight)) / period
-
-            if mode == 'refrigerator':
-                if -(a.heatRight - heatRight) / period > maximumPower:
-                    maximumPower = -(a.heatRight - heatRight) / period
-
-                working_power = -((a.heatLeft - heatLeft) -
-                                  (a.heatRight - heatRight)) / period
-                if working_power > maximumWorkingPower:
-                    maximumWorkingPower = - \
-                        ((a.heatLeft - heatLeft) -
-                         (a.heatRight - heatRight)) / period
-
-            if mode == 'refrigerator-energetics':
-                coolingPower = -(a.heatRight - heatRight) / period
-                workingPower = -((a.heatLeft - heatLeft) -
-                                 (a.heatRight - heatRight)) / period
-                COP = coolingPower / workingPower
-                print (a.heatLeft - heatLeft), (a.heatRight - heatRight)
-
-            if mode == 'heat_pump-energetics':
-                heatingPower = -(a.heatLeft - heatLeft) / period
-                workingPower = -((a.heatLeft - heatLeft) -
-                                 (a.heatRight - heatRight)) / period
-                COP = heatingPower / workingPower
-
             # updates the error values and prints information in log file
             value1 = value2
             value2 = a.temperature[rightTemperatureSensor][1]
@@ -942,25 +929,24 @@ class magcalsys_solidstate_1D:
         print ''
         print 'Number of cycles:', i
         print 'Final cycle error:', abs((value1 - value2) / value2)
-        if mode == 'refrigerator':
-            print 'Maximum cooling power (W):', maximumPower
-            print 'Maximum working power (W)', maximumWorkingPower
+        if type_study == 'fixed temperature span':
+            heating_power = -(a.heatLeft - heatLeft) / period
+            cooling_power = -(a.heatRight - heatRight) / period
+            working_power = heating_power - cooling_power
+            print 'Heating power (W):', heating_power
+            print 'Cooling power (W):', cooling_power
+            print 'Working power (W):', working_power
+            if mode == 'refrigerator':
+                print 'COP:', cooling_power / working_power
+            if mode == 'heat_pump':
+                print 'COP:', heating_power / working_power
+        else:
             temperature_span = (-final_temperature_right +
                                 final_temperature_left)
-            print 'No load temperature span (K):', temperature_span
-        if mode == 'heat_pump':
-            print 'Maximum heating power (W):', maximumPower
-            print 'Maximum working power (W)', maximumWorkingPower
-            temperature_span = final_temperature_right - final_temperature_left
-            print 'No load temperature span (K):', temperature_span
-        if mode == 'refrigerator-energetics':
-            print 'Cooling power (W):', coolingPower
-            print 'Working power (W):', workingPower
-            print 'COP:', COP
-        if mode == 'heat_pump-energetics':
-            print 'Heating power (W):', heatingPower
-            print 'Working power (W):', workingPower
-            print 'COP:', COP
+            if mode == 'refrigerator':
+                print 'No load temperature span (K):', temperature_span
+            if mode == 'heat_pump':
+                print 'No load temperature span (K):', -temperature_span
         print 'Final time (s):', a.timePassed
         print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
         print ''
@@ -979,7 +965,7 @@ class magcalsys_fluidAMR_1D:
 
     def __init__(self, fileName, ambTemperature=293, fluid_length=100,
                  MCM_length=20, rightReservoir_length=3,
-                 leftReservoir_length=3, MCM_material=((0.04,'Gd'),(0.04,'Cu')),#'Gd',
+                 leftReservoir_length=3, MCM_material=((0.04,'Gd'),(0.04,'Cu')),
                  fluid_material='water', leftReservoir_material='Cu',
                  rightReservoir_material='Cu', freq=1., dt=0.001, dx=0.004,
                  stopCriteria=1e-4, solverMode='implicit_k(x)',
@@ -987,11 +973,10 @@ class magcalsys_fluidAMR_1D:
                  note=None, boundaries=((2,0),(3,0)),
                  mode='heat_pump', version=None, 
                  leftHEXpositions=15, rightHEXpositions=15,
-                 startingField='magnetization', #h=5000000.,
+                 startingField='magnetization', 
                  temperatureSensor=[3,-3], demagnetizationSteps=5,
                  magnetizationSteps=1, demagnetizationMode='constant_right',
                  magnetizationMode='constant_left',
-                 #mcm_cascade = (1,(0.08,'Gd')),
                  applied_static_field_time_ratio=(0.,0.),removed_static_field_time_ratio=(0.25,0.25),
                  h_mcm_fluid=5000000, h_leftreservoir_fluid=5000000, h_rightreservoir_fluid=5000000,
                  mcm_discontinuity=[2,0.016],#='default'#=[3,0.008]
@@ -1079,7 +1064,7 @@ class magcalsys_fluidAMR_1D:
             print 'dt or frequency too low'
             
         if write_interval > int(time_step / dt):
-            write_interval = 1#int(time_step / dt)
+            write_interval = 1
             
         # information for the log file
         print ''

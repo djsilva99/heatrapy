@@ -502,7 +502,7 @@ class heatcond_activemat_1D:
     def __init__(self, ambTemperature, materials=['Cu'], borders=[1, 11],
                  materialsOrder=[0], dx=0.01, dt=0.1, fileName='data.txt',
                  boundaries=[0, 0], Q=[], Q0=[], heatPoints=[1, -2],
-                 initialState=False):
+                 initialState=False, h_left=50000., h_right=50000.):
         """Initializes the object.
 
         ambTemperature: ambient temperature of the whole system
@@ -517,7 +517,16 @@ class heatcond_activemat_1D:
         boundaries: list of two entries that define the boundary condition
             for tempreture. If 0 the boundary condition is insulation
         Q: list of 3 entry lists that gives the fixed heat source coeficient.
-            The first term is the initial space index where it is applies. The
+            The first term is the initial space index            self.heatLeft = -(self.k[self.heatPoints[0]] *
+                              self.dt / self.dx) * \
+                (self.temperature[self.heatPoints[0]][1] -
+                 self.temperature[self.heatPoints[0] - 1][1]) + \
+                self.heatLeft
+            self.heatRight = -(self.k[self.heatPoints[1]] *
+                               self.dt / self.dx) * \
+                (self.temperature[self.heatPoints[1]][1] -
+                 self.temperature[self.heatPoints[1] - 1][1]) + \
+                self.heatRight where it is applies. The
             second is the final space index where it is applies. The third is
             the value of the coeficient.
         Q0 is a list of 3 entry lists that gives the temperature dependent heat
@@ -536,6 +545,9 @@ class heatcond_activemat_1D:
         self.materials = range(len(materials))
         self.boundaries = boundaries
         self.ambTemperature = ambTemperature
+        self.h_left = h_left
+        self.h_right = h_right
+
 
         # loads the data for each material
         for i in range(len(materials)):
@@ -904,16 +916,9 @@ class heatcond_activemat_1D:
 
             # calculates the heat flux of the defined ...
             # two points during the time step
-            self.heatLeft = -(self.k[self.heatPoints[0]] *
-                              self.dt / self.dx) * \
-                (self.temperature[self.heatPoints[0]][1] -
-                 self.temperature[self.heatPoints[0] - 1][1]) + \
-                self.heatLeft
-            self.heatRight = -(self.k[self.heatPoints[1]] *
-                               self.dt / self.dx) * \
-                (self.temperature[self.heatPoints[1]][1] -
-                 self.temperature[self.heatPoints[1] - 1][1]) + \
-                self.heatRight
+
+            self.heatLeft = -self.dt*self.h_left*(self.temperature[self.heatPoints[0]][1] - self.boundaries[0]) + self.heatLeft
+            self.heatRight = self.dt*self.h_right*(self.temperature[self.heatPoints[1]][1] - self.boundaries[1]) + self.heatRight
 
             nw = nw + 1
 
