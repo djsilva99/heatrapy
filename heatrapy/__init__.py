@@ -35,7 +35,10 @@ can be analyzed at the end.
 
 """
 
-from heatcond import heatcond_activemat_1D
-from magcalsys import magcalsys_solidstate_1D
+# from heatcond import heatcond_activemat_1D
+from systems import magcalsys_solidstate_1D, magcalsys_fluidAMR_1D
+from objects import object, system_objects, heatcond_activemat_1D
+# from mats import calmatpro
+# from solvers import explicit_general, explicit_k, implicit_general, implicit_k
 
-__all__ = [heatcond_activemat_1D, magcalsys_solidstate_1D]
+__all__ = [object, system_objects, heatcond_activemat_1D, magcalsys_solidstate_1D, magcalsys_fluidAMR_1D]
