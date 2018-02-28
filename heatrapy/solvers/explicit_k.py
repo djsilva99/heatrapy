@@ -1,27 +1,37 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+"""Contains the explicit_k solver.
+
+Used to compute thermal processes
+
+"""
+
 import numpy as np
 import copy
 
 
 def explicit_k(obj):
+    """explicit_k solver.
 
-    x=copy.copy(obj.temperature)
+    Used to compute one time step of systems with x-dependent thermal
+    contuctivity.
+
+    """
+
+    x = copy.copy(obj.temperature)
 
     # computes
     for i in range(1, obj.numPoints - 1):
 
-        eta = obj.dt / \
-            (2. * obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
+        eta = obj.dt / (2. * obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
         beta = obj.dt / (obj.rho[i] * obj.Cp[i])
 
-        Tnew = (1 + beta * obj.Q[i]) * obj.temperature[i][0] \
-            + eta * ((obj.k[i + 1] + obj.k[i]) *
-                    obj.temperature[i + 1][0] -
-                    (obj.k[i - 1] + obj.k[i + 1] + 2 *
-                    obj.k[i]) *
-                    obj.temperature[i][0] +
-                    (obj.k[i - 1] + obj.k[i]) *
-                    obj.temperature[i - 1][0]) + \
-            beta * (obj.Q0[i] - obj.Q[i] * obj.ambTemperature)
+        Tnew = ((1 + beta * obj.Q[i]) * obj.temperature[i][0] +
+                eta * ((obj.k[i + 1] + obj.k[i]) * obj.temperature[i + 1][0] -
+                       (obj.k[i - 1] + obj.k[i + 1] + 2 * obj.k[i]) *
+                       obj.temperature[i][0] + (obj.k[i - 1] + obj.k[i]) *
+                       obj.temperature[i - 1][0]) +
+                beta * (obj.Q0[i] - obj.Q[i] * obj.ambTemperature))
 
         x[i][1] = Tnew
 

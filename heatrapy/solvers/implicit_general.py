@@ -1,14 +1,25 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+"""Contains the implicit_general solver.
+
+Used to compute thermal processes
+
+"""
+
 import numpy as np
 import copy
 
 
-
 def implicit_general(obj):
+    """implicit_general solver.
+
+    Used to compute one time step of systems with fixed thermal contuctivity.
+
+    """
 
     # initializes the matrixes for the equation systems
     a = np.zeros((obj.numPoints, obj.numPoints))
     b = np.zeros(obj.numPoints)
-    # print a
 
     # left boundary
     a[0][0] = 1
@@ -41,12 +52,8 @@ def implicit_general(obj):
             (obj.Q0[i] - obj.Q[i] * obj.ambTemperature)
 
     x = np.linalg.solve(a, b)
-    # y=x
+    y = copy.copy(obj.temperature)
 
-    # y=x
-    
-    # return x
-    y=copy.copy(obj.temperature)
     # updates the temperature list
     for i in range(obj.numPoints):
         y[i][1] = x[i]

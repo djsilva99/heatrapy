@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 """Solvers.
 
-solvers
+This submodule contains the solvers for the computation of thermal processes.
 
 """
 

@@ -1,8 +1,20 @@
+"""Contains the implicit_k solver.
+
+Used to compute thermal processes
+
+"""
+
 import numpy as np
 import copy
 
 
 def implicit_k(obj):
+    """implicit_k solver.
+
+    Used to compute one time step of systems with k-dependent thermal
+    contuctivity.
+
+    """
 
     # initializes the matrixes for the equation systems
     a = np.zeros((obj.numPoints, obj.numPoints))
@@ -25,8 +37,7 @@ def implicit_k(obj):
 
     # creates the matrixes and solves the equation systems
     for i in range(1, obj.numPoints - 1):
-        gamma = 4. * obj.rho[i] * obj.Cp[i] * \
-            obj.dx * obj.dx / obj.dt
+        gamma = 4. * obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx / obj.dt
 
         a[i][i - 1] = obj.k[i - 1] + obj.k[i]
         a[i][i] = -(gamma + obj.k[i + 1] + obj.k[i - 1] +
@@ -45,7 +56,7 @@ def implicit_k(obj):
 
     x = np.linalg.solve(a, b)
 
-    y=copy.copy(obj.temperature)
+    y = copy.copy(obj.temperature)
 
     for i in range(obj.numPoints):
         y[i][1] = x[i]

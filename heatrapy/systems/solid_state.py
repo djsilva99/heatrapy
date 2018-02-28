@@ -2,12 +2,13 @@
 from __future__ import unicode_literals
 """Contains the class magcalsys_solidstate_1D.
 
-Used to compute 1-dimensional models for
-magnetocaloric systems
+Used to compute 1-dimensional models for solid state systems involving only one
+thermal object and caloric effects.
 
 """
 
 from .. import objects
+from .. import fields
 import time
 import numpy as np
 
@@ -17,31 +18,32 @@ class magcalsys_solidstate_1D:
     """magcalsys_solidstate_1D class
 
     computes the thermal processes for 1-dimensional fully solid state
-    magnetocaloric systems. The active magnetcic regenerative processes
-    can be used with the several allowed demagnetization processes.
-    Cascades of materials can also be simulated.
+    ferroic-based systems. The active regenerative processes can be used with
+    the several allowed modes for application and removal of fields. Cascades
+    of materials can also be computed.
 
     """
 
     def __init__(self, fileName, ambTemperature=293,
-                 leftThermalSwitch_length=5, rightThermalSwitch_length=5,
-                 MCM_length=20, rightReservoir_length=5,
-                 leftReservoir_length=5, MCM_material=((0.002,'Gd'),),#((0.05,'Gd'),(0.05,'Cu')),#='Gd',
+                 leftThermalSwitch_length=2, rightThermalSwitch_length=2,
+                 MCM_length=20, rightReservoir_length=3,
+                 leftReservoir_length=3, MCM_material=((0.002, 'Gd'),),
                  leftThermalSwitch_material='idealTS_hot',
                  rightThermalSwitch_material='idealTS_cold',
                  leftReservoir_material='Cu', rightReservoir_material='Cu',
-                 freq=.02, dt=.1, dx=0.002, stopCriteria=5e-3,
-                 solverMode='implicit_k(x)', minCycleNumber=20,
-                 maxCycleNumber=200, demagnetizationSteps=1,
-                 magnetizationSteps=1, demagnetizationMode='constant_right',
-                 magnetizationMode='constant_left', cyclePoints=25,
+                 freq=.1, dt=.01, dx=0.002, stopCriteria=5e-3,
+                 solverMode='implicit_k(x)', minCycleNumber=30,
+                 maxCycleNumber=31, demagnetizationSteps=3,
+                 magnetizationSteps=1, demagnetizationMode='accelerated_right',
+                 magnetizationMode='accelerated_left', cyclePoints=25,
                  boundaries=[293, 293], note=None, temperatureSensor='default',
                  heatPoints='default', mode='refrigerator', version=None,
                  restingTimeHot='default', restingTimeCold='default',
-                 startingField='magnetization', type_study='fixed temperature span',
-                 h_left=50000., h_right=50000.,
-                 mod_freq='default'):#=('/home/daniel/Desktop/freq.txt',90)):
-        """loads the data and computes.
+                 startingField='magnetization',
+                 type_study='fixed temperature span', h_left=50000.,
+                 h_right=50000.,
+                 mod_freq='default'):
+        """Initialization.
 
         fileName: file name where the temperature and heat flux are saved
         ambTemperature: ambient temperature of the whole system
@@ -82,6 +84,12 @@ class magcalsys_solidstate_1D:
         mode: mode used for the power calculations (e.g. COP) performed at
             the end of the simulation
         version: heatrapy version (default is None)
+        type_study: 'no load' or 'fixed temperature span'
+        h_left: left heat transfer coefficient
+        h_right: right heat transfer coefficient
+        mod_freq: if not 'default', allows to modulate the frequency according
+            to a specific temperature. tuple with first element as filename,
+            and second the sensor point.
 
         """
 
@@ -161,7 +169,6 @@ class magcalsys_solidstate_1D:
             initialState = False
 
         # initializes the object for the simulation
-
         materials = [leftReservoir_material, leftThermalSwitch_material,
                      MCM_material[0][1], rightThermalSwitch_material,
                      rightReservoir_material]
@@ -178,17 +185,17 @@ class magcalsys_solidstate_1D:
         heatPoints = [leftHeatSensor, rightHeatSensor]
 
         a = objects.heatcond_activemat_1D(ambTemperature, dx=dx, dt=dt,
-                                           fileName=fileName,
-                                           materials=materials,
-                                           borders=borders,
-                                           materialsOrder=[0, 1, 2, 3, 4],
-                                           boundaries=boundaries,
-                                           heatPoints=heatPoints,
-                                           initialState=initialState,
-                                           h_left=50000.,
-                                           h_right=50000.)
+                                          fileName=fileName,
+                                          materials=materials,
+                                          borders=borders,
+                                          materialsOrder=[0, 1, 2, 3, 4],
+                                          boundaries=boundaries,
+                                          heatPoints=heatPoints,
+                                          initialState=initialState,
+                                          h_left=50000., h_right=50000.)
 
-        k=leftReservoir_length+leftThermalSwitch_length
+        # defines the material cascade
+        k = leftReservoir_length + leftThermalSwitch_length
         for i in range(len(MCM_material)):
             from .. import mats
             import os
@@ -208,9 +215,10 @@ class magcalsys_solidstate_1D:
                 '/../database/' + MCM_material[i][1] + '/' + 'rho0.txt'
             rhoa = os.path.dirname(os.path.realpath(__file__)) + \
                 '/../database/' + MCM_material[i][1] + '/' + 'rhoa.txt'
-            a.materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa))
-            for j in range(k,k+int(MCM_material[i][0]/dx+1)):
-                a.materialsIndex[j]=len(a.materials)-1
+            a.materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
+                                              rho0, rhoa))
+            for j in range(k, k+int(MCM_material[i][0]/dx+1)):
+                a.materialsIndex[j] = len(a.materials)-1
             k = k+int(MCM_material[i][0]/dx)
 
         # defines some variable for the cycles
@@ -253,153 +261,34 @@ class magcalsys_solidstate_1D:
                 freq = np.interp(temperature_sensor, xMod, yMod)
                 period = (1. / freq)
 
-
             if startingField == 'magnetization':
 
                 # MAGNETIZATION AND COMPUTATION
 
-                # mode 1
-                if magnetizationMode == 'constant_right':
-                    for j in range(magnetizationSteps):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        time_interval = ((1 - restingTimeHot -
-                                          restingTimeCold) *
-                                         period / 2.)
-                        time_interval = (time_interval /
-                                         (magnetizationSteps))
-                        a.compute(time_interval,
-                                  int(1 / (freq * dt * cyclePoints)),
-                                  solver=solverMode)
+                com = ['constant_left', 'accelerated_left', 'decelerated_left']
+                if magnetizationMode in com:
+                    step_range = range(magnetizationSteps - 1, -1, -1)
+                else:
+                    step_range = range(magnetizationSteps)
 
-                # mode 2
-                if magnetizationMode == 'accelerated_right':
-                    for j in range(magnetizationSteps):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        totalmsteps = magnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq *
-                                         np.sqrt(totalmsteps))) *
-                                   (np.sqrt(j + 1) -
-                                    np.sqrt(j)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
+                for j in step_range:
 
-                # mode 3
-                if magnetizationMode == 'decelerated_right':
-                    for j in range(magnetizationSteps):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        totalmsteps = magnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq *
-                                         np.sqrt(totalmsteps))) *
-                                   (np.sqrt(magnetizationSteps - j) -
-                                    np.sqrt(magnetizationSteps - j -
-                                            1)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
-
-                # mode 4
-                if magnetizationMode == 'constant_left':
-                    for j in range(magnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        time_interval = (((1 - restingTimeHot -
-                                          restingTimeCold) * period /
-                                         2.) / (magnetizationSteps))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(time_interval, write_interval,
-                                  solver=solverMode)
-
-                # mode 5
-                if magnetizationMode == 'accelerated_left':
-                    for j in range(magnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        totalmsteps = magnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq *
-                                         np.sqrt(totalmsteps))) *
-                                   (np.sqrt(magnetizationSteps - j) -
-                                    np.sqrt(magnetizationSteps - j -
-                                            1)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
-
-                # mode 6
-                if magnetizationMode == 'decelerated_left':
-                    for j in range(magnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        totalmsteps = magnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq *
-                                         np.sqrt(totalmsteps))) *
-                                   (np.sqrt(j + 1) -
-                                    np.sqrt(j)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
+                    first = (leftReservoir_length + j *
+                             (leftThermalSwitch_length + MCM_length +
+                              rightThermalSwitch_length) /
+                             magnetizationSteps + 1)
+                    second = (leftReservoir_length + (j + 1) *
+                              (leftThermalSwitch_length + MCM_length +
+                               rightThermalSwitch_length) /
+                              magnetizationSteps + 1)
+                    a.activate(first, second)
+                    delta_t = fields.operating_mode(magnetizationMode,
+                                                    restingTimeCold,
+                                                    restingTimeHot,
+                                                    magnetizationSteps, freq,
+                                                    j)
+                    a.compute(delta_t, int(1 / (freq * dt * cyclePoints)),
+                              solver=solverMode)
 
                 a.compute(restingTimeHot * period,
                           int(1 / (freq * dt * cyclePoints)),
@@ -407,156 +296,29 @@ class magcalsys_solidstate_1D:
 
                 # DEMAGNETIZATION AND COMPUTATION
 
-                # mode 1
-                if demagnetizationMode == 'constant_right':
-                    for j in range(demagnetizationSteps):
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        time_interval = (((1 - restingTimeHot -
-                                           restingTimeCold) *
-                                          period / 2.) /
-                                         (demagnetizationSteps))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(time_interval, write_interval,
-                                  solver=solverMode)
+                com = ['constant_left', 'accelerated_left', 'decelerated_left']
+                if magnetizationMode in com:
+                    step_range = range(demagnetizationSteps - 1, -1, -1)
+                else:
+                    step_range = range(demagnetizationSteps)
 
-                # mode 2
-                if demagnetizationMode == 'accelerated_right':
-                    for j in range(demagnetizationSteps):
-                        # if restingTimeCold != 0.:
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        totalsteps = demagnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq * np.sqrt(totalsteps))) *
-                                   (np.sqrt(j + 1) - np.sqrt(j)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
-
-                # mode 3
-                if demagnetizationMode == 'decelerated_right':
-                    for j in range(demagnetizationSteps):
-                            first = (leftReservoir_length + j *
-                                     ((leftThermalSwitch_length + MCM_length +
-                                       rightThermalSwitch_length) /
-                                      demagnetizationSteps) +
-                                     1)
-                            second = (leftReservoir_length + (j + 1) *
-                                      ((leftThermalSwitch_length + MCM_length +
-                                        rightThermalSwitch_length) /
-                                       demagnetizationSteps) +
-                                      1)
-                            a.deactivate(first, second)
-                            totalsteps = demagnetizationSteps
-                            delta_t = ((1 / (2 * (1. / (1. -
-                                                        restingTimeHot -
-                                                        restingTimeCold)) *
-                                             freq * np.sqrt(totalsteps))) *
-                                       (np.sqrt(demagnetizationSteps - j) -
-                                        np.sqrt(demagnetizationSteps - j -
-                                                1)))
-                            write_interval = int(1 / (freq * dt *
-                                                      cyclePoints))
-                            a.compute(delta_t, write_interval,
-                                      solver=solverMode)
-
-                # mode 4
-                if demagnetizationMode == 'constant_left':
-                    for j in range(demagnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        time_interval = (((1 - restingTimeHot -
-                                           restingTimeCold) *
-                                          period / 2.) /
-                                         (demagnetizationSteps - 1))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(time_interval, write_interval,
-                                  solver=solverMode)
-
-                # mode 5
-                if demagnetizationMode == 'accelerated_left':
-                    for j in range(demagnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        totalsteps = demagnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq * np.sqrt(totalsteps))) *
-                                   (np.sqrt(demagnetizationSteps - j) -
-                                    np.sqrt(demagnetizationSteps - j -
-                                            1)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
-
-                # mode 6
-                if demagnetizationMode == 'decelerated_left':
-                    for j in range(demagnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        totalsteps = demagnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq * np.sqrt(totalsteps))) *
-                                   (np.sqrt(j + 1) - np.sqrt(j)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
+                for j in step_range:
+                    first = (leftReservoir_length + j *
+                             (leftThermalSwitch_length + MCM_length +
+                              rightThermalSwitch_length) /
+                             demagnetizationSteps + 1)
+                    second = (leftReservoir_length + (j + 1) *
+                              (leftThermalSwitch_length + MCM_length +
+                               rightThermalSwitch_length) /
+                              demagnetizationSteps + 1)
+                    a.deactivate(first, second)
+                    delta_t = fields.operating_mode(demagnetizationMode,
+                                                    restingTimeCold,
+                                                    restingTimeHot,
+                                                    demagnetizationSteps, freq,
+                                                    j)
+                    a.compute(delta_t, int(1 / (freq * dt * cyclePoints)),
+                              solver=solverMode)
 
                 time_interval = restingTimeCold * period
                 write_interval = int(1 / (freq * dt * cyclePoints))
@@ -566,155 +328,29 @@ class magcalsys_solidstate_1D:
 
                 # DEMAGNETIZATION AND COMPUTATION
 
-                # mode 1
-                if demagnetizationMode == 'constant_right':
-                    for j in range(demagnetizationSteps):
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        time_interval = (((1 - restingTimeHot -
-                                           restingTimeCold) *
-                                          period / 2.) /
-                                         (demagnetizationSteps))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(time_interval, write_interval,
-                                  solver=solverMode)
+                com = ['constant_left', 'accelerated_left', 'decelerated_left']
+                if magnetizationMode in com:
+                    step_range = range(demagnetizationSteps - 1, -1, -1)
+                else:
+                    step_range = range(demagnetizationSteps)
 
-                # mode 2
-                if demagnetizationMode == 'accelerated_right':
-                    for j in range(demagnetizationSteps):
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        totalsteps = demagnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq * np.sqrt(totalsteps))) *
-                                   (np.sqrt(j + 1) - np.sqrt(j)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
-
-                # mode 3
-                if demagnetizationMode == 'decelerated_right':
-                    for j in range(demagnetizationSteps):
-                            first = (leftReservoir_length + j *
-                                     ((leftThermalSwitch_length + MCM_length +
-                                       rightThermalSwitch_length) /
-                                      demagnetizationSteps) +
-                                     1)
-                            second = (leftReservoir_length + (j + 1) *
-                                      ((leftThermalSwitch_length + MCM_length +
-                                        rightThermalSwitch_length) /
-                                       demagnetizationSteps) +
-                                      1)
-                            a.deactivate(first, second)
-                            totalsteps = demagnetizationSteps
-                            delta_t = ((1 / (2 * (1. / (1. -
-                                                        restingTimeHot -
-                                                        restingTimeCold)) *
-                                             freq * np.sqrt(totalsteps))) *
-                                       (np.sqrt(demagnetizationSteps - j) -
-                                        np.sqrt(demagnetizationSteps - j -
-                                                1)))
-                            write_interval = int(1 / (freq * dt *
-                                                      cyclePoints))
-                            a.compute(delta_t, write_interval,
-                                      solver=solverMode)
-
-                # mode 4
-                if demagnetizationMode == 'constant_left':
-                    for j in range(demagnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        time_interval = (((1 - restingTimeHot -
-                                           restingTimeCold) *
-                                          period / 2.) /
-                                         (demagnetizationSteps))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(time_interval, write_interval,
-                                  solver=solverMode)
-
-                # mode 5
-                if demagnetizationMode == 'accelerated_left':
-                    for j in range(demagnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        totalsteps = demagnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq * np.sqrt(totalsteps))) *
-                                   (np.sqrt(demagnetizationSteps - j) -
-                                    np.sqrt(demagnetizationSteps - j -
-                                            1)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
-
-                # mode 6
-                if demagnetizationMode == 'decelerated_left':
-                    for j in range(demagnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 ((leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  demagnetizationSteps) +
-                                 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  ((leftThermalSwitch_length + MCM_length +
-                                    rightThermalSwitch_length) /
-                                   demagnetizationSteps) +
-                                  1)
-                        a.deactivate(first, second)
-                        totalsteps = demagnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq * np.sqrt(totalsteps))) *
-                                   (np.sqrt(j + 1) - np.sqrt(j)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
+                for j in step_range:
+                    first = (leftReservoir_length + j *
+                             (leftThermalSwitch_length + MCM_length +
+                              rightThermalSwitch_length) /
+                             demagnetizationSteps + 1)
+                    second = (leftReservoir_length + (j + 1) *
+                              (leftThermalSwitch_length + MCM_length +
+                               rightThermalSwitch_length) /
+                              demagnetizationSteps + 1)
+                    a.deactivate(first, second)
+                    delta_t = fields.operating_mode(demagnetizationMode,
+                                                    restingTimeCold,
+                                                    restingTimeHot,
+                                                    demagnetizationSteps, freq,
+                                                    j)
+                    a.compute(delta_t, int(1 / (freq * dt * cyclePoints)),
+                              solver=solverMode)
 
                 time_interval = restingTimeCold * period
                 write_interval = int(1 / (freq * dt * cyclePoints))
@@ -722,148 +358,29 @@ class magcalsys_solidstate_1D:
 
             # MAGNETIZATION AND COMPUTATION
 
-                # mode 1
-                if magnetizationMode == 'constant_right':
-                    for j in range(magnetizationSteps):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        time_interval = ((1 - restingTimeHot -
-                                          restingTimeCold) *
-                                         period / 2.)
-                        time_interval = (time_interval /
-                                         (magnetizationSteps))
-                        a.compute(time_interval,
-                                  int(1 / (freq * dt * cyclePoints)),
-                                  solver=solverMode)
+                com = ['constant_left', 'accelerated_left', 'decelerated_left']
+                if magnetizationMode in com:
+                    step_range = range(magnetizationSteps - 1, -1, -1)
+                else:
+                    step_range = range(magnetizationSteps)
 
-                # mode 2
-                if magnetizationMode == 'accelerated_right':
-                    for j in range(magnetizationSteps):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        totalmsteps = magnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq *
-                                         np.sqrt(totalmsteps))) *
-                                   (np.sqrt(j + 1) -
-                                    np.sqrt(j)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
-
-                # mode 3
-                if magnetizationMode == 'decelerated_right':
-                    for j in range(magnetizationSteps):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        totalmsteps = magnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq *
-                                         np.sqrt(totalmsteps))) *
-                                   (np.sqrt(magnetizationSteps - j) -
-                                    np.sqrt(magnetizationSteps - j -
-                                            1)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
-
-                # mode 4
-                if magnetizationMode == 'constant_left':
-                    for j in range(magnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        time_interval = (((1 - restingTimeHot -
-                                          restingTimeCold) * period /
-                                         2.) / (magnetizationSteps))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(time_interval, write_interval,
-                                  solver=solverMode)
-
-                # mode 5
-                if magnetizationMode == 'accelerated_left':
-                    for j in range(magnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        totalmsteps = magnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq *
-                                         np.sqrt(totalmsteps))) *
-                                   (np.sqrt(magnetizationSteps - j) -
-                                    np.sqrt(magnetizationSteps - j -
-                                            1)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
-
-                # mode 6
-                if magnetizationMode == 'decelerated_left':
-                    for j in range(magnetizationSteps - 1, -1, -1):
-                        first = (leftReservoir_length + j *
-                                 (leftThermalSwitch_length + MCM_length +
-                                  rightThermalSwitch_length) /
-                                 magnetizationSteps + 1)
-                        second = (leftReservoir_length + (j + 1) *
-                                  (leftThermalSwitch_length + MCM_length +
-                                   rightThermalSwitch_length) /
-                                  magnetizationSteps + 1)
-                        a.activate(first, second)
-                        totalmsteps = magnetizationSteps
-                        delta_t = ((1 / (2 * (1. / (1. -
-                                                    restingTimeHot -
-                                                    restingTimeCold)) *
-                                         freq *
-                                         np.sqrt(totalmsteps))) *
-                                   (np.sqrt(j + 1) -
-                                    np.sqrt(j)))
-                        write_interval = int(1 / (freq * dt *
-                                                  cyclePoints))
-                        a.compute(delta_t, write_interval,
-                                  solver=solverMode)
+                for j in step_range:
+                    first = (leftReservoir_length + j *
+                             (leftThermalSwitch_length + MCM_length +
+                              rightThermalSwitch_length) /
+                             magnetizationSteps + 1)
+                    second = (leftReservoir_length + (j + 1) *
+                              (leftThermalSwitch_length + MCM_length +
+                               rightThermalSwitch_length) /
+                              magnetizationSteps + 1)
+                    a.activate(first, second)
+                    delta_t = fields.operating_mode(magnetizationMode,
+                                                    restingTimeCold,
+                                                    restingTimeHot,
+                                                    magnetizationSteps, freq,
+                                                    j)
+                    a.compute(delta_t, int(1 / (freq * dt * cyclePoints)),
+                              solver=solverMode)
 
                 a.compute(restingTimeHot * period,
                           int(1 / (freq * dt * cyclePoints)),

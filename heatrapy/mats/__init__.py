@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-"""mats.
+"""Mats.
 
-mats
+This submodule access the properties of materials
 
 """
 

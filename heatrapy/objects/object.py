@@ -1,25 +1,50 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-"""Contains the class heatcond_activemat_1D.
+"""Contains the class object.
 
-Used to compute a 1-dimensional model of heat conduction
+Used to create a thermal object and apply or remove fields.
 
 """
 
-# from numpy import *
-# import numpy as np
 from .. import mats
 import os
 import copy
-from .. import solvers#.implicit_k as si
+from .. import solvers
 
 
 class object:
+
+    """object class
+
+    This class creates thermal objects to be used in more complex systems.
+    It includes 2 methods to apply and remove fields.
+
+    """
 
     def __init__(self, ambTemperature, materials=['Cu'], borders=[1, 11],
                  materialsOrder=[0], dx=0.01, dt=0.1, fileName='data.txt',
                  boundaries=[0, 0], Q=[], Q0=[], initialState=False,
                  heat_save=False):
+        """Initializes the object.
+
+        ambTemperature: ambient temperature of the whole system
+        materials: list of strings of all the used materials present in the
+            folder materials
+        borders: list of the points where there is a change of material
+        materialsOrder: list of the materials list indexes that defines the
+            material properties given by borders
+        dx: the space step
+        dt: the times step
+        fileName: file name where the temperature and heat flux are saved
+        boundaries: list of two entries that define the boundary condition
+            for tempreture. If 0 the boundary condition is insulation
+        Q: list of fixed heat source coeficient.
+        Q0: list of temperature dependent heat source coefficient.
+        initialState: initial state of the materials. True if applied field
+            and False is removed field.
+        heat_save: True if saving the heat at the two borders.
+
+        """
 
         # initial definitions
         self.borders = borders
@@ -69,7 +94,7 @@ class object:
         for i in range(1, borders[-1]):
             self.temperature.append([ambTemperature, ambTemperature])
             self.rho.append(self.materials[self.materialsIndex[i]].rho0(
-                ambTemperature))  # rhoTSHot)
+                ambTemperature))
             self.Cp.append(
                 self.materials[self.materialsIndex[i]].cp0(ambTemperature))
             self.k.append(
@@ -159,16 +184,3 @@ class object:
             else:
                 message = 'point %f already deactivated' % float(i)
                 print message
-
-
-
-if __name__ == "__main__":
-
-    a = system_objects()
-    a.objects[0].boundaries = [0, 100]
-    a.contactAdd(((0, 1), (1, 7), 10000000))
-    a.contactAdd(((0, 2), (1, 8), 10000000))
-    a.contactAdd(((0, 3), (1, 9), 10000000))
-    a.contactAdd(((0, 4), (1, 10), 10000000))
-    print a.contacts
-    a.compute(10, 10)

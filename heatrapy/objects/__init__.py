@@ -2,7 +2,9 @@
 from __future__ import unicode_literals
 """Objects.
 
-Objects
+This submodule includes the object class for creating thermal objects,
+object system class for creating systems of thermal objects, and
+a complex single object for using in more complex thermal computing.
 
 """
 

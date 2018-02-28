@@ -1,44 +1,68 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-"""Contains the class heatcond_activemat_1D.
+"""Contains the classes system_objects and heatcond_activemat_1D.
 
-Used to compute a 1-dimensional model of heat conduction
+Used to compute system models
 
 """
 
-# from numpy import *
-# import numpy as np
 from .. import mats
 import os
 import copy
-from .. import solvers#.implicit_k as si
+from .. import solvers
 import object
+
 
 class system_objects:
 
+    """system_objects class
+
+    This class creates a system of thermal objects, establishes contact between
+    them and computes the respective thermal processes.
+
+    """
+
     def __init__(self, number_objects=2, materials=['Cu', 'Cu'],
                  objects_length=[10, 10], ambTemperature=293, dx=0.01, dt=0.1,
-                 fileName='data',initialState=False,
-                 boundaries=((2,0),(3,0))):
+                 fileName='data', initialState=False,
+                 boundaries=((2, 0), (3, 0))):
+        """Initializes the object.
+
+        ambTemperature: ambient temperature of the whole system
+        materials: list of strings of all the used materials present in the
+            folder materials
+        number_objects: integer for the number of thermal objects
+        objects_length: list of the object lengths (spacial steps)
+        dx: the space step
+        dt: the times step
+        fileName: file name where the temperature and heat flux are saved
+        boundaries: tuple of two entries that define the boundary condition
+            for tempreture. The first corresponds to the thermal obect while
+            the second defines the temperature. If 0 the boundary condition is
+            insulation
+        initialState: initial state of the materials. True if applied field
+            and False is removed field.
+
+        """
 
         self.objects = []
         for i in range(number_objects):
-            if i not in [l[0] for l in boundaries] or (i,0) in boundaries:
-            # if i in [j[0] for j in boundaries]:
-                heat_save=False
+            if i not in [l[0] for l in boundaries] or (i, 0) in boundaries:
+                heat_save = False
             else:
-                heat_save=True
+                heat_save = True
 
             self.objects.append(object.object(ambTemperature,
-                                       materials=[materials[i]],
-                                       borders=[1, objects_length[i]+1],
-                                       materialsOrder=[0], dx=dx, dt=dt,
-                                       fileName=fileName+'_'+str(i)+'.txt',
-                                       boundaries=[0, 0], Q=[], Q0=[],
-                                       initialState=initialState, heat_save=heat_save))
+                                materials=[materials[i]],
+                                borders=[1, objects_length[i]+1],
+                                materialsOrder=[0], dx=dx, dt=dt,
+                                fileName=fileName+'_'+str(i)+'.txt',
+                                boundaries=[0, 0], Q=[], Q0=[],
+                                initialState=initialState,
+                                heat_save=heat_save))
 
         self.contacts = set()
-        self.boundaries=boundaries
+        self.boundaries = boundaries
         self.dt = dt
         self.q1 = 0.
         self.q2 = 0.
@@ -46,19 +70,36 @@ class system_objects:
         for i in boundaries:
             if i[1] != 0:
                 for j in range(len(self.objects[i[0]].temperature)):
-                    self.objects[i[0]].temperature[j]=[i[1],i[1]]
+                    self.objects[i[0]].temperature[j] = [i[1], i[1]]
 
     def contactFilter(self, object):
-        filtered = [x for x in self.contacts if (x[0][0]==object or x[1][0]==object)]
+        """Filter self.contacts by thermal object id
+
+        object: thermal object id
+
+        """
+
+        filtered = [x for x in
+                    self.contacts if (x[0][0] == object or x[1][0] == object)]
         return set(filtered)
 
         self.contacts.add(contact)
 
     def contactAdd(self, contact):
+        """Add contact to self.contacts
+
+        contact: thermal contact
+
+        """
 
         self.contacts.add(contact)
 
     def contactRemove(self, contact):
+        """Remove all contacts from an object
+
+        contact: thermal object id
+
+        """
 
         removing_contact = None
 
@@ -69,6 +110,14 @@ class system_objects:
         self.contacts.remove(removing_contact)
 
     def compute(self, timeInterval, writeInterval, solver='implicit_k'):
+        """Computes the thermal process
+
+        Computes the system for timeInterval, and writes into the fileName
+        file every writeInterval time steps. Four different solvers can be
+        used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
+        and 'implicit_k(x)'.
+
+        """
 
         # number of time steps for the given timeInterval
         nt = int(timeInterval / self.dt)
@@ -81,7 +130,7 @@ class system_objects:
 
             for obj in self.objects:
                 obj.Q0 = copy.copy(obj.Q0_ref)
-            
+
             for contact in self.contacts:
                 td1 = self.objects[contact[1][0]].temperature[contact[1][1]][0]
                 td2 = self.objects[contact[0][0]].temperature[contact[0][1]][0]
@@ -89,36 +138,33 @@ class system_objects:
                 heat_contact_2 = contact[2] * (td2 - td1)
                 self.objects[contact[0][0]].Q0[contact[0][1]] = heat_contact_1
                 self.objects[contact[1][0]].Q0[contact[1][1]] = heat_contact_2
-            
+
             object_number = -1
             for obj in self.objects:
                 object_number = object_number + 1
                 obj.timePassed = obj.timePassed + obj.dt
 
-                # print ''
-                # print self.boundaries
-                # print object_number,(object_number not in [l[0] for l in self.boundaries] or (object_number,0) in self.boundaries)
-                if object_number not in [l[0] for l in self.boundaries] or (object_number,0) in self.boundaries:
+                cond1 = object_number not in [l[0] for l in self.boundaries]
+                if cond1 or (object_number, 0) in self.boundaries:
 
-
-                    # defines the material properties accoring to the state list
+                    # defines the material properties
                     for i in range(1, obj.numPoints - 1):
                         if obj.state[i] is True:
-                            obj.rho[i] = obj.materials[obj.materialsIndex[i]].rhoa(
+                            ind = obj.materialsIndex[i]
+                            obj.rho[i] = obj.materials[ind].rhoa(
                                 obj.temperature[i][0])
-                            obj.Cp[i] = obj.materials[obj.materialsIndex[i]].cpa(
+                            obj.Cp[i] = obj.materials[ind].cpa(
                                 obj.temperature[i][0])
-                            obj.k[i] = obj.materials[obj.materialsIndex[i]].ka(
+                            obj.k[i] = obj.materials[ind].ka(
                                 obj.temperature[i][0])
                         if obj.state[i] is False:
-                            obj.rho[i] = obj.materials[obj.materialsIndex[i]].rho0(
+                            ind = obj.materialsIndex[i]
+                            obj.rho[i] = obj.materials[ind].rho0(
                                 obj.temperature[i][0])
-                            obj.Cp[i] = obj.materials[obj.materialsIndex[i]].cp0(
+                            obj.Cp[i] = obj.materials[ind].cp0(
                                 obj.temperature[i][0])
-                            obj.k[i] = obj.materials[obj.materialsIndex[i]].k0(
+                            obj.k[i] = obj.materials[ind].k0(
                                 obj.temperature[i][0])
-
-                # if object_number not in [l[0] for l in boundaries] or (object_number,0) in boundaries:
 
                     # SOLVERS
 
@@ -145,21 +191,18 @@ class system_objects:
                         for i in obj.temperature:
                             newLine = ',%f' % i[1]
                             line = line + newLine
-                        # line = line + newLine
                         f = open(obj.fileName, 'a')
                         f.write(line+'\n')
                         f.close()
 
                 else:
 
-                    heat = [p*self.dt*obj.dx for p in obj.Q0 if p != None]
-
-                    heat = sum(heat)/(len(heat)*self.dt)
+                    heat = [p*self.dt*obj.dx for p in obj.Q0 if p is not None]
+                    heat = sum(heat)/(len(heat)*obj.dx)
 
                     if object_number == self.boundaries[0][0]:
                         self.q1 = self.q1 + heat
                         q = self.q1
-
                     else:
                         self.q2 = self.q2 + heat
                         q = self.q2
@@ -179,7 +222,6 @@ class system_objects:
 
             if nw == writeInterval:
                 nw = 0
-
             else:
                 nw = nw + 1
 
@@ -217,16 +259,7 @@ class heatcond_activemat_1D(object.object):
         boundaries: list of two entries that define the boundary condition
             for tempreture. If 0 the boundary condition is insulation
         Q: list of 3 entry lists that gives the fixed heat source coeficient.
-            The first term is the initial space index            self.heatLeft = -(self.k[self.heatPoints[0]] *
-                              self.dt / self.dx) * \
-                (self.temperature[self.heatPoints[0]][1] -
-                 self.temperature[self.heatPoints[0] - 1][1]) + \
-                self.heatLeft
-            self.heatRight = -(self.k[self.heatPoints[1]] *
-                               self.dt / self.dx) * \
-                (self.temperature[self.heatPoints[1]][1] -
-                 self.temperature[self.heatPoints[1] - 1][1]) + \
-                self.heatRight where it is applies. The
+            The first term is the initial space index where it is applies. The
             second is the final space index where it is applies. The third is
             the value of the coeficient.
         Q0 is a list of 3 entry lists that gives the temperature dependent heat
@@ -236,6 +269,10 @@ class heatcond_activemat_1D(object.object):
         heatPoints: list of the space indexes where we want to extract the heat
             flux. Normally, the first term is the heat flux of the hot end and
             the second term is the heat flux of the cold end
+        initialState: initial state of the materials. True if applied field
+            and False is removed field.
+        h_left: left heat transfer coefficient
+        h_right: right heat transfer coefficient
 
         """
 
@@ -247,7 +284,6 @@ class heatcond_activemat_1D(object.object):
         self.ambTemperature = ambTemperature
         self.h_left = h_left
         self.h_right = h_right
-
 
         # loads the data for each material
         for i in range(len(materials)):
@@ -291,7 +327,7 @@ class heatcond_activemat_1D(object.object):
         for i in range(1, borders[-1]):
             self.temperature.append([ambTemperature, ambTemperature])
             self.rho.append(self.materials[self.materialsIndex[i]].rho0(
-                ambTemperature))  # rhoTSHot)
+                ambTemperature))
             self.Cp.append(
                 self.materials[self.materialsIndex[i]].cp0(ambTemperature))
             self.k.append(
@@ -412,8 +448,12 @@ class heatcond_activemat_1D(object.object):
             # calculates the heat flux of the defined ...
             # two points during the time step
 
-            self.heatLeft = -self.dt*self.h_left*(self.temperature[self.heatPoints[0]][1] - self.boundaries[0]) + self.heatLeft
-            self.heatRight = self.dt*self.h_right*(self.temperature[self.heatPoints[1]][1] - self.boundaries[1]) + self.heatRight
+            self.heatLeft = (-self.dt * self.h_left *
+                             (self.temperature[self.heatPoints[0]][1] -
+                              self.boundaries[0]) + self.heatLeft)
+            self.heatRight = (self.dt * self.h_right *
+                              (self.temperature[self.heatPoints[1]][1] -
+                               self.boundaries[1]) + self.heatRight)
 
             nw = nw + 1
 
