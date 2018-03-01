@@ -6,5 +6,5 @@ Systems
 
 """
 
-from solid_state import magcalsys_solidstate_1D
-from fluid_regenerator import magcalsys_fluidAMR_1D
+from solid_caloric_systems import solid_active_regenerator
+from fluid_caloric_systems import fluid_active_regenerator

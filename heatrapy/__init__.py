@@ -2,43 +2,60 @@
 from __future__ import unicode_literals
 """Heatrapy.
 
-This module contains classes to extract the physical properties from
-the materials from the heatrapy database, to create and compute
-1 dimensional models of heat conduction, and to use the 1 dimensional
-model to build models that include the magnetocaloric technology.
+This module allows to create thermal objects, establish thermal contact between
+them, activate or deactivate the whole, or part, of the materials, and compute
+the respective heat transfer processes, in 1 dimension. It includes several
+system models for the computation of several thermotechnologies, including
+ferroic-based systems.
 
-The package relies on 3 classes:
+There are 3 classes that create general models:
 
-#########
-calmatpro
-#########
+######
+object
+######
 
-Extracts and interpolate the physical properties density (rho), specific
-heat (cp), adiabatic change of temperature (tad), and thermal conductivity
-(k), giving the temperature.
+This class only creates a single thermal object. It includes 2 methods:
+material activation and material deactivation, of part of the object.
 
-#########
-heatcond
-#########
+##############
+system_objects
+##############
 
-Creates 1 dimensional models and computes the system using one of 4 solvers:
-implicit with k(x), implicit with constant k, explicit with k(x), and explicit
-with constant k. The output data is saved in a file.
+This class creates a system of objects that can be in contact to each other
+and computes the respective heat transfer processes. It uses the class object
+for the creation of each thermal object.
 
-#########
-magcalsys
-#########
+#############
+single_object
+#############
 
-Creates 1 dimensional models of magnetocaloric systems using the heatcond
-class. During the computation, it writes log files of the key parameters that
-can be analyzed at the end.
+This class computes the heat transfer processes involved in only one thermal
+object. It uses the class object for activating and deactivating the material.
+
+At this moment there are 2 complex systems that can be computed:
+
+########################
+fluid_active_regenerator
+########################
+
+This function creates and computes an active regenerative system used for
+refrigeration and heat pumps. The heat exchanger is a fluid. It can be used
+to compute caloric systems, e.g. magnetocaloric, electrocaloric, elastocaloric,
+and barocaloric.
+
+########################
+solid_active_regenerator
+########################
+
+This function creates and computes an active regenerative system used for
+refrigeration and heat pumps. The heat exchanger is the solid material itself.
+It can be used to compute caloric systems, e.g. magnetocaloric, electrocaloric,
+elastocaloric, and barocaloric.
 
 """
 
-# from heatcond import heatcond_activemat_1D
-from systems import magcalsys_solidstate_1D, magcalsys_fluidAMR_1D
-from objects import object, system_objects, heatcond_activemat_1D
-# from mats import calmatpro
-# from solvers import explicit_general, explicit_k, implicit_general, implicit_k
+from systems import solid_active_regenerator, fluid_active_regenerator
+from objects import object, system_objects, single_object
 
-__all__ = [object, system_objects, heatcond_activemat_1D, magcalsys_solidstate_1D, magcalsys_fluidAMR_1D]
+__all__ = [object, system_objects, single_object, solid_active_regenerator,
+           fluid_active_regenerator]

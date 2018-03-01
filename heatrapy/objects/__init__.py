@@ -9,6 +9,6 @@ a complex single object for using in more complex thermal computing.
 """
 
 from object import object
-from system import system_objects, heatcond_activemat_1D
+from system import system_objects, single_object
 
-__all__ = [object, system_objects, heatcond_activemat_1D]
+__all__ = [object, system_objects, single_object]

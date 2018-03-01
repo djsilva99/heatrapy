@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-"""Contains the classes system_objects and heatcond_activemat_1D.
+"""Contains the classes system_objects and single_object.
 
 Used to compute system models
 
@@ -22,29 +22,47 @@ class system_objects:
 
     """
 
-    def __init__(self, number_objects=2, materials=['Cu', 'Cu'],
-                 objects_length=[10, 10], ambTemperature=293, dx=0.01, dt=0.1,
-                 fileName='data', initialState=False,
+    def __init__(self, number_objects=2, materials=('Cu', 'Cu'),
+                 objects_length=(10, 10), amb_temperature=293, dx=0.01, dt=0.1,
+                 file_name='data', initial_state=False,
                  boundaries=((2, 0), (3, 0))):
         """Initializes the object.
 
-        ambTemperature: ambient temperature of the whole system
+        amb_temperature: ambient temperature of the whole system
         materials: list of strings of all the used materials present in the
             folder materials
         number_objects: integer for the number of thermal objects
         objects_length: list of the object lengths (spacial steps)
         dx: the space step
         dt: the times step
-        fileName: file name where the temperature and heat flux are saved
+        file_name: file name where the temperature and heat flux are saved
         boundaries: tuple of two entries that define the boundary condition
             for tempreture. The first corresponds to the thermal obect while
             the second defines the temperature. If 0 the boundary condition is
             insulation
-        initialState: initial state of the materials. True if applied field
+        initial_state: initial state of the materials. True if applied field
             and False is removed field.
 
         """
 
+        # check the validity of inputs
+        cond01 = isinstance(amb_temperature, float)
+        cond01 = cond01 or isinstance(amb_temperature, int)
+        cond02 = isinstance(materials, tuple)
+        cond03 = isinstance(number_objects, int)
+        cond04 = isinstance(objects_length, tuple)
+        cond05 = isinstance(dx, int) or isinstance(dx, float)
+        cond06 = isinstance(dt, int) or isinstance(dt, float)
+        cond07 = isinstance(file_name, unicode)
+        cond07 = cond07 or isinstance(file_name, str)
+        cond08 = isinstance(boundaries, tuple)
+        cond09 = isinstance(initial_state, bool)
+        condition = cond01 and cond02 and cond03 and cond04 and cond05
+        condition = condition and cond06 and cond07 and cond08 and cond09
+        if not condition:
+            raise ValueError
+
+        # initial definitions
         self.objects = []
         for i in range(number_objects):
             if i not in [l[0] for l in boundaries] or (i, 0) in boundaries:
@@ -52,13 +70,13 @@ class system_objects:
             else:
                 heat_save = True
 
-            self.objects.append(object.object(ambTemperature,
-                                materials=[materials[i]],
-                                borders=[1, objects_length[i]+1],
-                                materialsOrder=[0], dx=dx, dt=dt,
-                                fileName=fileName+'_'+str(i)+'.txt',
-                                boundaries=[0, 0], Q=[], Q0=[],
-                                initialState=initialState,
+            self.objects.append(object.object(amb_temperature,
+                                materials=(materials[i],),
+                                borders=(1, objects_length[i]+1),
+                                materials_order=(0,), dx=dx, dt=dt,
+                                file_name=file_name+'_'+str(i)+'.txt',
+                                boundaries=(0, 0), Q=[], Q0=[],
+                                initial_state=initial_state,
                                 heat_save=heat_save))
 
         self.contacts = set()
@@ -112,7 +130,7 @@ class system_objects:
     def compute(self, timeInterval, writeInterval, solver='implicit_k'):
         """Computes the thermal process
 
-        Computes the system for timeInterval, and writes into the fileName
+        Computes the system for timeInterval, and writes into the file_name
         file every writeInterval time steps. Four different solvers can be
         used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
         and 'implicit_k(x)'.
@@ -142,15 +160,15 @@ class system_objects:
             object_number = -1
             for obj in self.objects:
                 object_number = object_number + 1
-                obj.timePassed = obj.timePassed + obj.dt
+                obj.time_passed = obj.time_passed + obj.dt
 
                 cond1 = object_number not in [l[0] for l in self.boundaries]
                 if cond1 or (object_number, 0) in self.boundaries:
 
                     # defines the material properties
-                    for i in range(1, obj.numPoints - 1):
+                    for i in range(1, obj.num_points - 1):
                         if obj.state[i] is True:
-                            ind = obj.materialsIndex[i]
+                            ind = obj.materials_index[i]
                             obj.rho[i] = obj.materials[ind].rhoa(
                                 obj.temperature[i][0])
                             obj.Cp[i] = obj.materials[ind].cpa(
@@ -158,7 +176,7 @@ class system_objects:
                             obj.k[i] = obj.materials[ind].ka(
                                 obj.temperature[i][0])
                         if obj.state[i] is False:
-                            ind = obj.materialsIndex[i]
+                            ind = obj.materials_index[i]
                             obj.rho[i] = obj.materials[ind].rho0(
                                 obj.temperature[i][0])
                             obj.Cp[i] = obj.materials[ind].cp0(
@@ -184,14 +202,14 @@ class system_objects:
                     if solver == 'explicit_k(x)':
                         obj.temperature = solvers.explicit_K(obj)
 
-                    # writes the temperature to fileName file ...
+                    # writes the temperature to file_name file ...
                     # if the number of time steps is verified
                     if nw + 1 == writeInterval or j == 0 or j == nt - 1:
-                        line = '%f' % obj.timePassed
+                        line = '%f' % obj.time_passed
                         for i in obj.temperature:
-                            newLine = ',%f' % i[1]
-                            line = line + newLine
-                        f = open(obj.fileName, 'a')
+                            new_line = ',%f' % i[1]
+                            line = line + new_line
+                        f = open(obj.file_name, 'a')
                         f.write(line+'\n')
                         f.close()
 
@@ -207,16 +225,16 @@ class system_objects:
                         self.q2 = self.q2 + heat
                         q = self.q2
 
-                    # writes the temperature to fileName file ...
+                    # writes the temperature to file_name file ...
                     # if the number of time steps is verified
                     if nw + 1 == writeInterval or j == 0 or j == nt - 1:
-                        line = '%f' % obj.timePassed
+                        line = '%f' % obj.time_passed
                         for i in obj.temperature:
-                            newLine = ',%f' % i[1]
-                            line = line + newLine
-                        newLine = ',%f' % q
-                        line = line + newLine
-                        f = open(obj.fileName, 'a')
+                            new_line = ',%f' % i[1]
+                            line = line + new_line
+                        new_line = ',%f' % q
+                        line = line + new_line
+                        f = open(obj.file_name, 'a')
                         f.write(line+'\n')
                         f.close()
 
@@ -226,9 +244,9 @@ class system_objects:
                 nw = nw + 1
 
 
-class heatcond_activemat_1D(object.object):
+class single_object(object.object):
 
-    """heatcond_activemat_1D class
+    """single_object class
 
     This class solves numerically the heat conduction equation for 1 dimension
     of an active material(s). Three solvers can be used: explicit with
@@ -241,21 +259,21 @@ class heatcond_activemat_1D(object.object):
 
     """
 
-    def __init__(self, ambTemperature, materials=['Cu'], borders=[1, 11],
-                 materialsOrder=[0], dx=0.01, dt=0.1, fileName='data.txt',
-                 boundaries=[0, 0], Q=[], Q0=[], heatPoints=[1, -2],
-                 initialState=False, h_left=50000., h_right=50000.):
+    def __init__(self, amb_temperature, materials=('Cu'), borders=(1, 11),
+                 materials_order=(0,), dx=0.01, dt=0.1, file_name='data.txt',
+                 boundaries=(0, 0), Q=[], Q0=[], heat_points=(1, -2),
+                 initial_state=False, h_left=50000., h_right=50000.):
         """Initializes the object.
 
-        ambTemperature: ambient temperature of the whole system
+        amb_temperature: ambient temperature of the whole system
         materials: list of strings of all the used materials present in the
             folder materials
         borders: list of the points where there is a change of material
-        materialsOrder: list of the materials list indexes that defines the
+        materials_order: list of the materials list indexes that defines the
             material properties given by borders
         dx: the space step
         dt: the times step
-        fileName: file name where the temperature and heat flux are saved
+        file_name: file name where the temperature and heat flux are saved
         boundaries: list of two entries that define the boundary condition
             for tempreture. If 0 the boundary condition is insulation
         Q: list of 3 entry lists that gives the fixed heat source coeficient.
@@ -266,22 +284,43 @@ class heatcond_activemat_1D(object.object):
             source coefficient. The first term is the initial space index where
             it is applies. The second is the final space index where it is
             applies. The third is the value of the coeficient.
-        heatPoints: list of the space indexes where we want to extract the heat
-            flux. Normally, the first term is the heat flux of the hot end and
-            the second term is the heat flux of the cold end
-        initialState: initial state of the materials. True if applied field
+        heat_points: list of the space indexes where we want to extract the
+            heat flux. Normally, the first term is the heat flux of the hot end
+            and the second term is the heat flux of the cold end
+        initial_state: initial state of the materials. True if applied field
             and False is removed field.
         h_left: left heat transfer coefficient
         h_right: right heat transfer coefficient
 
         """
 
+        # check the validity of inputs
+        cond01 = isinstance(amb_temperature, float)
+        cond01 = cond01 or isinstance(amb_temperature, int)
+        cond02 = isinstance(materials, tuple)
+        cond03 = isinstance(borders, tuple)
+        cond04 = isinstance(materials_order, tuple)
+        cond05 = isinstance(dx, int) or isinstance(dx, float)
+        cond06 = isinstance(dt, int) or isinstance(dt, float)
+        cond07 = isinstance(file_name, unicode)
+        cond07 = cond07 or isinstance(file_name, str)
+        cond08 = isinstance(boundaries, tuple)
+        cond09 = isinstance(heat_points, tuple)
+        cond10 = isinstance(initial_state, bool)
+        cond11 = isinstance(h_left, int) or isinstance(h_left, float)
+        cond12 = isinstance(h_right, int) or isinstance(h_right, float)
+        condition = cond01 and cond02 and cond03 and cond04 and cond05
+        condition = condition and cond06 and cond07 and cond08 and cond09
+        condition = condition and cond10 and cond11 and cond12
+        if not condition:
+            raise ValueError
+
         # initial definitions
-        self.heatPoints = heatPoints
+        self.heat_points = heat_points
         self.borders = borders
         self.materials = range(len(materials))
         self.boundaries = boundaries
-        self.ambTemperature = ambTemperature
+        self.amb_temperature = amb_temperature
         self.h_left = h_left
         self.h_right = h_right
 
@@ -307,40 +346,40 @@ class heatcond_activemat_1D(object.object):
                 tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa)
 
         # defines which are the properties of each material point
-        self.materialsIndex = [None]
+        self.materials_index = [None]
         for i in range(len(borders) - 1):
             for j in range(borders[i], borders[i + 1]):
-                self.materialsIndex.append(materialsOrder[i])
-        self.materialsIndex.append(None)
+                self.materials_index.append(materials_order[i])
+        self.materials_index.append(None)
 
         # loads the inputs and creates the lists temperature, Cp, rho and k
-        self.numPoints = borders[-1] + 1
-        self.fileName = fileName
+        self.num_points = borders[-1] + 1
+        self.file_name = file_name
         self.dx = dx
         self.dt = dt
-        self.temperature = [[ambTemperature, ambTemperature]]
+        self.temperature = [[amb_temperature, amb_temperature]]
         self.Cp = [None]
         self.rho = [None]
         self.Q = [None]
         self.Q0 = [None]
-        self.k = [self.materials[self.materialsIndex[1]].k0(ambTemperature)]
+        self.k = [self.materials[self.materials_index[1]].k0(amb_temperature)]
         for i in range(1, borders[-1]):
-            self.temperature.append([ambTemperature, ambTemperature])
-            self.rho.append(self.materials[self.materialsIndex[i]].rho0(
-                ambTemperature))
+            self.temperature.append([amb_temperature, amb_temperature])
+            self.rho.append(self.materials[self.materials_index[i]].rho0(
+                amb_temperature))
             self.Cp.append(
-                self.materials[self.materialsIndex[i]].cp0(ambTemperature))
+                self.materials[self.materials_index[i]].cp0(amb_temperature))
             self.k.append(
-                self.materials[self.materialsIndex[i]].k0(ambTemperature))
+                self.materials[self.materials_index[i]].k0(amb_temperature))
             self.Q.append(0.)
             self.Q0.append(0.)
-        self.temperature.append([ambTemperature, ambTemperature])
+        self.temperature.append([amb_temperature, amb_temperature])
         self.rho.append(None)
         self.Cp.append(None)
         self.Q.append(None)
         self.Q0.append(None)
         self.k.append(
-            self.materials[self.materialsIndex[-2]].k0(ambTemperature))
+            self.materials[self.materials_index[-2]].k0(amb_temperature))
 
         # creates the power sources
         for power in Q:
@@ -353,17 +392,17 @@ class heatcond_activemat_1D(object.object):
         # initializes the state of each point (True if active and False if ...
         # unactive), the time, heat flux from the hot side and heat flux ...
         # from the cold side
-        self.state = [initialState for i in range(borders[-1] + 1)]
-        self.timePassed = 0.
+        self.state = [initial_state for i in range(borders[-1] + 1)]
+        self.time_passed = 0.
         self.heatLeft = 0.
         self.heatRight = 0.
 
         line = 'time(s)'
         for i in range(len(self.temperature)):
             line = line + ',T[' + str(i) + '] (K)'
-        line = line + ',heat[' + str(self.heatPoints[0]) + '](W)' + \
-            ',heat[' + str(self.heatPoints[1]) + '](J)\n'
-        f = open(self.fileName, 'a')
+        line = line + ',heat[' + str(self.heat_points[0]) + '](W)' + \
+            ',heat[' + str(self.heat_points[1]) + '](J)\n'
+        f = open(self.file_name, 'a')
         f.write(line)
         f.close()
 
@@ -385,13 +424,13 @@ class heatcond_activemat_1D(object.object):
                 modeTemp=False, numFlag=0.5, modeTempPoint=1):
         """Computes the thermal process
 
-        Computes the system for timeInterval, and writes into the fileName
+        Computes the system for timeInterval, and writes into the file_name
         file every writeInterval time steps. Four different solvers can be
         used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
-        and 'implicit_k(x)'. heatPoints is a list that defines the points where
-        the heat flux are calculated if modeTemp is True the compute method
-        stops when the point modeTempPoint changes numFlag relative to the
-        initial value
+        and 'implicit_k(x)'. heat_points is a list that defines the points
+        where the heat flux are calculated if modeTemp is True the compute
+        method stops when the point modeTempPoint changes numFlag relative to
+        the initial value
 
         """
 
@@ -407,24 +446,24 @@ class heatcond_activemat_1D(object.object):
         # computes
         for j in range(nt):
 
-            # updates the timePassed
-            self.timePassed = self.timePassed + self.dt
+            # updates the time_passed
+            self.time_passed = self.time_passed + self.dt
 
             # defines the material properties accoring to the state list
-            for i in range(1, self.numPoints - 1):
+            for i in range(1, self.num_points - 1):
                 if self.state[i] is True:
-                    self.rho[i] = self.materials[self.materialsIndex[i]].rhoa(
+                    self.rho[i] = self.materials[self.materials_index[i]].rhoa(
                         self.temperature[i][0])
-                    self.Cp[i] = self.materials[self.materialsIndex[i]].cpa(
+                    self.Cp[i] = self.materials[self.materials_index[i]].cpa(
                         self.temperature[i][0])
-                    self.k[i] = self.materials[self.materialsIndex[i]].ka(
+                    self.k[i] = self.materials[self.materials_index[i]].ka(
                         self.temperature[i][0])
                 if self.state[i] is False:
-                    self.rho[i] = self.materials[self.materialsIndex[i]].rho0(
+                    self.rho[i] = self.materials[self.materials_index[i]].rho0(
                         self.temperature[i][0])
-                    self.Cp[i] = self.materials[self.materialsIndex[i]].cp0(
+                    self.Cp[i] = self.materials[self.materials_index[i]].cp0(
                         self.temperature[i][0])
-                    self.k[i] = self.materials[self.materialsIndex[i]].k0(
+                    self.k[i] = self.materials[self.materials_index[i]].k0(
                         self.temperature[i][0])
 
             # SOLVERS
@@ -449,10 +488,10 @@ class heatcond_activemat_1D(object.object):
             # two points during the time step
 
             self.heatLeft = (-self.dt * self.h_left *
-                             (self.temperature[self.heatPoints[0]][1] -
+                             (self.temperature[self.heat_points[0]][1] -
                               self.boundaries[0]) + self.heatLeft)
             self.heatRight = (self.dt * self.h_right *
-                              (self.temperature[self.heatPoints[1]][1] -
+                              (self.temperature[self.heat_points[1]][1] -
                                self.boundaries[1]) + self.heatRight)
 
             nw = nw + 1
@@ -463,23 +502,23 @@ class heatcond_activemat_1D(object.object):
                 value = self.temperature[modeTempPoint][0] - initModeTemp
                 if abs(value) > numFlag:
                     nw = 0
-                    f = open(self.fileName, 'a')
+                    f = open(self.file_name, 'a')
                     f.write(line)
                     f.close()
                     break
 
-            # writes the temperature to fileName file ...
+            # writes the temperature to file_name file ...
             # if the number of time steps is verified
             if nw == writeInterval or j == 0 or j == nt - 1:
-                line = '%f,' % self.timePassed
+                line = '%f,' % self.time_passed
                 for i in self.temperature:
-                    newLine = '%f,' % i[1]
-                    line = line + newLine
-                newLine = '%f,' % self.heatLeft
-                line = line + newLine
-                newLine = '%f' % self.heatRight
-                line = line + newLine + '\n'
-                f = open(self.fileName, 'a')
+                    new_line = '%f,' % i[1]
+                    line = line + new_line
+                new_line = '%f,' % self.heatLeft
+                line = line + new_line
+                new_line = '%f' % self.heatRight
+                line = line + new_line + '\n'
+                f = open(self.file_name, 'a')
                 f.write(line)
                 f.close()
 
