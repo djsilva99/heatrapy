@@ -13,30 +13,30 @@ import numpy as np
 from .. import fields
 
 
-def fluid_active_regenerator(file_name, amb_temperature=293, fluid_length=100,
-                             MCM_length=20, right_reservoir_length=3,
-                             left_reservoir_length=3,
+def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
+                             MCM_length=50, right_reservoir_length=20,
+                             left_reservoir_length=20,
                              MCM_material=((0.000, 'Gd'),),
                              fluid_material='water',
                              left_reservoir_material='Cu',
-                             right_reservoir_material='Cu', freq=1, dt=0.001,
-                             dx=0.004, stop_criteria=1e-3,
+                             right_reservoir_material='Cu', freq=0.17, dt=0.1,
+                             dx=0.001, stop_criteria=1e-6,
                              solver='implicit_k(x)', min_cycle_number=1,
-                             max_cycle_number=50, cycle_points=25, note=None,
-                             boundaries=((2, 293), (3, 293)), mode='heat_pump',
-                             version=None, leftHEXpositions=15,
-                             rightHEXpositions=15, starting_field='applied',
+                             max_cycle_number=5000, cycle_points=25, note=None,
+                             boundaries=((2, 298), (3, 0)), mode='heat_pump',
+                             version=None, leftHEXpositions=10,
+                             rightHEXpositions=10, starting_field='applied',
                              temperature_sensor=(3, -3), field_removal_steps=1,
                              field_applied_steps=1,
                              field_removal_mode='accelerated_left',
                              field_applied_mode='accelerated_right',
                              applied_static_field_time_ratio=(0., 0.),
                              removed_static_field_time_ratio=(0., 0.),
-                             h_mcm_fluid=5000000,
-                             h_leftreservoir_fluid=5000000,
-                             h_rightreservoir_fluid=5000000,
+                             h_mcm_fluid=1500000,
+                             h_leftreservoir_fluid=1000000,
+                             h_rightreservoir_fluid=1000000,
                              mcm_discontinuity='default',
-                             type_study='fixed_temperature_span', velocity=.2,
+                             type_study='no_load', velocity=.007,
                              mod_freq='default'):
     """fluid_active_regenerator class
 
@@ -178,7 +178,7 @@ def fluid_active_regenerator(file_name, amb_temperature=293, fluid_length=100,
                                  objects_length=(fluid_length, MCM_length,
                                                  left_reservoir_length,
                                                  right_reservoir_length),
-                                 amb_temperature=293, dx=dx, dt=dt,
+                                 amb_temperature=amb_temperature, dx=dx, dt=dt,
                                  file_name=file_name,
                                  initial_state=initial_state,
                                  boundaries=boundaries)
@@ -215,21 +215,21 @@ def fluid_active_regenerator(file_name, amb_temperature=293, fluid_length=100,
         from .. import mats
         import os
         tadi = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vaccum/tadi.txt'
+            '/../database/vacuum/tadi.txt'
         tadd = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vaccum/tadd.txt'
+            '/../database/vacuum/tadd.txt'
         cpa = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vaccum/cpa.txt'
+            '/../database/vacuum/cpa.txt'
         cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vaccum/cp0.txt'
+            '/../database/vacuum/cp0.txt'
         k0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vaccum/k0.txt'
+            '/../database/vacuum/k0.txt'
         ka = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vaccum/ka.txt'
+            '/../database/vacuum/ka.txt'
         rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vaccum/rho0.txt'
+            '/../database/vacuum/rho0.txt'
         rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vaccum/rhoa.txt'
+            '/../database/vacuum/rhoa.txt'
         AMR.objects[1].materials.append(mats.calmatpro(tadi, tadd, cpa,
                                                        cp0, k0, ka, rho0,
                                                        rhoa))
@@ -325,9 +325,11 @@ def fluid_active_regenerator(file_name, amb_temperature=293, fluid_length=100,
             condition = True
             while condition:
 
-                val = AMR.objects[0].temperature[temperature_sensor[0]][0]
+                vl1 = left_reservoir_length/2
+                val = AMR.objects[2].temperature[vl1][0]
                 value1 = val
-                val = AMR.objects[0].temperature[temperature_sensor[1]][0]
+                vl2 = right_reservoir_length/2
+                val = AMR.objects[3].temperature[vl2][0]
                 value2 = val
 
                 if mod_freq != 'default':
@@ -702,9 +704,11 @@ def fluid_active_regenerator(file_name, amb_temperature=293, fluid_length=100,
         elif starting_field == 'removal':
             condition = True
             while condition:
-                val = AMR.objects[0].temperature[temperature_sensor[0]][0]
+                vl1 = left_reservoir_length/2
+                val = AMR.objects[2].temperature[vl1][0]
                 value1 = val
-                val = AMR.objects[0].temperature[temperature_sensor[1]][0]
+                vl2 = right_reservoir_length/2
+                val = AMR.objects[3].temperature[vl2][0]
                 value2 = val
 
                 if mod_freq != 'default':
@@ -1843,10 +1847,6 @@ def fluid_active_regenerator(file_name, amb_temperature=293, fluid_length=100,
 
         print '------------------------------------------------------'
         print ''
-        print 'Number of cycles:', cycle_number
-        val = (abs(AMR.objects[2].Q0[left_reservoir_length/2]-value1) /
-               value1)
-        print 'Final cycle error:', val
         if mode == 'refrigerator':
             if type_study == 'no_load':
                 v1 = left_reservoir_length/2
@@ -1854,12 +1854,19 @@ def fluid_active_regenerator(file_name, amb_temperature=293, fluid_length=100,
                 val = (abs(AMR.objects[2].temperature[v1][0] -
                        AMR.objects[3].temperature[v2][0]))
                 temperature_span = val
+                error = ((abs(abs(AMR.objects[2].temperature[vl1][0] -
+                                  AMR.objects[3].temperature[vl2][0]) -
+                              abs(value1-value2)))/abs(value1-value2))
+                print 'Final cycle error:', error
                 print 'No load temperature span (K):', temperature_span
             if type_study == 'fixed_temperature_span':
                 cooling_power = (-AMR.q2+q2)*freq
                 heating_power = (AMR.q1-q1)*freq
                 working_power = (AMR.q2-q2+AMR.q1-q1)*freq
                 COP = cooling_power/working_power
+                error = (abs(AMR.objects[2].Q0[left_reservoir_length/2] -
+                             value1) / value1)
+                print 'Final cycle error:', error
                 print 'Cooling power (W):', cooling_power
                 print 'Heating power (W):', heating_power
                 print 'Working power (W)', working_power
@@ -1871,16 +1878,23 @@ def fluid_active_regenerator(file_name, amb_temperature=293, fluid_length=100,
                 val = (abs(AMR.objects[2].temperature[v1][0] -
                        AMR.objects[3].temperature[v2][0]))
                 temperature_span = val
+                error = ((abs(abs(AMR.objects[2].temperature[vl1][0] -
+                                  AMR.objects[3].temperature[vl2][0]) -
+                              abs(value1-value2)))/abs(value1-value2))
+                print 'Final cycle error:', error
                 print 'No load temperature span (K):', temperature_span
             if type_study == 'fixed_temperature_span':
                 cooling_power = (-AMR.q2+q2)*freq
                 heating_power = (AMR.q1-q1)*freq
                 working_power = (AMR.q2-q2+AMR.q1-q1)*freq
+                error = (abs(AMR.objects[2].Q0[left_reservoir_length/2] -
+                             value1) / value1)
+                print 'Final cycle error:', error
                 print 'Cooling power (W):', cooling_power
                 print 'Heating power (W):', heating_power
                 print 'Working power (W)', working_power
                 print 'COP:', heating_power/working_power
-        print 'Final time (s):', AMR.objects[0].timePassed
+        print 'Final time (s):', AMR.objects[0].time_passed
         print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
         print ''
         print '------------------------------------------------------'
