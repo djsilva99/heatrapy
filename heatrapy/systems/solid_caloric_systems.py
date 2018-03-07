@@ -440,7 +440,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
         i = 1 + i
 
     # calculates the final temperatures
-    before_final_cycle_time = a.timePassed - 1. / freq
+    before_final_cycle_time = a.time_passed - 1. / freq
     time_accumulated = 0.
     file_temperature = open(file_name)
     lines = file_temperature.readlines()
@@ -460,7 +460,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
     final_temperature_right = final_temperature_right / time_accumulated
     file_temperature.close()
 
-    before_final_cycle_time = a.timePassed - 1. / freq
+    before_final_cycle_time = a.time_passed - 1. / freq
     time_accumulated = 0.
     file_temperature = open(file_name)
     lines = file_temperature.readlines()
@@ -512,7 +512,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
             print 'No load temperature span (K):', temperature_span
         if mode == 'heat_pump':
             print 'No load temperature span (K):', -temperature_span
-    print 'Final time (s):', a.timePassed
+    print 'Final time (s):', a.time_passed
     print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
     print ''
     print '------------------------------------------------------'
