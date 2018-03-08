@@ -345,7 +345,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
             # REMOVAL OF FIELD AND COMPUTATION
 
             com = ['constant_left', 'accelerated_left', 'decelerated_left']
-            if field_applied_mode in com:
+            if field_removal_mode in com:
                 step_range = range(field_removal_steps - 1, -1, -1)
             else:
                 step_range = range(field_removal_steps)
@@ -377,7 +377,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
             # REMOVAL OF FIELD AND COMPUTATION
 
             com = ['constant_left', 'accelerated_left', 'decelerated_left']
-            if field_applied_mode in com:
+            if field_removal_mode in com:
                 step_range = range(field_removal_steps - 1, -1, -1)
             else:
                 step_range = range(field_removal_steps)
