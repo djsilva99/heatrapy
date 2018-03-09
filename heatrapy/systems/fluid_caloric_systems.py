@@ -309,6 +309,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
     print 'Starting Field:', starting_field
     print 'Boundaries:', boundaries
     print 'Ambient temperature (K):', amb_temperature
+    print 'Fluid velocity (m/s):', velocity
     print 'Stop criteria:', stop_criteria
     print 'Time:', time.ctime()
     print ''
@@ -430,8 +431,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     AMR.contacts = contacts
 
                     cond1 = (1/(2.*freq) -
-                             applied_static_field_time_ratio[1]/2)
-                    if n*time_step < applied_static_field_time_ratio[0]/2:
+                             applied_static_field_time_ratio[1]/freq)
+                    if n*time_step < applied_static_field_time_ratio[0]/freq:
                         AMR.compute(time_step, write_interval,
                                     solver=solver)
 
@@ -487,8 +488,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     v3 = applied_static_field_time_ratio[1]
                                     v4 = field_applied_steps
                                     val = fields.operating_mode(v1, v2, v3,
-                                                                v4, freq,
-                                                                j)
+                                                                v4, freq, j)
                                     time_interval = val
                                     first = (j * MCM_length /
                                              field_applied_steps + 1)
@@ -594,8 +594,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     AMR.contacts = contacts
 
                     cond1 = (1 / (2. * freq) -
-                             removed_static_field_time_ratio[1] / 2)
-                    if n*time_step < removed_static_field_time_ratio[0]/2:
+                             removed_static_field_time_ratio[1] / freq)
+                    if n*time_step < removed_static_field_time_ratio[0]/freq:
                         AMR.compute(time_step, write_interval,
                                     solver=solver)
 
@@ -803,8 +803,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
 
                     AMR.contacts = contacts
                     val = (1 / (2. * freq) -
-                           removed_static_field_time_ratio[1] / 2)
-                    if n*time_step < removed_static_field_time_ratio[0]/2:
+                           removed_static_field_time_ratio[1] / freq)
+                    if n*time_step < removed_static_field_time_ratio[0]/freq:
                         AMR.compute(time_step, write_interval,
                                     solver=solver)
 
@@ -972,8 +972,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     AMR.contacts = contacts
 
                     cond1 = (1/(2.*freq) -
-                             applied_static_field_time_ratio[1]/2)
-                    if n*time_step < applied_static_field_time_ratio[0]/2:
+                             applied_static_field_time_ratio[1]/freq)
+                    if n*time_step < applied_static_field_time_ratio[0]/freq:
                         AMR.compute(time_step, write_interval,
                                     solver=solver)
 
@@ -1190,8 +1190,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     AMR.contacts = contacts
 
                     cond1 = (1/(2.*freq) -
-                             applied_static_field_time_ratio[1]/2)
-                    if n*time_step < applied_static_field_time_ratio[0]/2:
+                             applied_static_field_time_ratio[1]/freq)
+                    if n*time_step < applied_static_field_time_ratio[0]/freq:
                         AMR.compute(time_step, write_interval,
                                     solver=solver)
 
@@ -1354,8 +1354,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     AMR.contacts = contacts
 
                     cond1 = (1 / (2. * freq) -
-                             removed_static_field_time_ratio[1] / 2)
-                    if n*time_step < removed_static_field_time_ratio[0]/2:
+                             removed_static_field_time_ratio[1] / freq)
+                    if n*time_step < removed_static_field_time_ratio[0]/freq:
                         AMR.compute(time_step, write_interval,
                                     solver=solver)
 
@@ -1559,8 +1559,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     AMR.contacts = contacts
 
                     cond1 = (1 / (2. * freq) -
-                             removed_static_field_time_ratio[1] / 2)
-                    if n*time_step < removed_static_field_time_ratio[0]/2:
+                             removed_static_field_time_ratio[1] / freq)
+                    if n*time_step < removed_static_field_time_ratio[0]/freq:
                         AMR.compute(time_step, write_interval,
                                     solver=solver)
 
@@ -1728,8 +1728,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     AMR.contacts = contacts
 
                     cond1 = (1/(2.*freq) -
-                             applied_static_field_time_ratio[1]/2)
-                    if n*time_step < applied_static_field_time_ratio[0]/2:
+                             applied_static_field_time_ratio[1]/freq)
+                    if n*time_step < applied_static_field_time_ratio[0]/freq:
                         AMR.compute(time_step, write_interval,
                                     solver=solver)
 
