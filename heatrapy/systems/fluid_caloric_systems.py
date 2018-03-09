@@ -36,7 +36,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                              h_leftreservoir_fluid=1,
                              h_rightreservoir_fluid=1,
                              mcm_discontinuity='default',
-                             type_study='no_load', velocity=.007,
+                             type_study='no_load', stroke=.02,
                              mod_freq='default'):
     """fluid_active_regenerator class
 
@@ -109,7 +109,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
     cond01 = isinstance(amb_temperature, float)
     cond01 = cond01 or isinstance(amb_temperature, int)
     cond02 = isinstance(fluid_length, int)
-    cond03 = isinstance(velocity, int) or isinstance(velocity, float)
+    cond03 = isinstance(stroke, int) or isinstance(stroke, float)
     cond04 = isinstance(MCM_length, int)
     cond05 = isinstance(dx, int) or isinstance(dx, float)
     cond06 = isinstance(dt, int) or isinstance(dt, float)
@@ -251,9 +251,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             if i == i_cond3 and j < mcm_discontinuity[0]:
                 j = j + 1
 
+    velocity = 2 * freq * stroke
     write_interval = cycle_points/2
     steps = int(velocity / (2 * freq * dx))
     time_step = (1 / (2. * freq)) / steps
+    velocity = 2 * freq * stroke
 
     if int(time_step / dt) == 0:
         print 'dt or frequency too low'
@@ -309,7 +311,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
     print 'Starting Field:', starting_field
     print 'Boundaries:', boundaries
     print 'Ambient temperature (K):', amb_temperature
-    print 'Fluid velocity (m/s):', velocity
+    print 'Stroke (m):', stroke
     print 'Stop criteria:', stop_criteria
     print 'Time:', time.ctime()
     print ''
@@ -346,7 +348,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         yMod.append(float(pair[1]))
                     input.close()
                     freq = np.interp(temperature_sensor, xMod, yMod)
-                    print freq, AMR.objects[1].temperature[mod_freq[1]][0]
+                    velocity = 2 * freq * stroke
                     steps = int(velocity / (2 * freq * dx))
                     time_step = (1 / (2. * freq)) / steps
                     if int(time_step / dt) == 0:
@@ -724,6 +726,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         yMod.append(float(pair[1]))
                     input.close()
                     freq = np.interp(temperature_sensor, xMod, yMod)
+                    velocity = 2 * freq * stroke
                     steps = int(velocity / (2 * freq * dx))
                     time_step = (1 / (2. * freq)) / steps
                     if int(time_step / dt) == 0:
@@ -1106,6 +1109,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         yMod.append(float(pair[1]))
                     input.close()
                     freq = np.interp(temperature_sensor, xMod, yMod)
+                    velocity = 2 * freq * stroke
                     steps = int(velocity / (2 * freq * dx))
                     time_step = (1 / (2. * freq)) / steps
                     if int(time_step / dt) == 0:
@@ -1478,6 +1482,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         yMod.append(float(pair[1]))
                     input.close()
                     freq = np.interp(temperature_sensor, xMod, yMod)
+                    velocity = 2 * freq * stroke
                     steps = int(velocity / (2 * freq * dx))
                     time_step = (1 / (2. * freq)) / steps
                     if int(time_step / dt) == 0:
