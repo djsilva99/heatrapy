@@ -259,7 +259,7 @@ class single_object(object.object):
 
     """
 
-    def __init__(self, amb_temperature, materials=('Cu'), borders=(1, 11),
+    def __init__(self, amb_temperature, materials=('Cu',), borders=(1, 11),
                  materials_order=(0,), dx=0.01, dt=0.1, file_name='data.txt',
                  boundaries=(0, 0), Q=[], Q0=[], heat_points=(1, -2),
                  initial_state=False, h_left=50000., h_right=50000.):
