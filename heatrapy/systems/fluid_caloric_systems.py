@@ -242,13 +242,13 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             i_cond2 = (j * len(AMR.objects[1].temperature) /
                        (mcm_discontinuity[0] + 1) -
                        int(mcm_discontinuity[1] / (2 * dx)))
-            if i < j_cond1 and i >= i_cond2:
+            if i < i_cond1 and i >= i_cond2:
                 val = len(AMR.objects[1].materials)-1
-                AMR.objects[1].materialsIndex[i] = val
-                i_cond3 = (j * len(AMR.objects[1].temperature) /
-                           (mcm_discontinuity[0] + 1) +
-                           int(mcm_discontinuity[1] / (2 * dx)))
-            if i == i_cond3 and j < mcm_discontinuity[0]:
+                AMR.objects[1].materials_index[i] = val
+                # i_cond3 = (j * len(AMR.objects[1].temperature) /
+                #            (mcm_discontinuity[0] + 1) +
+                #            int(mcm_discontinuity[1] / (2 * dx)))
+            if i == i_cond1 and j < mcm_discontinuity[0]:
                 j = j + 1
 
     velocity = 2 * freq * stroke
@@ -412,9 +412,6 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                             if not (i+1 < cond1 and i+1 >= cond2):
                                 contacts.add(((0, i+init_pos+n), (1, i+1),
                                              h_mcm_fluid))
-                            cond1 = (p * len(AMR.objects[1].temperature) /
-                                     (mcm_discontinuity[0] + 1) +
-                                     int(mcm_discontinuity[1] / (2 * dx)))
                             if i+1 == cond1 and p < mcm_discontinuity[0]:
                                 p = p+1
 
@@ -569,17 +566,13 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         for i in range(MCM_length):
                             cond1 = (p * len(AMR.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) +
-                                     int(mcm_discontinuity[1] /
-                                         (2 * dx)))
+                                     int(mcm_discontinuity[1] / (2 * dx)))
                             cond2 = (p * len(AMR.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) -
                                      int(mcm_discontinuity[1] / (2 * dx)))
                             if not (i+1 < cond1 and i+1 >= cond2):
                                 contacts.add(((0, i+init_pos-n), (1, i+1),
                                               h_mcm_fluid))
-                            cond1 = (p * len(AMR.objects[1].temperature) /
-                                     (mcm_discontinuity[0] + 1) +
-                                     int(mcm_discontinuity[1] / (2 * dx)))
                             if i+1 == cond1 and p < mcm_discontinuity[0]:
                                 p = p + 1
 
@@ -788,10 +781,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                             if not (i+1 < val1 and i+1 >= val2):
                                 contacts.add(((0, i+init_pos-n), (1, i+1),
                                               h_mcm_fluid))
-                            val = (p * len(AMR.objects[1].temperature) /
-                                   (mcm_discontinuity[0] + 1) +
-                                   int(mcm_discontinuity[1] / (2 * dx)))
-                            if i+1 == val and p < mcm_discontinuity[0]:
+                            if i+1 == val1 and p < mcm_discontinuity[0]:
                                 p = p+1
 
                     init_pos = (left_reservoir_length + leftHEXpositions +
@@ -954,9 +944,6 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                             if not (i+1 < cond1 and i+1 >= cond2):
                                 contacts.add(((0, i+init_pos+n), (1, i+1),
                                               h_mcm_fluid))
-                            cond1 = (p * len(AMR.objects[1].temperature) /
-                                     (mcm_discontinuity[0] + 1) +
-                                     int(mcm_discontinuity[1] / (2 * dx)))
                             if i+1 == cond1 and p < mcm_discontinuity[0]:
                                 p = p+1
 
@@ -1173,9 +1160,6 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                             if not (i+1 < cond1 and i+1 >= cond2):
                                 contacts.add(((0, i+init_pos+n), (1, i+1),
                                               h_mcm_fluid))
-                            cond1 = (p * len(AMR.objects[1].temperature) /
-                                     (mcm_discontinuity[0] + 1) +
-                                     int(mcm_discontinuity[1] / (2 * dx)))
                             if i+1 == cond1 and p < mcm_discontinuity[0]:
                                 p = p+1
 
@@ -1339,9 +1323,6 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                             if not (i+1 < cond1 and i+1 >= cond2):
                                 contacts.add(((0, i+init_pos-n), (1, i+1),
                                               h_mcm_fluid))
-                            cond1 = (p * len(AMR.objects[1].temperature) /
-                                     (mcm_discontinuity[0] + 1) +
-                                     int(mcm_discontinuity[1] / (2 * dx)))
                             if i+1 == cond1 and p < mcm_discontinuity[0]:
                                 p = p + 1
 
@@ -1545,9 +1526,6 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                             if not (i+1 < cond1 and i+1 >= cond2):
                                 contacts.add(((0, i+init_pos-n), (1, i+1),
                                               h_mcm_fluid))
-                            cond1 = (p * len(AMR.objects[1].temperature) /
-                                     (mcm_discontinuity[0] + 1) +
-                                     int(mcm_discontinuity[1] / (2 * dx)))
                             if i+1 == cond1 and p < mcm_discontinuity[0]:
                                 p = p + 1
 
@@ -1712,9 +1690,6 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                             if not (i+1 < cond1 and i+1 >= cond2):
                                 contacts.add(((0, i+init_pos+n), (1, i+1),
                                               h_mcm_fluid))
-                            cond1 = (p * len(AMR.objects[1].temperature) /
-                                     (mcm_discontinuity[0] + 1) +
-                                     int(mcm_discontinuity[1] / (2 * dx)))
                             if i+1 == cond1 and p < mcm_discontinuity[0]:
                                 p = p+1
 
