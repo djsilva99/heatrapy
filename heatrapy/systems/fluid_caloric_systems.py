@@ -280,7 +280,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
     print ''
     print 'Mode:', mode
     print 'Fluid:', fluid_material + ' (' + str(fluid_length*dx) + ')'
-    print 'MCM material:', MCM_material
+    string = ' (' + str(MCM_length * dx) + ')'
+    print 'MCM material:', MCM_material, string
     string = ' (' + str(left_reservoir_length * dx) + ')'
     print 'Left reservoir:', left_reservoir_material + string
     string = ' (' + str(right_reservoir_length * dx) + ')'
