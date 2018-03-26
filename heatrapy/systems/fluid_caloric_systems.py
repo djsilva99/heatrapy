@@ -1848,9 +1848,9 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 error = (abs(AMR.objects[2].Q0[left_reservoir_length/2] -
                              value1) / value1)
                 print 'Final cycle error:', error
-                print 'Cooling power (W):', cooling_power
-                print 'Heating power (W):', heating_power
-                print 'Working power (W)', working_power
+                print 'Cooling power (W/m2):', cooling_power
+                print 'Heating power (W/m2):', heating_power
+                print 'Working power (W/m2)', working_power
                 print 'COP:', COP
         if mode == 'heat_pump':
             if type_study == 'no_load':
@@ -1871,9 +1871,9 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 error = (abs(AMR.objects[2].Q0[left_reservoir_length/2] -
                              value1) / value1)
                 print 'Final cycle error:', error
-                print 'Cooling power (W):', cooling_power
-                print 'Heating power (W):', heating_power
-                print 'Working power (W)', working_power
+                print 'Cooling power (W/m2):', cooling_power
+                print 'Heating power (W/m2):', heating_power
+                print 'Working power (W/m2)', working_power
                 print 'COP:', heating_power/working_power
         print 'Final time (s):', AMR.objects[0].time_passed
         print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
