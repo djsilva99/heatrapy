@@ -1432,13 +1432,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     else:
                                         cond = False
 
-                if (AMR.q1-q1) == value1 or value1 == 0.:
+                if value1 == 0.:
                     condition = cycle_number < max_cycle_number - 1
                 else:
                     cond1 = cycle_number < min_cycle_number
-                    val = (abs(AMR.objects[2].Q0[left_reservoir_length/2] -
-                           value1))
-                    cond2 = ((AMR.q1-q1)-value1)/value1 > stop_criteria
+                    cond2 = abs((AMR.q1-q1)-value1)/value1 > stop_criteria
                     cond3 = cycle_number < max_cycle_number
                     condition = (cond1 or cond2) and cond3
                 cycle_number = cycle_number + 1
@@ -1799,13 +1797,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     else:
                                         cond = False
 
-                if (AMR.q1-q1) == value1 or value1 == 0.:
+                if value1 == 0.:
                     condition = cycle_number < max_cycle_number - 1
                 else:
                     cond1 = cycle_number < min_cycle_number
-                    val = abs(AMR.objects[2].Q0[left_reservoir_length/2] -
-                              value1)
-                    cond2 = ((AMR.q1-q1)-value1)/value1 > stop_criteria
+                    cond2 = abs((AMR.q1-q1)-value1)/value1 > stop_criteria
                     cond3 = cycle_number < max_cycle_number
                     condition = (cond1 or cond2) and cond3
                 cycle_number = cycle_number + 1
@@ -1828,6 +1824,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
 
         print '------------------------------------------------------'
         print ''
+        print 'Number of cycles:', cycle_number
         if mode == 'refrigerator':
             if type_study == 'no_load':
                 v1 = left_reservoir_length/2
@@ -1845,8 +1842,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 heating_power = (AMR.q1-q1)*freq
                 working_power = (AMR.q2-q2+AMR.q1-q1)*freq
                 COP = cooling_power/working_power
-                error = (abs(AMR.objects[2].Q0[left_reservoir_length/2] -
-                             value1) / value1)
+                error = abs((AMR.q1-q1)-value1)/value1
                 print 'Final cycle error:', error
                 print 'Cooling power (W/m2):', cooling_power
                 print 'Heating power (W/m2):', heating_power
@@ -1868,8 +1864,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 cooling_power = (-AMR.q2+q2)*freq
                 heating_power = (AMR.q1-q1)*freq
                 working_power = (AMR.q2-q2+AMR.q1-q1)*freq
-                error = (abs(AMR.objects[2].Q0[left_reservoir_length/2] -
-                             value1) / value1)
+                error = abs((AMR.q1-q1)-value1)/value1
                 print 'Final cycle error:', error
                 print 'Cooling power (W/m2):', cooling_power
                 print 'Heating power (W/m2):', heating_power
