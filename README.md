@@ -2,29 +2,33 @@
 
 <img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v0.1.4
 
-This package is a module for simulating heat transfer processes. At the moment, it is focused on heat conduction, and includes a subpackage for computing magnetocaloric systems. The heatcond_activemat_1D class can be used to simulate conduction of heat in 1 dimension.
-To simulate magnetocaloric operating systems use the magcalsys class. For visualizing the produced data use the python library <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a>.
+This package is a module for simulating dynamic heat transfer processes involving caloric effects in 1.5D systems. It is focused on heat conduction, and includes two subpackages for computing magnetocaloric systems. For visualizing the produced data use the python library <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a>.
 
+author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.2.10
 
-author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.1.4
-
+![resSwitch-screenshot](https://github.com/danieljosesilva/heatrapy/blob/master/img/example.gif)
 
 ## Table of contents
 
 1. [Installation](#installation)
 2. [Introduction](#introduction)
-3. [heatcond module](#heatcond)
-    1. [creation of the model](#heatcond-model)
-    2. [state](#heatcond-state)
-    3. [power source](#heatcond-power)
-    4. [compute](#heatcond-compute)
-    5. [example](#heatcond-example)
-4. [magcalsys module](#magcalsys)
+3. [Thermal objects](#thermal_objects)
+    1. [object class](#object-class)
+    2. [activation and deactivation](#activation-deactivation)
+    3. [system_objects class](#system-objects-class)
+    4. [single_object class](#single-object-class)
+5. [Magnetocaloric systems](#magnetocaloric)
+    1. [solid state system](#solid-state)
+    2. [hydraulic active magnetic regenerative system](#hydraulic)
+    3. [flexible parameters](#flexible)
+        1. [field sweeping](#sweeping)
+        2. [thermal object discontinuity](#discontinuity)
+        3. [material cascade](#cascade)
 
 
 ## 1. Installation <a name="installation"></a>
 
-To install simply use the pip package manager:
+To install heatrapy use the pip package manager:
 
 ```bash
 $ pip install heatrapy
@@ -33,25 +37,39 @@ $ pip install heatrapy
 To import the heatrapy module type in the python shell:
 
 ```python
->>> import heatrapy as ht
+>>> import heatrapy as htp
 ```
 
 
 ## 2. Introduction <a name="introduction"></a>
 
-This module contains classes to extract the physical properties from the materials from the heatrapy database, to create and compute 1 dimensional models of heat conduction, and to use the 1 dimensional model to build models that include the magnetocaloric technology. The package relies on 3 classes:
+This module allows to create thermal objects, establish thermal contact between them, activate or deactivate the whole, or part, of the materials, and compute the respective heat transfer processes, in 1 dimension. It includes several system models for the computation of several thermotechnologies, including ferroic-based systems.
 
-**calmatpro**
+There are 3 classes that create general models:
 
-Extracts and interpolate the physical properties density (rho), specific heat (cp), adiabatic change of temperature (tad), and thermal conductivity (k), giving the temperature. The current database includes: Gd, Cu, idealTS_cold, idealTS_hot, and water.
+**object**
 
-**heatcond**
+This class only creates a single thermal object. It includes 2 methods: material activation and material deactivation, of part of the object.
 
-Creates 1-dimensional models and computes the system using one of 4 solvers: implicit with k(x), implicit with constant k, explicit with k(x), and explicit with constant k. The output data is saved in a file.
+**system_objects**
 
-**magcalsys**
+This class creates a system of objects that can be in contact to each other and computes the respective heat transfer processes. It uses the class object for the creation of each thermal object.
 
-Creates 1-dimensional models of magnetocaloric systems using the heatcond class. During the computation, it writes log files of the key parameters that can be analyzed at the end.
+**single_object**
+
+This class computes the heat transfer processes involved in only one thermal object. It uses the class object for activating and deactivating the material.
+
+At this moment there are 2 type of caloric systems that can be computed:
+
+**fluid_active_regenerator**
+
+This function creates and computes an active regenerative system used for
+magnetocaloric refrigeration and heat pumps. The heat exchanger is a fluid. It can be used to compute caloric systems, e.g. magnetocaloric, electrocaloric, elastocaloric, and barocaloric.
+
+**solid_active_regenerator**
+
+This function creates and computes an active regenerative system used for
+refrigeration and heat pumps. The heat exchanger is the solid material itself. It can be used to compute caloric systems, e.g. magnetocaloric, electrocaloric, elastocaloric, and barocaloric.
 
 
 ## 3. heatcond <a name="heatcond"></a>
