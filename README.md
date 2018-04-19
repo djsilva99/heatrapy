@@ -15,8 +15,8 @@ author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.2.10
 3. [Thermal objects](#thermal_objects)
     1. [object class](#object-class)
     2. [material state](#material-state)
-    3. [system_objects class](#system-objects-class)
-    4. [single_object class](#single-object-class)
+    3. [system_objects class](#system-objects)
+    4. [single_object class](#single-object)
     5. [example](#example)
 4. [Caloric systems](#caloric)
     1. [solid state system](#solid-state)
@@ -74,7 +74,7 @@ magnetocaloric refrigeration and heat pumps. The heat exchanger is a **fluid**. 
 1D thermal objects incorporates all thermal physical properties (temperature, specific heat, thermal conductivity and density) and boundary conditions, for a discretized length. Thermal objects can include heat sources and can be in contact with other thermal objects. There are three classes for thermal objects. The ```object``` class is responsible for creating thermal objects, the ```system_objects``` class is responsible for creating systems of thermal objects and compute the respective system, and the ```single_object``` class is responsible for computing single objects made of several materials.
 
 
-### 1. Object class <a name="object-class"></a>
+### i. Object class <a name="object-class"></a>
 
 The `object` class is the building block of the whole package. It creates thermal objects to be used in the more complex systems when the ```system_objects``` and ```single_object``` classes are called. It includes two methods to apply and remove fields. To create a thermal object type:
 
@@ -110,7 +110,7 @@ In this case, the `foo` object will have the following main array attributes:
 
 
 
-### 2. material state <a name="material-state"></a>
+### ii. material state <a name="material-state"></a>
 
 Following the last subsection, to activate a piece of `foo` type:
 
@@ -129,7 +129,7 @@ foo.deactivate(initial_point, final_point)
 This command will deactivate the material from the `initial_point` to the `final_point`.
 
 
-### 3. system_objects class <a name="system-objects"></a>
+### iii. system_objects class <a name="system-objects"></a>
 
 The `system_objects` class can be used to compute heat transfer processes between solids. It creates a system of thermal objects, establishes contact between them and computes the respective thermal processes. To create a system of thermal objects type:
 
@@ -177,13 +177,13 @@ where `object` is the thermal object index.
 Finally, to compute the overall system type
 
 ```python
->>> foo.compute(timeInterval, writeInterval, solver='implicit_k'))
+>>> foo.compute(time_interval, write_interval, solver='implicit_k'))
 ```
 
-This method computes the system for `timeInterval`, and writes into the `file_name` file every `writeInterval` time steps. Four different `solvers` can be used: `'explicit_general'`, `'explicit_k(x)'`, `'implicit_general'`, and `'implicit_k(x)'`. The implicit solvers use the Crank-Nicholsen method. While the solvers ending with general is only suited to x-independent thermal conductivities, the solvers ending with k(x) take into account x-dependent thermal conductivities. In general, the solver `implicit_k(x)` works for all the systems but is computationally more heavy (more time consuming)
+This method computes the system for `time_interval`, and writes into the `file_name` file every `write_interval` time steps. Four different `solvers` can be used: `'explicit_general'`, `'explicit_k(x)'`, `'implicit_general'`, and `'implicit_k(x)'`. The implicit solvers use the Crank-Nicholsen method. While the solvers ending with general is only suited to x-independent thermal conductivities, the solvers ending with k(x) take into account x-dependent thermal conductivities. In general, the solver `implicit_k(x)` works for all the systems but is computationally more heavy (more time consuming)
 
 
-### 4. single_object class <a name="single-object"></a>
+### iv. single_object class <a name="single-object"></a>
 
 The `single_object` class solves numerically the heat conduction equation for a single thermal object, in which domains can have different materials. This class inherits the methods of the `object` class. To create a single thermal object type
 
@@ -214,14 +214,14 @@ The input variables are the following:
 To compute the `single_object` type
 
 ```python
->>> foo.compute(timeInterval, writeInterval, solver='explicit_k(x)',
+>>> foo.compute(time_interval, write_interval, solver='explicit_k(x)',
 ...             modeTemp=False, numFlag=0.5, modeTempPoint=1):
 ```
 
-This method computes the system for `timeInterval`, and writes into the `file_name` file every `writeInterval` time steps. The four different solvers pointed out for the `system_objects` class can be used. `heat_points` is a list that defines the points where the heat flux are calculated if `modeTemp` is `True` the compute method stops when the point `modeTempPoint` changes `numFlag` relative to the initial value
+This method computes the system for `time_interval`, and writes into the `file_name` file every `write_interval` time steps. The four different solvers pointed out for the `system_objects` class can be used. `heat_points` is a list that defines the points where the heat flux are calculated if `modeTemp` is `True` the compute method stops when the point `modeTempPoint` changes `numFlag` relative to the initial value
 
 
-### 5. example <a name="example"></a>
+### v. example <a name="example"></a>
 
 The following example computes a simple 1-dimensional model with 0.5 m of gadolinium (Gd). The system is initial at 293 K. One end of the system is at a fixed temperature of 300 K, while the other end is insulated. The used time step is 1 second, and the used space step is 0.05 m, so that the overall number of space points is 10. The system is initially deactivated. To create the model we initialize the object `example`:
 
@@ -270,7 +270,7 @@ As expected the temperature will tend to the 300 K fixed temperature. The activa
 The purpose of the heatrapy package is to provide a framework in computing heat transfer processes in solids involving caloric effects, so that different systems can be computed. The developed model systems are included in the systems folder. At the momento it includes two different systems for caloric devices: a fully solid state device and an hydraulic active regenerative device. The computation is performed by executing the respective function, which is described for both systems below.
 
 
-## 1. solid state system <a name="solid-state"></a>
+## i. solid state system <a name="solid-state"></a>
 
 To compute a fully solid state caloric system the function `solid_active_regenerator` must be called. The active regenerative processes can be used with the several allowed modes for application and removal of fields. Cascades of materials can also be computed. To run one simulation type
 
@@ -338,7 +338,7 @@ The input variables are the following:
 * `mod_freq`: if not `'default'`, i.e. if tuple, allows to modulate the frequency according to a specific temperature. The first element is the file_name, and second the sensor point.
 
 
-## 2. hydraulic active regenerative system <a name="hydraulic"></a>
+## ii. hydraulic active regenerative system <a name="hydraulic"></a>
 
 To compute a hydraulic active caloric regenerative system the function `fluid_active_regenerator` must be called. The active regenerative processes can be used with the several allowed modes for application and removal of fields. Cascades of materials can also be computed. To run one simulation type
 
