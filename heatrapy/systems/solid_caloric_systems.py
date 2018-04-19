@@ -70,25 +70,25 @@ def solid_active_regenerator(file_name, amb_temperature=293,
     field_removal_mode: mode of field removal
         modes can be constant_right, constant_left, accelerated_right,
         accelerated_left, decelerated_right, and decelerated_left
-    field_applied_mode is the mode of the application of field
-        modes can be constant_right, constant_left, accelerated_right,
-        accelerated_left, decelerated_right, and decelerated_left
+    field_applied_mode: mode of the application of field modes can be
+        constant_right, constant_left, accelerated_right, accelerated_left,
+        decelerated_right, and decelerated_left
     cycle_points: number of points recorded for each position for each cycle
-    boundaries: list with the boundary conditions
-    temperature_sensor: list of two space indexes used to determine the
+    boundaries: tuple with the boundary conditions
+    temperature_sensor: tuple of two space indexes used to determine the
         temperature span at the end of the simulation. The first term is
         the sensor at the hot end and the second at the cold end
-    heat_points: list of two space indexes used to determine the heat
+    heat_points: tuple of two space indexes used to determine the heat
         flux for the hot end (first term) and cold end (second term)
-    mode: mode used for the power calculations (e.g. COP) performed at
-        the end of the simulation
+    mode: mode used for the power calculations (e.g. COP) performed at the end
+        of the simulation. It can be 'refrigerator' or 'heat_pump'
     version: heatrapy version (default is None)
     type_study: 'no_load' or 'fixed_temperature_span'
     h_left: left heat transfer coefficient
     h_right: right heat transfer coefficient
-    mod_freq: if not 'default', allows to modulate the frequency according
-        to a specific temperature. tuple with first element as file_name,
-        and second the sensor point.
+    mod_freq: if not 'default', i.e. if tuple, allows to modulate the
+        frequency according to a specific temperature. The first element is
+        the file_name, and second the sensor point.
 
     """
 

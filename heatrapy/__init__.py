@@ -4,17 +4,16 @@ from __future__ import unicode_literals
 
 This module allows to create thermal objects, establish thermal contact between
 them, activate or deactivate the whole, or part, of the materials, and compute
-the respective heat transfer processes, in 1 dimension. It includes several
-system models for the computation of several thermotechnologies, including
-ferroic-based systems.
+the respective heat transfer processes, in 1D. It includes two system models
+for the computation of caloric systems.
 
-There are 3 classes that create general models:
+The package is based on three classes that create general models:
 
 ######
 object
 ######
 
-This class only creates a single thermal object. It includes 2 methods:
+This class only creates a single thermal object. It includes two methods:
 material activation and material deactivation, of part of the object.
 
 ##############
@@ -32,7 +31,8 @@ single_object
 This class computes the heat transfer processes involved in only one thermal
 object. It uses the class object for activating and deactivating the material.
 
-At this moment there are 2 complex systems that can be computed:
+At this moment there are two type of caloric systems (functions) that can be
+computed:
 
 ########################
 fluid_active_regenerator

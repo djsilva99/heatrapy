@@ -17,7 +17,7 @@ class object:
     """object class
 
     This class creates thermal objects to be used in more complex systems.
-    It includes 2 methods to apply and remove fields.
+    It includes two methods to apply and remove fields.
 
     """
 
@@ -37,8 +37,8 @@ class object:
         dt: the times step
         file_name: file name where the temperature and heat flux are saved
         boundaries: list of two entries that define the boundary condition
-            for tempreture. If 0 the boundary condition is insulation
-        Q: list of fixed heat source coeficient.
+            for temperature. If 0 the boundary condition is insulation
+        Q: list of fixed heat source coefficient.
         Q0: list of temperature dependent heat source coefficient.
         initial_state: initial state of the materials. True if applied field
             and False is removed field.

@@ -72,14 +72,14 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
         accelerated_left, decelerated_right, and decelerated_left
     cycle_points: number of points recorded for each position for each cycle
     boundaries: tuple of two entries that define the boundary condition
-        for tempreture. The first corresponds to the thermal obect while
+        for temperature. The first corresponds to the thermal object while
         the second defines the temperature. If 0 the boundary condition is
         insulation
-    temperature_sensor: list of two space indexes used to determine the
+    temperature_sensor: tuple of two space indexes used to determine the
         temperature span at the end of the simulation. The first term is
         the sensor at the hot end and the second at the cold end
-    mode: mode used for the power calculations (e.g. COP) performed at
-        the end of the simulation
+    mode: mode used for the power calculations (e.g. COP) performed at the end
+        of the simulation. It can be 'refrigerator' or 'heat_pump'
     version: heatrapy version (default is None)
     type_study: 'no_load' or 'fixed_temperature_span'
     h_mcm_fluid: heat transfer coefficient for fluid - MCM
@@ -99,7 +99,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
     removed_static_field_time_ratio: tuple with the resting time ratios
         before and after the removal of the field.
     mcm_discontinuity: if not 'default' the MCM is devided into n pieces.
-        the input is a tuple where the first entry is the number of
+        The input is a tuple where the first entry is the number of
         discontinuities, while the second is the thickness of each
         discontinuity in meters.
 
