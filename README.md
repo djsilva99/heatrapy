@@ -1,10 +1,10 @@
 # heatrapy
 
-<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v0.2.10
+<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v0.2.11
 
 This package is a module for simulating dynamic heat transfer processes involving caloric effects in 1.5D systems by using the finite difference method. It is focused on heat conduction, and includes two subpackages for computing caloric systems. For visualizing the output data use the python library <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a>.
 
-author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.2.10
+author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.2.11
 
 ![resSwitch-screenshot](https://github.com/danieljosesilva/heatrapy/blob/master/img/example.gif)
 
@@ -56,7 +56,7 @@ This class creates a system of objects that can be in contact to each other and 
 
 This class computes the heat transfer processes involved in only one thermal object. It uses the class object for activating and deactivating the material.
 
-At this moment there are two type of caloric systems (functions) that can be computed:
+At this moment there are two types of caloric systems (functions) that can be computed:
 
 **solid_active_regenerator**
 

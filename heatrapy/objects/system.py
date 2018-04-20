@@ -127,11 +127,11 @@ class system_objects:
 
         self.contacts.remove(removing_contact)
 
-    def compute(self, timeInterval, writeInterval, solver='implicit_k'):
+    def compute(self, timeInterval, write_interval, solver='implicit_k'):
         """Computes the thermal process
 
         Computes the system for timeInterval, and writes into the file_name
-        file every writeInterval time steps. Four different solvers can be
+        file every write_interval time steps. Four different solvers can be
         used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
         and 'implicit_k(x)'.
 
@@ -204,7 +204,7 @@ class system_objects:
 
                     # writes the temperature to file_name file ...
                     # if the number of time steps is verified
-                    if nw + 1 == writeInterval or j == 0 or j == nt - 1:
+                    if nw + 1 == write_interval or j == 0 or j == nt - 1:
                         line = '%f' % obj.time_passed
                         for i in obj.temperature:
                             new_line = ',%f' % i[1]
@@ -227,7 +227,7 @@ class system_objects:
 
                     # writes the temperature to file_name file ...
                     # if the number of time steps is verified
-                    if nw + 1 == writeInterval or j == 0 or j == nt - 1:
+                    if nw + 1 == write_interval or j == 0 or j == nt - 1:
                         line = '%f' % obj.time_passed
                         for i in obj.temperature:
                             new_line = ',%f' % i[1]
@@ -238,7 +238,7 @@ class system_objects:
                         f.write(line+'\n')
                         f.close()
 
-            if nw == writeInterval:
+            if nw == write_interval:
                 nw = 0
             else:
                 nw = nw + 1
@@ -420,12 +420,12 @@ class single_object(object.object):
             for j in range(power[1], power[2]):
                 self.Q0[j] = power[0]
 
-    def compute(self, timeInterval, writeInterval, solver='explicit_k(x)',
+    def compute(self, timeInterval, write_interval, solver='explicit_k(x)',
                 modeTemp=False, numFlag=0.5, modeTempPoint=1):
         """Computes the thermal process
 
         Computes the system for timeInterval, and writes into the file_name
-        file every writeInterval time steps. Four different solvers can be
+        file every write_interval time steps. Four different solvers can be
         used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
         and 'implicit_k(x)'. heat_points is a list that defines the points
         where the heat flux are calculated if modeTemp is True the compute
@@ -509,7 +509,7 @@ class single_object(object.object):
 
             # writes the temperature to file_name file ...
             # if the number of time steps is verified
-            if nw == writeInterval or j == 0 or j == nt - 1:
+            if nw == write_interval or j == 0 or j == nt - 1:
                 line = '%f,' % self.time_passed
                 for i in self.temperature:
                     new_line = '%f,' % i[1]
@@ -522,5 +522,5 @@ class single_object(object.object):
                 f.write(line)
                 f.close()
 
-            if nw == writeInterval:
+            if nw == write_interval:
                 nw = 0

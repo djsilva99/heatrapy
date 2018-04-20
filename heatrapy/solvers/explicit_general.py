@@ -35,14 +35,18 @@ def explicit_general(obj):
 
     # left boundary for next time step
     if obj.boundaries[0] == 0:
-        x[0][1] = obj.temperature[1][0]
+        x[0][1] = obj.temperature[1][1]
     else:
         x[0][1] = obj.boundaries[0]
 
     # right boundary for next time step
     if obj.boundaries[1] == 0:
-        x[obj.num_points - 1][1] = obj.temperature[obj.num_points - 2][0]
+        x[obj.num_points - 1][1] = obj.temperature[obj.num_points - 2][1]
     else:
         x[obj.num_points - 1][1] = obj.boundaries[1]
+
+    # updates temperature for next iteration
+    for i in range(0, obj.num_points):
+        x[i][0] = x[i][1]
 
     return x

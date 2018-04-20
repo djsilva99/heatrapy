@@ -47,4 +47,8 @@ def explicit_k(obj):
     else:
         x[obj.num_points - 1][1] = obj.boundaries[1]
 
+    # updates temperature for next iteration
+    for i in range(0, obj.num_points):
+        x[i][0] = x[i][1]
+
     return x
