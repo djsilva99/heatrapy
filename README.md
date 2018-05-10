@@ -1,10 +1,10 @@
 # heatrapy
 
-<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v0.2.11
+<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v1.0.0
 
-This package is a module for simulating dynamic heat transfer processes involving caloric effects in 1.5D systems by using the finite difference method. It is focused on heat conduction, and includes two subpackages for computing caloric systems. For visualizing the output data use the python library <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a>.
+This package is a module for simulating dynamic heat transfer processes involving caloric effects in 1.5D systems by using the finite difference method. It is focused on heat conduction, and includes two subpackages for computing caloric systems. The python library <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a> can be used for the visualization of the output data.
 
-author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.2.12
+author: Daniel Silva (djsilva99@gmail.com) <br> current version: v1.0.0
 
 ![resSwitch-screenshot](https://github.com/danieljosesilva/heatrapy/blob/master/img/example.gif)
 
