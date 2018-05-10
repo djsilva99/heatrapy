@@ -4,7 +4,7 @@
 
 This package is a module for simulating dynamic heat transfer processes involving caloric effects in 1.5D systems by using the finite difference method. It is focused on heat conduction, and includes two subpackages for computing caloric systems. For visualizing the output data use the python library <a href='https://github.com/danieljosesilva/physplotlib'>physplotlib</a>.
 
-author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.2.11
+author: Daniel Silva (djsilva99@gmail.com) <br> current version: v0.2.12
 
 ![resSwitch-screenshot](https://github.com/danieljosesilva/heatrapy/blob/master/img/example.gif)
 
