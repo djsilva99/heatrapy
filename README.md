@@ -18,9 +18,11 @@ author: Daniel Silva (djsilva99@gmail.com) <br> current version: v1.0.0
     3. [system_objects class](#system-objects)
     4. [single_object class](#single-object)
     5. [example](#example)
-4. [Caloric systems](#caloric)
-    1. [solid state system](#solid-state)
-    2. [hydraulic active regenerative system](#hydraulic)
+4. [Systems](#caloric)
+    1. [caloric solid state system](#solid-state)
+    2. [caloric hydraulic active regenerative system](#hydraulic)
+5. [List of publications](#publicatons)
+6. [Contributions](#contriutions)
 
 
 ## 1. Installation <a name="installation"></a>
@@ -265,12 +267,12 @@ This code will output the following time-dependent temperature plot:
 As expected the temperature will tend to the 300 K fixed temperature. The activation of the material at 30000 s makes the temperature to jump to ~ 302 K.
 
 
-## 4. Caloric systems <a name="caloric"></a>
+## 4. Systems <a name="caloric"></a>
 
 The purpose of the heatrapy package is to provide a framework in computing heat transfer processes in solids involving caloric effects, so that different systems can be computed. The developed model systems are included in the systems folder. At the momento it includes two different systems for caloric devices: a fully solid state device and an hydraulic active regenerative device. The computation is performed by executing the respective function, which is described for both systems below.
 
 
-## i. solid state system <a name="solid-state"></a>
+## i. caloric solid state system <a name="solid-state"></a>
 
 To compute a fully solid state caloric system the function `solid_active_regenerator` must be called. The active regenerative processes can be used with the several allowed modes for application and removal of fields. Cascades of materials can also be computed. To run one simulation type
 
@@ -338,7 +340,7 @@ The input variables are the following:
 * `mod_freq`: if not `'default'`, i.e. if tuple, allows to modulate the frequency according to a specific temperature. The first element is the file_name, and second the sensor point.
 
 
-## ii. hydraulic active regenerative system <a name="hydraulic"></a>
+## ii. caloric hydraulic active regenerative system <a name="hydraulic"></a>
 
 To compute a hydraulic active caloric regenerative system the function `fluid_active_regenerator` must be called. The active regenerative processes can be used with the several allowed modes for application and removal of fields. Cascades of materials can also be computed. To run one simulation type
 
@@ -409,3 +411,12 @@ The input variables are the following:
 * `applied_static_field_time_ratio`: tuple with the resting time ratios before and after the application of the field.
 * `removed_static_field_time_ratio`: tuple with the resting time ratios before and after the removal of the field.
 * `mcm_discontinuity`: if not `'default'` the MCM is divided into n pieces. The input is a tuple where the first entry is the number of discontinuities, while the second is the thickness of each discontinuity in meters.
+
+## 5. List of publications <a name="publications"></a>
+
+* [D. J. Silva, J. S. Amaral, and V. S. Amaral, **Heatrapy: A flexible Python framework for computing dynamic heat transfer processes involving caloric effects in 1.5D systems**, *SoftwareX*, 7 (2018) 373.](https://www.sciencedirect.com/science/article/pii/S2352711018301298)
+* [D. J. Silva, J. Ventura, J. S. Amaral, and V. S. Amaral, **Enhancing the temperature span of thermal switch‐based solid state magnetic refrigerators with field sweeping**, *Int. J. Energy Res.*, 43 (2019) 742.](https://onlinelibrary.wiley.com/doi/abs/10.1002/er.4264)
+
+## 6. Contributions <a name="contributions"></a>
+
+You are more than welcome to contribute to this project. There are several ways to help: report bugs, write documentation, suggest new features, suggest new systems, code. For more information please contact djsilva99@gmail.com.
