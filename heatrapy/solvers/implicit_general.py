@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """Contains the implicit_general solver.
 
 Used to compute thermal processes

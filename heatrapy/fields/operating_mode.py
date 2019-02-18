@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """Contains the function operating_mode.
 
 Used to sweep applied and removed fields
@@ -60,4 +58,4 @@ def operating_mode(mode, time_before, time_after, field_steps, freq, j):
         return delta_t
 
     else:
-        print 'invalid operating mode!'
+        print('invalid operating mode!')

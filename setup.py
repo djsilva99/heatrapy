@@ -15,16 +15,16 @@ description += 'systems.'
 
 
 setup(name='heatrapy',
-      version='1.0.0',
+      version='1.0.1',
       description='Library for simulating heat transfer processes',
       long_description=description,
       classifiers=[
           'Development Status :: 3 - Alpha',
           'License :: OSI Approved :: MIT License',
-          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.5',
           'Topic :: Scientific/Engineering :: Physics',
       ],
-      url='https://github.com/danieljosesilva/heatrapy',
+      url='https://github.com/djsilva99/heatrapy',
       author='Daniel Silva',
       author_email='djsilva99@gmail.com',
       license='MIT',

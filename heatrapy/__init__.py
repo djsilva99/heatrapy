@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """Heatrapy.
 
 This module allows to create thermal objects, establish thermal contact between
@@ -54,8 +52,8 @@ elastocaloric, and barocaloric.
 
 """
 
-from systems import solid_active_regenerator, fluid_active_regenerator
-from objects import object, system_objects, single_object
+from .systems import solid_active_regenerator, fluid_active_regenerator
+from .objects import object, system_objects, single_object
 
 __all__ = [object, system_objects, single_object, solid_active_regenerator,
            fluid_active_regenerator]

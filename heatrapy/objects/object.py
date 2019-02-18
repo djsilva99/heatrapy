@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """Contains the class object.
 
 Used to create a thermal object and apply or remove fields.
@@ -54,7 +52,7 @@ class object:
         cond04 = isinstance(materials_order, tuple)
         cond05 = isinstance(dx, int) or isinstance(dx, float)
         cond06 = isinstance(dt, int) or isinstance(dt, float)
-        cond07 = isinstance(file_name, unicode)
+        cond07 = isinstance(file_name, str)
         cond07 = cond07 or isinstance(file_name, str)
         cond08 = isinstance(boundaries, tuple)
         cond09 = isinstance(Q, list)
@@ -69,7 +67,7 @@ class object:
 
         # initial definitions
         self.borders = borders
-        self.materials = range(len(materials))
+        self.materials = [i for i in range(len(materials))]
         self.boundaries = boundaries
         self.amb_temperature = amb_temperature
 
@@ -162,6 +160,8 @@ class object:
 
         """
 
+        initial_point = int(initial_point)
+        final_point = int(final_point)
         for i in range(initial_point, final_point):
 
             if self.state[i] is False:
@@ -178,7 +178,7 @@ class object:
 
             else:
                 message = 'point %f already activated' % float(i)
-                print message
+                print(message)
 
     def deactivate(self, initial_point, final_point):
         """Deactivation of the material
@@ -188,6 +188,8 @@ class object:
 
         """
 
+        initial_point = int(initial_point)
+        final_point = int(final_point)
         for i in range(initial_point, final_point):
 
             if self.state[i] is True:
@@ -204,4 +206,4 @@ class object:
 
             else:
                 message = 'point %f already deactivated' % float(i)
-                print message
+                print(message)

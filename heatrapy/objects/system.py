@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """Contains the classes system_objects and single_object.
 
 Used to compute system models
@@ -10,7 +8,7 @@ from .. import mats
 import os
 import copy
 from .. import solvers
-import object
+from . import object
 
 
 class system_objects:
@@ -53,7 +51,7 @@ class system_objects:
         cond04 = isinstance(objects_length, tuple)
         cond05 = isinstance(dx, int) or isinstance(dx, float)
         cond06 = isinstance(dt, int) or isinstance(dt, float)
-        cond07 = isinstance(file_name, unicode)
+        cond07 = isinstance(file_name, str)
         cond07 = cond07 or isinstance(file_name, str)
         cond08 = isinstance(boundaries, tuple)
         cond09 = isinstance(initial_state, bool)
@@ -70,7 +68,7 @@ class system_objects:
             else:
                 heat_save = True
 
-            self.objects.append(object.object(amb_temperature,
+            self.objects.append(object(amb_temperature,
                                 materials=(materials[i],),
                                 borders=(1, objects_length[i]+1),
                                 materials_order=(0,), dx=dx, dt=dt,
@@ -150,12 +148,12 @@ class system_objects:
                 obj.Q0 = copy.copy(obj.Q0_ref)
 
             for contact in self.contacts:
-                td1 = self.objects[contact[1][0]].temperature[contact[1][1]][0]
-                td2 = self.objects[contact[0][0]].temperature[contact[0][1]][0]
+                td1 = self.objects[contact[1][0]].temperature[int(contact[1][1])][0]
+                td2 = self.objects[contact[0][0]].temperature[int(contact[0][1])][0]
                 heat_contact_1 = contact[2] * (td1 - td2)
                 heat_contact_2 = contact[2] * (td2 - td1)
-                self.objects[contact[0][0]].Q0[contact[0][1]] = heat_contact_1
-                self.objects[contact[1][0]].Q0[contact[1][1]] = heat_contact_2
+                self.objects[contact[0][0]].Q0[int(contact[0][1])] = heat_contact_1
+                self.objects[contact[1][0]].Q0[int(contact[1][1])] = heat_contact_2
 
             object_number = -1
             for obj in self.objects:
@@ -244,7 +242,7 @@ class system_objects:
                 nw = nw + 1
 
 
-class single_object(object.object):
+class single_object(object):
 
     """single_object class
 
@@ -302,7 +300,7 @@ class single_object(object.object):
         cond04 = isinstance(materials_order, tuple)
         cond05 = isinstance(dx, int) or isinstance(dx, float)
         cond06 = isinstance(dt, int) or isinstance(dt, float)
-        cond07 = isinstance(file_name, unicode)
+        cond07 = isinstance(file_name, str)
         cond07 = cond07 or isinstance(file_name, str)
         cond08 = isinstance(boundaries, tuple)
         cond09 = isinstance(heat_points, tuple)
@@ -318,7 +316,7 @@ class single_object(object.object):
         # initial definitions
         self.heat_points = heat_points
         self.borders = borders
-        self.materials = range(len(materials))
+        self.materials = [i for i in range(len(materials))]
         self.boundaries = boundaries
         self.amb_temperature = amb_temperature
         self.h_left = h_left

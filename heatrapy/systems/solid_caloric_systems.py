@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """Contains the function solid_active_regenerator.
 
 Used to compute 1-dimensional models for solid state systems involving only one
@@ -94,7 +92,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
 
     # check the validity of inputs
 
-    cond01 = isinstance(file_name, unicode)
+    cond01 = isinstance(file_name, str)
     cond01 = cond01 or isinstance(file_name, str)
     cond02 = isinstance(amb_temperature, float)
     cond02 = cond01 or isinstance(amb_temperature, int)
@@ -105,18 +103,18 @@ def solid_active_regenerator(file_name, amb_temperature=293,
     cond07 = isinstance(right_reservoir_length, int)
     cond08 = isinstance(MCM_material, tuple)
     cond09 = isinstance(left_thermalswitch_material, str)
-    cond09 = cond09 or isinstance(left_thermalswitch_material, unicode)
+    cond09 = cond09 or isinstance(left_thermalswitch_material, str)
     cond10 = isinstance(left_thermalswitch_material, str)
-    cond10 = cond10 or isinstance(left_thermalswitch_material, unicode)
+    cond10 = cond10 or isinstance(left_thermalswitch_material, str)
     cond11 = isinstance(left_reservoir_material, str)
-    cond11 = cond11 or isinstance(left_reservoir_material, unicode)
+    cond11 = cond11 or isinstance(left_reservoir_material, str)
     cond12 = isinstance(right_reservoir_material, str)
-    cond12 = cond12 or isinstance(right_reservoir_material, unicode)
+    cond12 = cond12 or isinstance(right_reservoir_material, str)
     cond13 = isinstance(freq, int) or isinstance(freq, float)
     cond14 = isinstance(dx, int) or isinstance(dx, float)
     cond15 = isinstance(dt, int) or isinstance(dt, float)
     cond16 = isinstance(stop_criteria, int) or isinstance(stop_criteria, float)
-    cond17 = isinstance(solver, unicode) or isinstance(solver, str)
+    cond17 = isinstance(solver, str) or isinstance(solver, str)
     cond18 = isinstance(min_cycle_number, int)
     cond19 = isinstance(max_cycle_number, int)
     cond20 = isinstance(field_removal_steps, int)
@@ -152,51 +150,51 @@ def solid_active_regenerator(file_name, amb_temperature=293,
         resting_time_cold = 0.
 
     # information for the log file
-    print ''
-    print ''
-    print '######################################################'
-    print ''
-    print '------------------------------------------------------'
-    print file_name
-    print '------------------------------------------------------'
-    print ''
-    print 'heatconpy version:', version
-    print 'Module: solid_active_regenerator'
+    print('')
+    print('')
+    print('######################################################')
+    print('')
+    print('------------------------------------------------------')
+    print(file_name)
+    print('------------------------------------------------------')
+    print('')
+    print('heatconpy version:', version)
+    print('Module: solid_active_regenerator')
     if note is not None:
-        print ''
-        print 'Note:', note
-    print ''
-    print 'Mode:', mode
-    print 'System:', left_reservoir_material + '/' + \
+        print('')
+        print('Note:', note)
+    print('')
+    print('Mode:', mode)
+    print('System:', left_reservoir_material + '/' + \
         left_thermalswitch_material + '/MCM material/' + \
-        right_thermalswitch_material + '/' + right_reservoir_material
-    print 'Dimensions (m):', str(dx * left_reservoir_length) + '/' + \
+        right_thermalswitch_material + '/' + right_reservoir_material)
+    print('Dimensions (m):', str(dx * left_reservoir_length) + '/' + \
         str(dx * left_thermalswitch_length) + '/' + str(dx * MCM_length) + \
         '/' + str(dx * right_thermalswitch_length) + '/' + \
-        str(dx * right_reservoir_length)
-    print 'Number of points:', str(left_reservoir_length) + '/' + \
+        str(dx * right_reservoir_length))
+    print('Number of points:', str(left_reservoir_length) + '/' + \
         str(left_thermalswitch_length) + '/' + str(MCM_length) + '/' + \
-        str(right_thermalswitch_length) + '/' + str(right_reservoir_length)
-    print 'MCM material:', MCM_material
-    print 'Left heat transfer coefficient (W /(m2 K)):', h_left
-    print 'Right heat transfer coefficient (W /(m2 K)):', h_right
-    print 'dx (m):', dx
-    print 'dt (s):', dt
-    print 'Frequency (Hz):', freq
-    print 'Hot resting time ratio:', resting_time_hot
-    print 'Cold resting time ratio:', resting_time_cold
-    print 'Solver:', solver
-    print 'Frequency modulation:', mod_freq
-    print 'Applied field mode:', field_applied_mode
-    print 'Applied field steps:', field_applied_steps
-    print 'Field removal mode:', field_removal_mode
-    print 'Field removal steps:', field_removal_steps
-    print 'Starting Field:', starting_field
-    print 'Boundaries:', boundaries
-    print 'Ambient temperature (K):', amb_temperature
-    print 'Stop criteria:', stop_criteria
-    print 'Time:', time.ctime()
-    print ''
+        str(right_thermalswitch_length) + '/' + str(right_reservoir_length))
+    print('MCM material:', MCM_material)
+    print('Left heat transfer coefficient (W /(m2 K)):', h_left)
+    print('Right heat transfer coefficient (W /(m2 K)):', h_right)
+    print('dx (m):', dx)
+    print('dt (s):', dt)
+    print('Frequency (Hz):', freq)
+    print('Hot resting time ratio:', resting_time_hot)
+    print('Cold resting time ratio:', resting_time_cold)
+    print('Solver:', solver)
+    print('Frequency modulation:', mod_freq)
+    print('Applied field mode:', field_applied_mode)
+    print('Applied field steps:', field_applied_steps)
+    print('Field removal mode:', field_removal_mode)
+    print('Field removal steps:', field_removal_steps)
+    print('Starting Field:', starting_field)
+    print('Boundaries:', boundaries)
+    print('Ambient temperature (K):', amb_temperature)
+    print('Stop criteria:', stop_criteria)
+    print('Time:', time.ctime())
+    print('')
 
     # used to calculate the simulation time at the end
     start_time = time.time()
@@ -271,8 +269,8 @@ def solid_active_regenerator(file_name, amb_temperature=293,
 
     # defines some variable for the cycles
     if temperature_sensor == 'default':
-        righttemperature_sensor = -(right_reservoir_length / 2)
-        lefttemperature_sensor = (left_reservoir_length / 2)
+        righttemperature_sensor = -int(right_reservoir_length / 2)
+        lefttemperature_sensor = int(left_reservoir_length / 2)
     else:
         righttemperature_sensor = temperature_sensor[1]
         lefttemperature_sensor = temperature_sensor[0]
@@ -490,32 +488,32 @@ def solid_active_regenerator(file_name, amb_temperature=293,
     minutes = '%02d' % minutes
     seconds = '%02d' % seconds
 
-    print '------------------------------------------------------'
-    print ''
-    print 'Number of cycles:', i
-    print 'Final cycle error:', abs((value1 - value2) / value2)
+    print('------------------------------------------------------')
+    print('')
+    print('Number of cycles:', i)
+    print('Final cycle error:', abs((value1 - value2) / value2))
     if type_study == 'fixed_temperature_span':
         heating_power = -(a.heatLeft - heatLeft) / period
         cooling_power = -(a.heatRight - heatRight) / period
         working_power = heating_power - cooling_power
-        print 'Heating power (W):', heating_power
-        print 'Cooling power (W):', cooling_power
-        print 'Working power (W):', working_power
+        print('Heating power (W):', heating_power)
+        print('Cooling power (W):', cooling_power)
+        print('Working power (W):', working_power)
         if mode == 'refrigerator':
-            print 'COP:', cooling_power / working_power
+            print('COP:', cooling_power / working_power)
         if mode == 'heat_pump':
-            print 'COP:', heating_power / working_power
+            print('COP:', heating_power / working_power)
     else:
         temperature_span = (-final_temperature_right +
                             final_temperature_left)
         if mode == 'refrigerator':
-            print 'No load temperature span (K):', temperature_span
+            print('No load temperature span (K):', temperature_span)
         if mode == 'heat_pump':
-            print 'No load temperature span (K):', -temperature_span
-    print 'Final time (s):', a.time_passed
-    print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
-    print ''
-    print '------------------------------------------------------'
-    print ''
-    print ''
-    print ''
+            print('No load temperature span (K):', -temperature_span)
+    print('Final time (s):', a.time_passed)
+    print('Simulation duration:', hours + ':' + minutes + ':' + seconds)
+    print('')
+    print('------------------------------------------------------')
+    print('')
+    print('')
+    print('')

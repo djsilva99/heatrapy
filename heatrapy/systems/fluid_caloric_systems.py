@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """Contains the function fluid_active_regenerator.
 
 Used to compute 1-dimensional models for ferroic-based systems using fluids
@@ -113,25 +111,25 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
     cond04 = isinstance(MCM_length, int)
     cond05 = isinstance(dx, int) or isinstance(dx, float)
     cond06 = isinstance(dt, int) or isinstance(dt, float)
-    cond07 = isinstance(file_name, unicode)
+    cond07 = isinstance(file_name, str)
     cond07 = cond07 or isinstance(file_name, str)
     cond08 = isinstance(boundaries, tuple)
     cond09 = isinstance(right_reservoir_length, int)
     cond10 = isinstance(left_reservoir_length, int)
     cond11 = isinstance(MCM_material, tuple)
     cond12 = isinstance(fluid_material, str)
-    cond12 = cond12 or isinstance(fluid_material, unicode)
+    cond12 = cond12 or isinstance(fluid_material, str)
     cond13 = isinstance(left_reservoir_material, str)
-    cond13 = cond13 or isinstance(left_reservoir_material, unicode)
+    cond13 = cond13 or isinstance(left_reservoir_material, str)
     cond14 = isinstance(right_reservoir_material, str)
-    cond14 = cond14 or isinstance(right_reservoir_material, unicode)
+    cond14 = cond14 or isinstance(right_reservoir_material, str)
     cond15 = isinstance(freq, int) or isinstance(freq, float)
     cond16 = isinstance(stop_criteria, int) or isinstance(stop_criteria, float)
-    cond17 = isinstance(solver, unicode) or isinstance(solver, str)
+    cond17 = isinstance(solver, str) or isinstance(solver, str)
     cond18 = isinstance(min_cycle_number, int)
     cond19 = isinstance(max_cycle_number, int)
     cond20 = isinstance(cycle_points, int)
-    cond21 = isinstance(mode, unicode) or isinstance(mode, str)
+    cond21 = isinstance(mode, str) or isinstance(mode, str)
     cond22 = isinstance(leftHEXpositions, int)
     cond23 = isinstance(rightHEXpositions, int)
     cond24 = starting_field == 'applied' or starting_field == 'removal'
@@ -258,64 +256,64 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
     velocity = 2 * freq * stroke
 
     if int(time_step / dt) == 0:
-        print 'dt or frequency too low'
+        print('dt or frequency too low')
 
     if write_interval > int(time_step / dt):
         write_interval = 1
 
     # information for the log file
-    print ''
-    print ''
-    print '######################################################'
-    print ''
-    print '------------------------------------------------------'
-    print file_name
-    print '------------------------------------------------------'
-    print ''
-    print 'heatconpy version:', version
-    print 'Module: fluid_active_regenerator'
+    print('')
+    print('')
+    print('######################################################')
+    print('')
+    print('------------------------------------------------------')
+    print(file_name)
+    print('------------------------------------------------------')
+    print('')
+    print('heatconpy version:', version)
+    print('Module: fluid_active_regenerator')
     if note is not None:
-        print ''
-        print 'Note:', note
-    print ''
-    print 'Mode:', mode
-    print 'Fluid:', fluid_material + ' (' + str(fluid_length*dx) + ')'
+        print('')
+        print('Note:', note)
+    print('')
+    print('Mode:', mode)
+    print('Fluid:', fluid_material + ' (' + str(fluid_length*dx) + ')')
     string = ' (' + str(MCM_length * dx) + ')'
-    print 'MCM material:', MCM_material, string
+    print('MCM material:', MCM_material, string)
     string = ' (' + str(left_reservoir_length * dx) + ')'
-    print 'Left reservoir:', left_reservoir_material + string
+    print('Left reservoir:', left_reservoir_material + string)
     string = ' (' + str(right_reservoir_length * dx) + ')'
-    print 'Right reservoir:', right_reservoir_material + string
-    print 'Distance between MCM and left HEX:', leftHEXpositions*dx
-    print 'Distance between MCM and right HEX:', rightHEXpositions*dx
-    print 'dx (m):', dx
-    print 'dt (s):', dt
-    print 'Frequency (Hz):', freq
+    print('Right reservoir:', right_reservoir_material + string)
+    print('Distance between MCM and left HEX:', leftHEXpositions*dx)
+    print('Distance between MCM and right HEX:', rightHEXpositions*dx)
+    print('dx (m):', dx)
+    print('dt (s):', dt)
+    print('Frequency (Hz):', freq)
     if mcm_discontinuity == 'default':
-        print 'Discontinuity: None'
+        print('Discontinuity: None')
     else:
-        print 'Discontinuity:', mcm_discontinuity
-    print 'MCM - fluid heat transfer coefficient:', h_mcm_fluid
+        print('Discontinuity:', mcm_discontinuity)
+    print('MCM - fluid heat transfer coefficient:', h_mcm_fluid)
     val = h_leftreservoir_fluid
-    print 'Left reservoir - fluid heat transfer coefficient:', val
+    print('Left reservoir - fluid heat transfer coefficient:', val)
     val = h_rightreservoir_fluid
-    print 'Right reservoir - fluid heat transfer coefficient:', val
+    print('Right reservoir - fluid heat transfer coefficient:', val)
     val = applied_static_field_time_ratio
-    print 'Applied field static time ratios:', val
+    print('Applied field static time ratios:', val)
     val = removed_static_field_time_ratio
-    print 'Removed field static time ratios:', val
-    print 'Solver:', solver
-    print 'Applied field mode:', field_applied_mode
-    print 'Applied field steps:', field_applied_steps
-    print 'Field removal mode:', field_removal_mode
-    print 'Field removal steps:', field_removal_steps
-    print 'Starting Field:', starting_field
-    print 'Boundaries:', boundaries
-    print 'Ambient temperature (K):', amb_temperature
-    print 'Stroke (m):', stroke
-    print 'Stop criteria:', stop_criteria
-    print 'Time:', time.ctime()
-    print ''
+    print('Removed field static time ratios:', val)
+    print('Solver:', solver)
+    print('Applied field mode:', field_applied_mode)
+    print('Applied field steps:', field_applied_steps)
+    print('Field removal mode:', field_removal_mode)
+    print('Field removal steps:', field_removal_steps)
+    print('Starting Field:', starting_field)
+    print('Boundaries:', boundaries)
+    print('Ambient temperature (K):', amb_temperature)
+    print('Stroke (m):', stroke)
+    print('Stop criteria:', stop_criteria)
+    print('Time:', time.ctime())
+    print('')
 
     start_time = time.time()
 
@@ -329,10 +327,10 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             condition = True
             while condition:
 
-                vl1 = left_reservoir_length/2
+                vl1 = int(left_reservoir_length/2)
                 val = AMR.objects[2].temperature[vl1][0]
                 value1 = val
-                vl2 = right_reservoir_length/2
+                vl2 = int(right_reservoir_length/2)
                 val = AMR.objects[3].temperature[vl2][0]
                 value2 = val
 
@@ -353,7 +351,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     steps = int(velocity / (2 * freq * dx))
                     time_step = (1 / (2. * freq)) / steps
                     if int(time_step / dt) == 0:
-                        print 'dt or frequency too low'
+                        print('dt or frequency too low')
                     if write_interval > int(time_step / dt):
                         write_interval = 1
 
@@ -686,8 +684,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     condition = cycle_number < max_cycle_number - 1
                 else:
                     cond1 = cycle_number < min_cycle_number
-                    vl1 = left_reservoir_length/2
-                    vl2 = right_reservoir_length/2
+                    vl1 = int(left_reservoir_length/2)
+                    vl2 = int(right_reservoir_length/2)
                     cond2 = ((abs(abs(AMR.objects[2].temperature[vl1][0] -
                                       AMR.objects[3].temperature[vl2][0]) -
                                   abs(value1-value2)))/abs(value1-value2))
@@ -724,7 +722,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     steps = int(velocity / (2 * freq * dx))
                     time_step = (1 / (2. * freq)) / steps
                     if int(time_step / dt) == 0:
-                        print 'dt or frequency too low'
+                        print('dt or frequency too low')
                     if write_interval > int(time_step / dt):
                         write_interval = 1
 
@@ -1069,7 +1067,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 cycle_number = cycle_number + 1
 
         else:
-            print 'incorrect starting_field'
+            print('incorrect starting_field')
 
     if type_study == 'fixed_temperature_span':
 
@@ -1101,7 +1099,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     steps = int(velocity / (2 * freq * dx))
                     time_step = (1 / (2. * freq)) / steps
                     if int(time_step / dt) == 0:
-                        print 'dt or frequency too low'
+                        print('dt or frequency too low')
                     if write_interval > int(time_step / dt):
                         write_interval = 1
 
@@ -1466,7 +1464,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     steps = int(velocity / (2 * freq * dx))
                     time_step = (1 / (2. * freq)) / steps
                     if int(time_step / dt) == 0:
-                        print 'dt or frequency too low'
+                        print('dt or frequency too low')
                     if write_interval > int(time_step / dt):
                         write_interval = 1
 
@@ -1807,7 +1805,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 cycle_number = cycle_number + 1
 
         else:
-            print 'incorrect starting_field'
+            print('incorrect starting_field')
 
     cond1 = starting_field == 'applied'
     cond2 = starting_field == 'removal'
@@ -1822,9 +1820,9 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
         minutes = '%02d' % minutes
         seconds = '%02d' % seconds
 
-        print '------------------------------------------------------'
-        print ''
-        print 'Number of cycles:', cycle_number
+        print('------------------------------------------------------')
+        print('')
+        print('Number of cycles:', cycle_number)
         if mode == 'refrigerator':
             if type_study == 'no_load':
                 v1 = left_reservoir_length/2
@@ -1835,19 +1833,19 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 error = ((abs(abs(AMR.objects[2].temperature[vl1][0] -
                                   AMR.objects[3].temperature[vl2][0]) -
                               abs(value1-value2)))/abs(value1-value2))
-                print 'Final cycle error:', error
-                print 'No load temperature span (K):', temperature_span
+                print('Final cycle error:', error)
+                print('No load temperature span (K):', temperature_span)
             if type_study == 'fixed_temperature_span':
                 cooling_power = (-AMR.q2+q2)*freq
                 heating_power = (AMR.q1-q1)*freq
                 working_power = (AMR.q2-q2+AMR.q1-q1)*freq
                 COP = cooling_power/working_power
                 error = abs((AMR.q1-q1)-value1)/value1
-                print 'Final cycle error:', error
-                print 'Cooling power (W/m2):', cooling_power
-                print 'Heating power (W/m2):', heating_power
-                print 'Working power (W/m2)', working_power
-                print 'COP:', COP
+                print('Final cycle error:', error)
+                print('Cooling power (W/m2):', cooling_power)
+                print('Heating power (W/m2):', heating_power)
+                print('Working power (W/m2)', working_power)
+                print('COP:', COP)
         if mode == 'heat_pump':
             if type_study == 'no_load':
                 v1 = left_reservoir_length/2
@@ -1858,25 +1856,25 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 error = ((abs(abs(AMR.objects[2].temperature[vl1][0] -
                                   AMR.objects[3].temperature[vl2][0]) -
                               abs(value1-value2)))/abs(value1-value2))
-                print 'Final cycle error:', error
-                print 'No load temperature span (K):', temperature_span
+                print('Final cycle error:', error)
+                print('No load temperature span (K):', temperature_span)
             if type_study == 'fixed_temperature_span':
                 cooling_power = (-AMR.q2+q2)*freq
                 heating_power = (AMR.q1-q1)*freq
                 working_power = (AMR.q2-q2+AMR.q1-q1)*freq
                 error = abs((AMR.q1-q1)-value1)/value1
-                print 'Final cycle error:', error
-                print 'Cooling power (W/m2):', cooling_power
-                print 'Heating power (W/m2):', heating_power
-                print 'Working power (W/m2)', working_power
-                print 'COP:', heating_power/working_power
-        print 'Final time (s):', AMR.objects[0].time_passed
-        print 'Simulation duration:', hours + ':' + minutes + ':' + seconds
-        print ''
-        print '------------------------------------------------------'
-        print ''
-        print ''
-        print ''
+                print('Final cycle error:', error)
+                print('Cooling power (W/m2):', cooling_power)
+                print('Heating power (W/m2):', heating_power)
+                print('Working power (W/m2)', working_power)
+                print('COP:', heating_power/working_power)
+        print('Final time (s):', AMR.objects[0].time_passed)
+        print('Simulation duration:', hours + ':' + minutes + ':' + seconds)
+        print('')
+        print('------------------------------------------------------')
+        print('')
+        print('')
+        print('')
 
     else:
-        print 'simulation not complete'
+        print('simulation not complete')

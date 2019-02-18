@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """Contains the class calmatpro.
 
 Used to access the properties of materials from the database
