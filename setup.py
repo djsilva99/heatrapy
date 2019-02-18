@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """heatrapy: Library for simulating heat transfer processes
 
 Computes heat transfer processes in solids for 1-dimensional models.
