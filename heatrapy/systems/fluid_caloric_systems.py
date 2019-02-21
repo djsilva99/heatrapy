@@ -1825,8 +1825,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
         print('Number of cycles:', cycle_number)
         if mode == 'refrigerator':
             if type_study == 'no_load':
-                v1 = left_reservoir_length/2
-                v2 = right_reservoir_length/2
+                v1 = int(left_reservoir_length/2)
+                v2 = int(right_reservoir_length/2)
                 val = (abs(AMR.objects[2].temperature[v1][0] -
                        AMR.objects[3].temperature[v2][0]))
                 temperature_span = val
@@ -1848,8 +1848,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 print('COP:', COP)
         if mode == 'heat_pump':
             if type_study == 'no_load':
-                v1 = left_reservoir_length/2
-                v2 = right_reservoir_length/2
+                v1 = int(left_reservoir_length/2)
+                v2 = int(right_reservoir_length/2)
                 val = (abs(AMR.objects[2].temperature[v1][0] -
                        AMR.objects[3].temperature[v2][0]))
                 temperature_span = val
