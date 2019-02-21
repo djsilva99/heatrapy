@@ -198,7 +198,7 @@ class system_objects:
 
                     # explicit k dependent on x
                     if solver == 'explicit_k(x)':
-                        obj.temperature = solvers.explicit_K(obj)
+                        obj.temperature = solvers.explicit_k(obj)
 
                     # writes the temperature to file_name file ...
                     # if the number of time steps is verified
