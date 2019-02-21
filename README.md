@@ -160,7 +160,7 @@ To add a contact between thermal objects type
 >>> foo.contactAdd(contact)
 ```
 
-The `contact` input parameter is a tuple of length 2 (one for thermal object A and one for thermal object B) in which each element is a tuple of length 2 as well where the first element is the index of the thermal object and the second is the index spatial point.
+The `contact` input parameter is a tuple of length 3 (one element for thermal object A, one for thermal object B, and one for the heat transfer coefficient). Each thermal object element is a tuple of length 2 where the first element is the index of the thermal object and the second is the spatial point index.
 
 To remove a specific `contact` type
 
