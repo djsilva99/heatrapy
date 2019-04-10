@@ -12,7 +12,7 @@ def explicit_k(obj):
     """explicit_k solver.
 
     Used to compute one time step of systems with x-dependent thermal
-    contuctivity.
+    conductivity.
 
     """
 
@@ -20,7 +20,6 @@ def explicit_k(obj):
 
     # computes
     for i in range(1, obj.num_points - 1):
-
         eta = obj.dt / (2. * obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
         beta = obj.dt / (obj.rho[i] * obj.Cp[i])
 

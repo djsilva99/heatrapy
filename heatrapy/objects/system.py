@@ -260,7 +260,8 @@ class single_object(object):
     def __init__(self, amb_temperature, materials=('Cu',), borders=(1, 11),
                  materials_order=(0,), dx=0.01, dt=0.1, file_name='data.txt',
                  boundaries=(0, 0), Q=[], Q0=[], heat_points=(1, -2),
-                 initial_state=False, h_left=50000., h_right=50000.):
+                 initial_state=False, h_left=50000., h_right=50000.,
+                 materials_path=False):
         """Initializes the object.
 
         amb_temperature: ambient temperature of the whole system
@@ -323,25 +324,38 @@ class single_object(object):
         self.h_right = h_right
 
         # loads the data for each material
-        for i in range(len(materials)):
-            tadi = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + materials[i] + '/' + 'tadi.txt'
-            tadd = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + materials[i] + '/' + 'tadd.txt'
-            cpa = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + materials[i] + '/' + 'cpa.txt'
-            cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + materials[i] + '/' + 'cp0.txt'
-            k0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + materials[i] + '/' + 'k0.txt'
-            ka = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + materials[i] + '/' + 'ka.txt'
-            rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + materials[i] + '/' + 'rho0.txt'
-            rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + materials[i] + '/' + 'rhoa.txt'
-            self.materials[i] = mats.calmatpro(
-                tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa)
+        if materials_path == False:
+            for i in range(len(materials)):
+                tadi = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'tadi.txt'
+                tadd = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'tadd.txt'
+                cpa = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'cpa.txt'
+                cp0 = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'cp0.txt'
+                k0 = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'k0.txt'
+                ka = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'ka.txt'
+                rho0 = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'rho0.txt'
+                rhoa = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'rhoa.txt'
+                self.materials[i] = mats.calmatpro(
+                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa)
+        else:
+            for i in range(len(materials)):
+                tadi = materials_path + materials[i] + '/' + 'tadi.txt'
+                tadd = materials_path + materials[i] + '/' + 'tadd.txt'
+                cpa = materials_path + materials[i] + '/' + 'cpa.txt'
+                cp0 = materials_path + materials[i] + '/' + 'cp0.txt'
+                k0 = materials_path + materials[i] + '/' + 'k0.txt'
+                ka = materials_path + materials[i] + '/' + 'ka.txt'
+                rho0 = materials_path + materials[i] + '/' + 'rho0.txt'
+                rhoa = materials_path + materials[i] + '/' + 'rhoa.txt'
+                self.materials[i] = mats.calmatpro(
+                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa)
 
         # defines which are the properties of each material point
         self.materials_index = [None]
