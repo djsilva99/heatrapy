@@ -56,6 +56,86 @@ def implicit_k(obj):
 
     x = np.linalg.solve(a, b)
 
+    lheat = copy.copy(obj.lheat)
+
+    for i in range(1, obj.num_points - 1):
+        j=0
+        for lh in obj.latent_heat
+            if x[i] < lh[0] and lh[1] > 0. and obj.lheat > 0.:
+                if i == 1:
+                    alpha_1 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
+                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
+                    heat_1 = alpha_1*(obj.temperature[i][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
+                if obj.num_points - 2:
+                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
+                    alpha_2 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
+                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i][0])
+                else:
+                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
+                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
+                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
+                lheat[i][j] = lheat[i][j] - heat_1 - heat_2
+                x[i] = lh[0]
+
+            if x[i] > lh[0] and lh[1] > 0. and obj.lheat == 0.:
+                if i == 1:
+                    alpha_1 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
+                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
+                    heat_1 = alpha_1*(obj.temperature[i][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
+                if obj.num_points - 2:
+                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
+                    alpha_2 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
+                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i][0])
+                else:
+                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
+                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
+                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
+                lheat[i][j] = lheat[i][j] - heat_1 - heat_2
+                x[i] = lh[0]
+            if x[i] < lh[0] and lh[1] < 0. and obj.lheat == 0.:
+                if i == 1:
+                    alpha_1 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
+                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
+                    heat_1 = alpha_1*(obj.temperature[i][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
+                if obj.num_points - 2:
+                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
+                    alpha_2 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
+                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i][0])
+                else:
+                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
+                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
+                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
+                lheat[i][j] = lheat[i][j] - heat_1 - heat_2
+                x[i] = lh[0]
+            if x[i] > lh[0] and lh[1] < 0. and obj.lheat > 0.:
+                            if i == 1:
+                    alpha_1 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
+                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
+                    heat_1 = alpha_1*(obj.temperature[i][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
+                if obj.num_points - 2:
+                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
+                    alpha_2 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
+                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i][0])
+                else:
+                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
+                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
+                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
+                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
+                lheat[i][j] = lheat[i][j] - heat_1 - heat_2
+                x[i] = lh[0]
+            j = j + 1
+
     y = copy.copy(obj.temperature)
 
     for i in range(obj.num_points):
