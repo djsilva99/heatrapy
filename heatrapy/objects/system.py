@@ -190,7 +190,7 @@ class system_objects:
 
                     # implicit k dependent on x
                     if solver == 'implicit_k(x)':
-                        obj.temperature = solvers.implicit_k(obj)
+                        obj.temperature, obj.lheat = solvers.implicit_k(obj)
 
                     # explicit k constant
                     if solver == 'explicit_general':

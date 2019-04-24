@@ -100,7 +100,7 @@ class object:
                 for line in s:
                     latent_values = line.split()
                     self.latent_heat.append(
-                        (latent_values[0],latent_values[1]))
+                        (latent_values[0],latent_values[1])
                     )
         else:
             for i in range(len(materials)):

@@ -61,79 +61,24 @@ def implicit_k(obj):
     for i in range(1, obj.num_points - 1):
         j=0
         for lh in obj.latent_heat
-            if x[i] < lh[0] and lh[1] > 0. and obj.lheat > 0.:
-                if i == 1:
-                    alpha_1 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
-                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
-                    heat_1 = alpha_1*(obj.temperature[i][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
-                if obj.num_points - 2:
-                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
-                    alpha_2 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
-                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i][0])
+            if x[i] > lh[0] and obj.temperature[i][0] <= lh[0] and lheat[i][j] != ln[1]:
+                energy = obj.Cp[i]*obj.rho[i]*(x[i]-obj.temperature[i])
+                if energy+lheat[i][j]>=lheat[i]:
+                    lheat[i][j] = lh[1]
+                    energy_temp = lheat[i] - (energy + lheat[i][j])
+                    x[i] = obj.temperature[i][0] + energy_temp / (obj.Cp[i] * obj.rho[i])
                 else:
-                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
-                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
-                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
-                lheat[i][j] = lheat[i][j] - heat_1 - heat_2
-                x[i] = lh[0]
-
-            if x[i] > lh[0] and lh[1] > 0. and obj.lheat == 0.:
-                if i == 1:
-                    alpha_1 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
-                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
-                    heat_1 = alpha_1*(obj.temperature[i][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
-                if obj.num_points - 2:
-                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
-                    alpha_2 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
-                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i][0])
+                    lheat[i][j] += energy
+                    x[i] = obj.temperature[i][0]
+            if x[i] < lh[0] and obj.temperature[i][0] >= lh[0] and lheat[i][j] != ln[1]:
+                energy = obj.Cp[i]*obj.rho[i]*(x[i]-obj.temperature[i])
+                if energy+lheat[i][j]<=0.:
+                    lheat[i][j] = 0.
+                    energy_temp = - (energy + lheat[i][j])
+                    x[i] = obj.temperature[i][0] + energy_temp / (obj.Cp[i] * obj.rho[i])
                 else:
-                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
-                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
-                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
-                lheat[i][j] = lheat[i][j] - heat_1 - heat_2
-                x[i] = lh[0]
-            if x[i] < lh[0] and lh[1] < 0. and obj.lheat == 0.:
-                if i == 1:
-                    alpha_1 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
-                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
-                    heat_1 = alpha_1*(obj.temperature[i][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
-                if obj.num_points - 2:
-                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
-                    alpha_2 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
-                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i][0])
-                else:
-                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
-                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
-                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
-                lheat[i][j] = lheat[i][j] - heat_1 - heat_2
-                x[i] = lh[0]
-            if x[i] > lh[0] and lh[1] < 0. and obj.lheat > 0.:
-                            if i == 1:
-                    alpha_1 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
-                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
-                    heat_1 = alpha_1*(obj.temperature[i][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
-                if obj.num_points - 2:
-                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
-                    alpha_2 = obj.dt * obj.k[i] / (obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
-                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i][0])
-                else:
-                    alpha_1 = obj.rho[i-1]*obj.Cp[i-1]*obj.dx
-                    alpha_2 = obj.rho[i+1]*obj.Cp[i+1]*obj.dx
-                    heat_1 = alpha_1*(obj.temperature[i-1][1] - obj.temperature[i-1][0])
-                    heat_2 = alpha_2*(obj.temperature[i+1][1] - obj.temperature[i+1][0])
-                lheat[i][j] = lheat[i][j] - heat_1 - heat_2
-                x[i] = lh[0]
+                    lheat[i][j] += energy
+                    x[i] = obj.temperature[i][0]
             j = j + 1
 
     y = copy.copy(obj.temperature)
@@ -142,4 +87,4 @@ def implicit_k(obj):
         y[i][1] = x[i]
         y[i][0] = x[i]
 
-    return y
+    return y, lheat
