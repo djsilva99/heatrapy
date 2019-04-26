@@ -60,24 +60,24 @@ def implicit_k(obj):
 
     for i in range(1, obj.num_points - 1):
         j=0
-        for lh in obj.latent_heat
-            if x[i] > lh[0] and obj.temperature[i][0] <= lh[0] and lheat[i][j] != ln[1]:
-                energy = obj.Cp[i]*obj.rho[i]*(x[i]-obj.temperature[i])
-                if energy+lheat[i][j]>=lheat[i]:
-                    lheat[i][j] = lh[1]
-                    energy_temp = lheat[i] - (energy + lheat[i][j])
+        for lh in obj.latent_heat:
+            if x[i] > lh[0] and obj.temperature[i][0] <= lh[0] and lheat[i][j][1] != lh[1]:
+                energy = obj.Cp[i]*obj.rho[i]*(x[i]-obj.temperature[i][0])
+                if energy+lheat[i][j][1]>=lh[1]:
+                    lheat[i][j][1] = lh[1]
+                    energy_temp = lheat[i][j][1] + energy - lh[1]
                     x[i] = obj.temperature[i][0] + energy_temp / (obj.Cp[i] * obj.rho[i])
                 else:
-                    lheat[i][j] += energy
+                    lheat[i][j][1] += energy
                     x[i] = obj.temperature[i][0]
-            if x[i] < lh[0] and obj.temperature[i][0] >= lh[0] and lheat[i][j] != ln[1]:
-                energy = obj.Cp[i]*obj.rho[i]*(x[i]-obj.temperature[i])
-                if energy+lheat[i][j]<=0.:
-                    lheat[i][j] = 0.
-                    energy_temp = - (energy + lheat[i][j])
+            if x[i] < lh[0] and obj.temperature[i][0] >= lh[0] and lheat[i][j] != lh[1]:
+                energy = obj.Cp[i]*obj.rho[i]*(x[i]-obj.temperature[i][0])
+                if energy+lheat[i][j][1]<=0.:
+                    lheat[i][j][1] = 0.
+                    energy_temp = (energy + lheat[i][j][1])
                     x[i] = obj.temperature[i][0] + energy_temp / (obj.Cp[i] * obj.rho[i])
                 else:
-                    lheat[i][j] += energy
+                    lheat[i][j][1] += energy
                     x[i] = obj.temperature[i][0]
             j = j + 1
 
