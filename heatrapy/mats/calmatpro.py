@@ -16,7 +16,7 @@ class calmatpro:
     """
 
     def __init__(self, nameTadi, nameTadd, nameCpA, nameCp0, namek0, namekA,
-                 namerho0, namerhoA):
+                 namerho0, namerhoA, lheat0, lheatA):
         """Initializes the object.
 
         loads the physical properties of a materials
@@ -119,6 +119,29 @@ class calmatpro:
             self.yrhoA.append(float(pairTad[1]))
         input.close()
 
+        # latent heat
+        input = open(lheat0, 'r')
+        s = input.readlines()
+        self.latent_heat0 = []
+        for line in s:
+            latent_values = line.split()
+            self.latent_heat0.append(
+                (float(latent_values[0]),float(latent_values[1]))
+            )
+        input.close()
+
+        # active latent heat
+        input = open(lheatA, 'r')
+        s = input.readlines()
+        self.latent_heatA = []
+        for line in s:
+            latent_values = line.split()
+            self.latent_heatA.append(
+                (float(latent_values[0]),float(latent_values[1]))
+            )
+        input.close()
+
+
     def tadi(self, Temperature):
         """gives the adiabatic temperature increase for a given temperature"""
 
@@ -158,3 +181,13 @@ class calmatpro:
         """method gives the active density for a given temperature"""
 
         return np.interp(Temperature, self.xrhoA, self.yrhoA)
+
+    def lheat0(self):
+        """method gives the latent heat list"""
+
+        return self.latent_heat0
+
+    def lheata(self):
+        """method gives the active latent heat list"""
+
+        return self.latent_heatA

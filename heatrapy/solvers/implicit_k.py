@@ -60,7 +60,7 @@ def implicit_k(obj):
 
     for i in range(1, obj.num_points - 1):
         j=0
-        for lh in obj.latent_heat:
+        for lh in obj.latent_heat[i]:
             if x[i] > lh[0] and obj.temperature[i][0] <= lh[0] and lheat[i][j][1] != lh[1]:
                 energy = obj.Cp[i]*obj.rho[i]*(x[i]-obj.temperature[i][0])
                 if energy+lheat[i][j][1]>=lh[1]:
@@ -70,7 +70,7 @@ def implicit_k(obj):
                 else:
                     lheat[i][j][1] += energy
                     x[i] = obj.temperature[i][0]
-            if x[i] < lh[0] and obj.temperature[i][0] >= lh[0] and lheat[i][j] != lh[1]:
+            if x[i] < lh[0] and obj.temperature[i][0] >= lh[0] and lheat[i][j][1] != 0:
                 energy = obj.Cp[i]*obj.rho[i]*(x[i]-obj.temperature[i][0])
                 if energy+lheat[i][j][1]<=0.:
                     lheat[i][j][1] = 0.

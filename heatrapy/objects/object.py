@@ -218,6 +218,17 @@ class object:
                     self.temperature[i][0])
                 self.k[i] = self.materials[self.materials_index[i]].ka(
                     self.temperature[i][0])
+                self.lheat[i] = []
+                self.latent_heat[i] = self.materials[self.materials_index[i]].lheata()
+                for lh in self.latent_heat[i]:
+                    if self.temperature[i][0]<lh[0] and lh[1]>0.:
+                        self.lheat[i].append([lh[0], 0.])
+                    if self.temperature[i][0]>lh[0] and lh[1]>0.:
+                        self.lheat[i].append([lh[0], lh[1]])
+                    if self.temperature[i][0]<lh[0] and lh[1]<0.:
+                        self.lheat[i].append([lh[0], -lh[1]])
+                    if self.temperature[i][0]>lh[0] and lh[1]<0.:
+                        self.lheat[i].append([lh[0], 0.])
                 self.state[i] = True
 
             else:
@@ -246,6 +257,17 @@ class object:
                     self.temperature[i][0])
                 self.k[i] = self.materials[self.materials_index[i]].k0(
                     self.temperature[i][0])
+                self.lheat[i] = []
+                self.latent_heat[i] = self.materials[self.materials_index[i]].lheat0()
+                for lh in self.latent_heat[i]:
+                    if self.temperature[i][0]<lh[0] and lh[1]>0.:
+                        self.lheat[i].append([lh[0], 0.])
+                    if self.temperature[i][0]>lh[0] and lh[1]>0.:
+                        self.lheat[i].append([lh[0], lh[1]])
+                    if self.temperature[i][0]<lh[0] and lh[1]<0.:
+                        self.lheat[i].append([lh[0], -lh[1]])
+                    if self.temperature[i][0]>lh[0] and lh[1]<0.:
+                        self.lheat[i].append([lh[0], 0.])
                 self.state[i] = False
 
             else:
