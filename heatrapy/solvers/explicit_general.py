@@ -47,4 +47,43 @@ def explicit_general(obj):
     for i in range(0, obj.num_points):
         x[i][0] = x[i][1]
 
-    return x
+    nx = []
+    for i in range(len(x)):
+        nx.append(x[i][0])
+
+    # latent heat
+    lheat = copy.copy(obj.lheat)
+    for i in range(1, obj.num_points - 1):
+        j = 0
+        for lh in obj.latent_heat[i]:
+            temper = obj.temperature[i][0]
+            if nx[i] > lh[0] and temper <= lh[0] and lheat[i][j][1] != lh[1]:
+                en = obj.Cp[i] * obj.rho[i] * (nx[i] - obj.temperature[i][0])
+                if en + lheat[i][j][1] >= lh[1]:
+                    lheat[i][j][1] = lh[1]
+                    energy_temp = lheat[i][j][1] + en - lh[1]
+                    nx[i] = obj.temperature[i][0] + \
+                        energy_temp / (obj.Cp[i] * obj.rho[i])
+                else:
+                    lheat[i][j][1] += en
+                    nx[i] = obj.temperature[i][0]
+            if nx[i] < lh[0] and temper >= lh[0] and lheat[i][j][1] != 0:
+                en = obj.Cp[i] * obj.rho[i] * (nx[i] - obj.temperature[i][0])
+                if en + lheat[i][j][1] <= 0.:
+                    lheat[i][j][1] = 0.
+                    energy_temp = (en + lheat[i][j][1])
+                    nx[i] = obj.temperature[i][0] + \
+                        energy_temp / (obj.Cp[i] * obj.rho[i])
+                else:
+                    lheat[i][j][1] += en
+                    nx[i] = obj.temperature[i][0]
+            j += 1
+
+    y = copy.copy(obj.temperature)
+
+    # updates the temperature list
+    for i in range(obj.num_points):
+        y[i][1] = nx[i]
+        y[i][0] = nx[i]
+
+    return y
