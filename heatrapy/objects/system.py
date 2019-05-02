@@ -23,7 +23,7 @@ class system_objects:
     def __init__(self, number_objects=2, materials=('Cu', 'Cu'),
                  objects_length=(10, 10), amb_temperature=293, dx=0.01, dt=0.1,
                  file_name='data', initial_state=False,
-                 boundaries=((2, 0), (3, 0))):
+                 boundaries=((2, 0), (3, 0)), material_path=False):
         """Initializes the object.
 
         amb_temperature: ambient temperature of the whole system
@@ -75,7 +75,8 @@ class system_objects:
                                 file_name=file_name+'_'+str(i)+'.txt',
                                 boundaries=(0, 0), Q=[], Q0=[],
                                 initial_state=initial_state,
-                                heat_save=heat_save))
+                                heat_save=heat_save),
+                                material_path=material_path)
 
         self.contacts = set()
         self.boundaries = boundaries

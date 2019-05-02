@@ -90,18 +90,12 @@ class object:
                     '/../database/' + materials[i] + '/' + 'rho0.txt'
                 rhoa = os.path.dirname(os.path.realpath(__file__)) + \
                     '/../database/' + materials[i] + '/' + 'rhoa.txt'
-                lheat = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'lheat.txt'
+                lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'lheat0.txt'
+                lheata = os.path.dirname(os.path.realpath(__file__)) + \
+                    '/../database/' + materials[i] + '/' + 'lheata.txt'
                 self.materials[i] = mats.calmatpro(
-                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa)
-                self.latent_heat = []
-                input = open(lheat, 'r')
-                s = input.readlines()
-                for line in s:
-                    latent_values = line.split()
-                    self.latent_heat.append(
-                        (latent_values[0],latent_values[1])
-                    )
+                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
         else:
             for i in range(len(materials)):
                 tadi = materials_path + materials[i] + '/' + 'tadi.txt'
@@ -112,17 +106,10 @@ class object:
                 ka = materials_path + materials[i] + '/' + 'ka.txt'
                 rho0 = materials_path + materials[i] + '/' + 'rho0.txt'
                 rhoa = materials_path + materials[i] + '/' + 'rhoa.txt'
-                lheat = materials_path + materials[i] + '/' + 'lheat.txt'
+                lheat0 = materials_path + materials[i] + '/' + 'lheat0.txt'
+                lheata = materials_path + materials[i] + '/' + 'lheata.txt'
                 self.materials[i] = mats.calmatpro(
-                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa)
-                self.latent_heat = []
-                input = open(lheat, 'r')
-                s = input.readlines()
-                for line in s:
-                    latent_values = line.split()
-                    self.latent_heat.append(
-                        (latent_values[0],latent_values[1])
-                    )
+                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
 
         # defines which are the properties of each material point
         self.materials_index = [None]
@@ -137,6 +124,7 @@ class object:
         self.dx = dx
         self.dt = dt
         self.temperature = [[amb_temperature, amb_temperature]]
+        self.latent_heat = [None]
         self.lheat = [None]
         self.Cp = [None]
         self.rho = [None]
@@ -153,22 +141,24 @@ class object:
                 self.materials[self.materials_index[i]].k0(amb_temperature))
             self.Q.append(0.)
             self.Q0.append(0.)
+            self.latent_heat.append(self.materials[self.materials_index[i]].lheat0())
             self.lheat.append([])
-            for lh in lheat:
-                if self.temperature[-1][1]<lheat[0] and lheat[1]>0.:
-                    self.lheat[-1].append(0.)
-                if self.temperature[-1][1]>lheat[0] and lheat[1]>0.:
-                    self.lheat[-1].append(lheat[1])
-                if self.temperature[-1][1]<lheat[0] and lheat[1]<0.:
-                    self.lheat[-1].append(-lheat[1])
-                if self.temperature[-1][1]>lheat[0] and lheat[1]<0.:
-                    self.lheat[-1].append(0)
+            for lh in self.materials[self.materials_index[i]].lheat0():
+                if self.temperature[i][1]<lh[0] and lh[1]>0.:
+                    self.lheat[-1].append([lh[0], 0.])
+                if self.temperature[i][1]>lh[0] and lh[1]>0.:
+                    self.lheat[-1].append([lh[0], lh[1]])
+                if self.temperature[i][1]<lh[0] and lh[1]<0.:
+                    self.lheat[-1].append([lh[0], -lh[1]])
+                if self.temperature[i][1]>lh[0] and lh[1]<0.:
+                    self.lheat[-1].append([lh[0], 0.])
         self.temperature.append([amb_temperature, amb_temperature])
         self.rho.append(None)
         self.Cp.append(None)
         self.Q.append(None)
         self.Q0.append(None)
         self.lheat.append(None)
+        self.latent_heat.append(None)
         self.k.append(
             self.materials[self.materials_index[-2]].k0(amb_temperature))
 
