@@ -34,7 +34,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                              starting_field='applied',
                              type_study='fixed_temperature_span',
                              h_left=50000., h_right=50000.,
-                             mod_freq='default'):
+                             mod_freq='default', materials_path=False):
     """solid_active_regenerator class
 
     computes the thermal processes for 1-dimensional fully solid state
@@ -175,6 +175,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
     print('Number of points:', str(left_reservoir_length) + '/' + \
         str(left_thermalswitch_length) + '/' + str(MCM_length) + '/' + \
         str(right_thermalswitch_length) + '/' + str(right_reservoir_length))
+    print('Materials path:', materials_path)
     print('MCM material:', MCM_material)
     print('Left heat transfer coefficient (W /(m2 K)):', h_left)
     print('Right heat transfer coefficient (W /(m2 K)):', h_right)
@@ -245,24 +246,43 @@ def solid_active_regenerator(file_name, amb_temperature=293,
     for i in range(len(MCM_material)):
         from .. import mats
         import os
-        tadi = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'tadi.txt'
-        tadd = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'tadd.txt'
-        cpa = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'cpa.txt'
-        cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'cp0.txt'
-        k0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'k0.txt'
-        ka = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'ka.txt'
-        rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'rho0.txt'
-        rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'rhoa.txt'
-        a.materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
-                                          rho0, rhoa))
+        if materials_path == False:
+            tadi = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'tadi.txt'
+            tadd = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'tadd.txt'
+            cpa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'cpa.txt'
+            cp0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'cp0.txt'
+            k0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'k0.txt'
+            ka = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'ka.txt'
+            rho0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'rho0.txt'
+            rhoa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'rhoa.txt'
+            lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'lheat0.txt'
+            lheata = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'lheata.txt'
+            a.materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
+                                            rho0, rhoa, lheat0, lheata))
+        else:
+            tadi = materials_path + MCM_material[i][1] + '/' + 'tadi.txt'
+            tadd = materials_path + MCM_material[i][1] + '/' + 'tadd.txt'
+            cpa = materials_path + MCM_material[i][1] + '/' + 'cpa.txt'
+            cp0 = materials_path + MCM_material[i][1] + '/' + 'cp0.txt'
+            k0 = materials_path + MCM_material[i][1] + '/' + 'k0.txt'
+            ka = materials_path + MCM_material[i][1] + '/' + 'ka.txt'
+            rho0 = materials_path + MCM_material[i][1] + '/' + 'rho0.txt'
+            rhoa = materials_path + MCM_material[i][1] + '/' + 'rhoa.txt'
+            lheat0 = materials_path + MCM_material[i][1] + '/' + 'lheat0.txt'
+            lheata = materials_path + MCM_material[i][1] + '/' + 'lheata.txt'
+            a.materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
+                                              rho0, rhoa, lheat0, lheata))
+
         for j in range(k, k+int(MCM_material[i][0]/dx+1)):
             a.materials_index[j] = len(a.materials)-1
         k = k+int(MCM_material[i][0]/dx)

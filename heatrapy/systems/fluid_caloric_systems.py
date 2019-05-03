@@ -35,7 +35,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                              h_rightreservoir_fluid=1,
                              mcm_discontinuity='default',
                              type_study='no_load', stroke=.02,
-                             mod_freq='default'):
+                             mod_freq='default', materials_path=False):
     """fluid_active_regenerator class
 
     Computes the thermal processes for 1-dimensional ferroic-based systems
@@ -185,25 +185,43 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
     for i in range(len(MCM_material)):
         from .. import mats
         import os
-        tadi = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'tadi.txt'
-        tadd = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'tadd.txt'
-        cpa = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'cpa.txt'
-        cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'cp0.txt'
-        k0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'k0.txt'
-        ka = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'ka.txt'
-        rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'rho0.txt'
-        rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/' + MCM_material[i][1] + '/' + 'rhoa.txt'
-        AMR.objects[1].materials.append(mats.calmatpro(tadi, tadd, cpa,
-                                                       cp0, k0, ka, rho0,
-                                                       rhoa))
+        if materials_path == False:
+            tadi = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'tadi.txt'
+            tadd = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'tadd.txt'
+            cpa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'cpa.txt'
+            cp0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'cp0.txt'
+            k0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'k0.txt'
+            ka = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'ka.txt'
+            rho0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'rho0.txt'
+            rhoa = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'rhoa.txt'
+            lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'lheat0.txt'
+            lheata = os.path.dirname(os.path.realpath(__file__)) + \
+                '/../database/' + MCM_material[i][1] + '/' + 'lheata.txt'
+            AMR.objects[1].materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
+                                            rho0, rhoa, lheat0, lheata))
+        else:
+            tadi = materials_path + MCM_material[i][1] + '/' + 'tadi.txt'
+            tadd = materials_path + MCM_material[i][1] + '/' + 'tadd.txt'
+            cpa = materials_path + MCM_material[i][1] + '/' + 'cpa.txt'
+            cp0 = materials_path + MCM_material[i][1] + '/' + 'cp0.txt'
+            k0 = materials_path + MCM_material[i][1] + '/' + 'k0.txt'
+            ka = materials_path + MCM_material[i][1] + '/' + 'ka.txt'
+            rho0 = materials_path + MCM_material[i][1] + '/' + 'rho0.txt'
+            rhoa = materials_path + MCM_material[i][1] + '/' + 'rhoa.txt'
+            lheat0 = materials_path + MCM_material[i][1] + '/' + 'lheat0.txt'
+            lheata = materials_path + MCM_material[i][1] + '/' + 'lheata.txt'
+            AMR.objects[1].materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
+                                              rho0, rhoa, lheat0, lheata))
+
         for j in range(k, k+int(MCM_material[i][0]/dx)):
             len_mat = len(AMR.objects[1].materials)
             AMR.objects[1].materialsIndex[j] = len_mat - 1
@@ -243,9 +261,6 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             if i < i_cond1 and i >= i_cond2:
                 val = len(AMR.objects[1].materials)-1
                 AMR.objects[1].materials_index[i] = val
-                # i_cond3 = (j * len(AMR.objects[1].temperature) /
-                #            (mcm_discontinuity[0] + 1) +
-                #            int(mcm_discontinuity[1] / (2 * dx)))
             if i == i_cond1 and j < mcm_discontinuity[0]:
                 j = j + 1
 
