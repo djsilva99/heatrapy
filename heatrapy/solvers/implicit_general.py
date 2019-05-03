@@ -79,11 +79,11 @@ def implicit_general(obj):
                     x[i] = obj.temperature[i][0]
             j += 1
 
-    y = copy.copy(obj.temperature)
+    y = copy.deepcopy(obj.temperature)
 
     # updates the temperature list
     for i in range(obj.num_points):
         y[i][1] = x[i]
         y[i][0] = x[i]
 
-    return y
+    return y, lheat

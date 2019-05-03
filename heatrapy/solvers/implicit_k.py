@@ -84,7 +84,7 @@ def implicit_k(obj):
                     x[i] = obj.temperature[i][0]
             j += 1
 
-    y = copy.copy(obj.temperature)
+    y = copy.deepcopy(obj.temperature)
 
     for i in range(obj.num_points):
         y[i][1] = x[i]

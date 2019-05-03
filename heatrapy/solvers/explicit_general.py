@@ -15,7 +15,7 @@ def explicit_general(obj):
 
     """
 
-    x = copy.copy(obj.temperature)
+    x = copy.deepcopy(obj.temperature)
 
     # computes
     for i in range(1, obj.num_points - 1):
@@ -79,11 +79,11 @@ def explicit_general(obj):
                     nx[i] = obj.temperature[i][0]
             j += 1
 
-    y = copy.copy(obj.temperature)
+    y = copy.deepcopy(obj.temperature)
 
     # updates the temperature list
     for i in range(obj.num_points):
         y[i][1] = nx[i]
         y[i][0] = nx[i]
 
-    return y
+    return y, lheat

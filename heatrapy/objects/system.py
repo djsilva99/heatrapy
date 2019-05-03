@@ -75,8 +75,8 @@ class system_objects:
                                 file_name=file_name+'_'+str(i)+'.txt',
                                 boundaries=(0, 0), Q=[], Q0=[],
                                 initial_state=initial_state,
-                                heat_save=heat_save),
-                                material_path=material_path)
+                                heat_save=heat_save,
+                                materials_path=material_path))
 
         self.contacts = set()
         self.boundaries = boundaries
@@ -187,7 +187,7 @@ class system_objects:
 
                     # implicit k constant
                     if solver == 'implicit_general':
-                        obj.temperature = solvers.implicit_general(obj)
+                        obj.temperature, obj.lheat = solvers.implicit_general(obj)
 
                     # implicit k dependent on x
                     if solver == 'implicit_k(x)':
@@ -195,11 +195,11 @@ class system_objects:
 
                     # explicit k constant
                     if solver == 'explicit_general':
-                        obj.temperature = solvers.explicit_general(obj)
+                        obj.temperature, obj.lheat = solvers.explicit_general(obj)
 
                     # explicit k dependent on x
                     if solver == 'explicit_k(x)':
-                        obj.temperature = solvers.explicit_k(obj)
+                        obj.temperature, obj.lheat = solvers.explicit_k(obj)
 
                     # writes the temperature to file_name file ...
                     # if the number of time steps is verified
@@ -504,7 +504,7 @@ class single_object(object):
 
             # implicit k constant
             if solver == 'implicit_general':
-                self.temperature = solvers.implicit_general(self)
+                self.temperature, self.lheat = solvers.implicit_general(self)
 
             # implicit k dependent on x
             if solver == 'implicit_k(x)':
@@ -512,11 +512,11 @@ class single_object(object):
 
             # explicit k constant
             if solver == 'explicit_general':
-                self.temperature = solvers.explicit_general(self)
+                self.temperature, self.lheat = solvers.explicit_general(self)
 
             # explicit k dependent on x
             if solver == 'explicit_k(x)':
-                self.temperature = solvers.explicit_k(self)
+                self.temperature, self.lheat = solvers.explicit_k(self)
 
             # calculates the heat flux of the defined ...
             # two points during the time step
