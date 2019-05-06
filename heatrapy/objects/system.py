@@ -394,7 +394,9 @@ class single_object(object):
                 self.materials[self.materials_index[i]].k0(amb_temperature))
             self.Q.append(0.)
             self.Q0.append(0.)
-            self.latent_heat.append(self.materials[self.materials_index[i]].lheat0())
+            self.latent_heat.append(
+                self.materials[self.materials_index[i]].lheat0()
+            )
             self.lheat.append([])
             for lh in self.materials[self.materials_index[i]].lheat0():
                 if self.temperature[i][1]<lh[0] and lh[1]>0.:

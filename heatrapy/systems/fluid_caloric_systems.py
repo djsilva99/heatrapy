@@ -206,8 +206,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 '/../database/' + MCM_material[i][1] + '/' + 'lheat0.txt'
             lheata = os.path.dirname(os.path.realpath(__file__)) + \
                 '/../database/' + MCM_material[i][1] + '/' + 'lheata.txt'
-            AMR.objects[1].materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
-                                            rho0, rhoa, lheat0, lheata))
+            AMR.objects[1].materials.append(
+                mats.calmatpro(
+                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata
+                )
+            )
         else:
             tadi = materials_path + MCM_material[i][1] + '/' + 'tadi.txt'
             tadd = materials_path + MCM_material[i][1] + '/' + 'tadd.txt'
@@ -219,8 +222,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             rhoa = materials_path + MCM_material[i][1] + '/' + 'rhoa.txt'
             lheat0 = materials_path + MCM_material[i][1] + '/' + 'lheat0.txt'
             lheata = materials_path + MCM_material[i][1] + '/' + 'lheata.txt'
-            AMR.objects[1].materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
-                                              rho0, rhoa, lheat0, lheata))
+            AMR.objects[1].materials.append(
+                mats.calmatpro(
+                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata
+                )
+            )
 
         for j in range(k, k+int(MCM_material[i][0]/dx)):
             len_mat = len(AMR.objects[1].materials)
