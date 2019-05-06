@@ -22,7 +22,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                              right_reservoir_material='Cu',
                              freq=.1, dt=.01, dx=0.002, stop_criteria=5e-3,
                              solver='implicit_k(x)', min_cycle_number=30,
-                             max_cycle_number=31, field_removal_steps=3,
+                             max_cycle_number=31, field_removal_steps=1,
                              field_applied_steps=1,
                              field_removal_mode='accelerated_right',
                              field_applied_mode='accelerated_left',
@@ -239,7 +239,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                               borders=borders, materials_order=(0, 1, 2, 3, 4),
                               boundaries=boundaries, heat_points=heat_points,
                               initial_state=initial_state, h_left=50000.,
-                              h_right=50000.)
+                              h_right=50000., materials_path=materials_path)
 
     # defines the material cascade
     k = left_reservoir_length + left_thermalswitch_length
