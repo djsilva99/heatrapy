@@ -149,12 +149,14 @@ class system_objects:
                 obj.Q0 = copy.copy(obj.Q0_ref)
 
             for contact in self.contacts:
-                td1 = self.objects[contact[1][0]].temperature[int(contact[1][1])][0]
-                td2 = self.objects[contact[0][0]].temperature[int(contact[0][1])][0]
+                ind1 = int(contact[1][1])
+                ind2 = int(contact[0][1])
+                td1 = self.objects[contact[1][0]].temperature[ind1][0]
+                td2 = self.objects[contact[0][0]].temperature[ind2][0]
                 heat_contact_1 = contact[2] * (td1 - td2)
                 heat_contact_2 = contact[2] * (td2 - td1)
-                self.objects[contact[0][0]].Q0[int(contact[0][1])] = heat_contact_1
-                self.objects[contact[1][0]].Q0[int(contact[1][1])] = heat_contact_2
+                self.objects[contact[0][0]].Q0[ind2] = heat_contact_1
+                self.objects[contact[1][0]].Q0[ind1] = heat_contact_2
 
             object_number = -1
             for obj in self.objects:
