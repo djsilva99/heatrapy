@@ -1,0 +1,335 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.17.2 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Heatapy</title>
+<meta name="description" content="Python framework for Computing transient heat transfer processes.">
+
+
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Heatapy">
+<meta property="og:title" content="Heatapy">
+<meta property="og:url" content="http://localhost:4000/examples/">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="canonical" href="http://localhost:4000/examples/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Heatrapy project",
+      "url": "http://localhost:4000/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Heatapy Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--home">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+          <a class="site-logo" href="/"><img src="/assets/heatrapy.png" alt=""></a>
+        
+        <a class="site-title" href="/">
+          Heatapy
+          <span class="site-subtitle">Python framework for Computing transient heat transfer processes</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/installation/" >Installation</a>
+            </li><li class="masthead__menu-item">
+              <a href="/docs/documentation/" >Documentation</a>
+            </li><li class="masthead__menu-item">
+              <a href="/examples/" >Examples</a>
+            </li><li class="masthead__menu-item">
+              <a href="/contributing/" >Contributing</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name"></h3>
+    
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+  <div class="archive">
+    
+      <h1 id="page-title" class="page__title"></h1>
+    
+    <h1 id="examples">Examples</h1>
+
+<p>The following example computes a simple 1-dimensional model with 0.5 m of gadolinium (Gd). The system is initial at 293 K. One end of the system is at a fixed temperature of 300 K, while the other end is insulated. The used time step is 1 second, and the used space step is 0.05 m, so that the overall number of space points is 10. The system is initially deactivated. To create the model we initialize the object <code class="highlighter-rouge">example</code>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span> <span class="n">example</span> <span class="o">=</span> <span class="n">ht</span><span class="o">.</span><span class="n">single_object</span><span class="p">(</span><span class="mi">293</span><span class="p">,</span> <span class="n">materials</span><span class="o">=</span><span class="p">[</span><span class="s">'Gd'</span><span class="p">],</span> <span class="n">borders</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span><span class="p">],</span> <span class="n">materials_order</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<span class="o">...</span>                            <span class="n">dx</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s">'example.txt'</span><span class="p">,</span> <span class="n">boundaries</span><span class="o">=</span><span class="p">[</span><span class="mi">300</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="o">...</span>                            <span class="n">Q</span><span class="o">=</span><span class="p">[],</span> <span class="n">Q0</span><span class="o">=</span><span class="p">[],</span> <span class="n">initial_state</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Then we compute the system for 30000 s, write the output values every 300 s, using the ‘implicit_k(x)’ solver:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span> <span class="n">example</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="mi">30000</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">'implicit_k(x)'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Afterwards we activate the whole system:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">example</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>and we compute the system for 30000 s one more time:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span> <span class="n">example</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="mi">30000</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s">'implicit_k(x)'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The output data is stored in file example.txt. To visualize the temperature as a function of time for the point index 3 we use the <a href="https://github.com/danieljosesilva/physplotlib">physplotlib</a> library and write:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">physplotlib</span> <span class="k">as</span> <span class="n">pp</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">example_visualization</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">statplot</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">example_visualization</span><span class="o">.</span><span class="n">loadFile</span><span class="p">(</span><span class="s">'example.txt'</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">example_visualization</span><span class="o">.</span><span class="n">verticalPlot</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">3</span><span class="p">]],</span> <span class="n">y_title</span><span class="o">=</span><span class="s">'temperature (K)'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This code will output the following time-dependent temperature plot:</p>
+<center>
+<img src="/assets/example.png" alt="Drawing" style="width: 80%;" />
+</center>
+<p>As expected the temperature will tend to the 300 K fixed temperature. The activation of the material at 30000 s makes the temperature to jump to ~ 302 K.</p>
+
+
+
+<!-- <h3 class="archive__subtitle">Recent Posts</h3> -->
+
+
+
+
+
+
+  </div>
+</div>
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <!-- <div class="page__footer-copyright"> -->
+<!--   <ul class="social-icons"> -->
+<!--      -->
+
+<!--     <\!--  -\-> -->
+<!--     <\!--    -\-> -->
+<!--     <\!--      -\-> -->
+<!--     <\!--    -\-> -->
+<!--     <\!--  -\-> -->
+<!-- <br> -->
+<!--     <li><a href="https://github.com/djsilva99/heatrapy"><i class="fab fa-fw fa-github" aria-hidden="true"></i> </a></li> -->
+<!--   </ul> -->
+<!-- </div> -->
+
+<!-- <div class="page__footer-copyright"><strong>contact:</strong> djsilva@gmx.com</div> -->
+
+<!-- <br> -->
+
+<div class="page__footer-copyright">&copy; 2019 Heatrapy project. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+  <script src="https://kit.fontawesome.com/4eee35f757.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>
