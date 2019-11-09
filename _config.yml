@@ -8,7 +8,8 @@ subtitle                 : "Python framework for Computing transient heat transf
 name                     : "Heatrapy project"
 description              : "Python framework for Computing transient heat transfer processes."
 logo_path                : "/assets/heatrapy.png"
-url                      : "https://djsilva99.github.io/heatrapy"
+url                      : "https://djsilva99.github.io"
+baseurl                  : "/heatrapy"
 
 # Collections
 collections:
