@@ -1,0 +1,34 @@
+# documentation links
+docs:
+  - title: Thermal objects
+    children:
+      - title: "thermal object class"
+        url: /docs/thermal_object_class/
+      - title: "material state"
+        url: /docs/material_state/
+      - title: "material data"
+        url: /docs/material_data/
+
+  - title: Computing thermal objects
+    children:
+      - title: "Single thermal object"
+        url: /docs/single_thermal_object/
+      - title: "System of thermal objects"
+        url: /docs/system_of_thermal_objects/
+
+  - title: Systems
+    children:
+      - title: "caloric solid state system"
+        url: /docs/caloric_solid_state_system/
+      - title: "caloric hydraulic system"
+        url: /docs/caloric_hydraulic_system/
+
+main:
+  - title: "Installation"
+    url: /installation/
+  - title: "Documentation"
+    url: /docs/documentation/
+  - title: "Examples"
+    url: /examples/
+  - title: "Contributing"
+    url: /contributing/

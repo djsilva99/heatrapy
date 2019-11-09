@@ -1,1 +1,32 @@
-theme: jekyll-theme-slate
+theme: minimal-mistakes-jekyll
+
+# Site Settings
+locale                   : "en-US"
+title                    : "Heatapy"
+title_separator          : "-"
+subtitle                 : "Python framework for Computing transient heat transfer processes"
+name                     : "Heatrapy project"
+description              : "Python framework for Computing transient heat transfer processes."
+logo_path                : "/assets/heatrapy.png"
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:path/
+
+defaults:
+  # _docs
+  - scope:
+      path: ""
+      type: docs
+    values:
+      sidebar:
+        nav: "docs"
+
+# Site Footer
+footer:
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      # url:
