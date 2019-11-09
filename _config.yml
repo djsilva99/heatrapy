@@ -10,6 +10,7 @@ description              : "Python framework for Computing transient heat transf
 logo_path                : "/assets/heatrapy.png"
 url                      : "https://djsilva99.github.io"
 baseurl                  : "/heatrapy"
+repository               : "djsilva99/heatrapy"
 
 # Collections
 collections:
