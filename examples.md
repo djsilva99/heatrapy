@@ -1,10 +1,8 @@
 ---
-layout: default
+layout: home
 permalink: /examples/
 author_profile: true
 ---
-
-# Example
 
 The following example computes a simple 1-dimensional model with 0.5 m of gadolinium (Gd). The system is initial at 293 K. One end of the system is at a fixed temperature of 300 K, while the other end is insulated. The used time step is 1 second, and the used space step is 0.05 m, so that the overall number of space points is 10. The system is initially deactivated. To create the model we initialize the object `example`:
 
@@ -52,3 +50,4 @@ This code will output the following time-dependent temperature plot:
 ![heatrapy-example](/assets/example.png)
 As expected the temperature will tend to the 300 K fixed temperature. The activation of the material at 30000 s makes the temperature to jump to ~ 302 K.
 
+## ----
