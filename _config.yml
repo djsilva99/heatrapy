@@ -2,9 +2,9 @@
 locale                   : "en-US"
 title                    : "Heatapy"
 title_separator          : "-"
-subtitle                 : "Python framework for Computing transient heat transfer processes"
+subtitle                 : "Python framework for computing transient heat transfer processes"
 name                     : "Heatrapy project"
-description              : "Python framework for Computing transient heat transfer processes."
+description              : "Python framework for computing transient heat transfer processes."
 logo_path                : "/assets/heatrapy.png"
 
 # Collections

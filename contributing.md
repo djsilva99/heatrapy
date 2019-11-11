@@ -4,9 +4,11 @@ permalink: /contributing/
 author_profile: true
 ---
 
+# Contributing
+
 You are more than welcome to contribute to this project. There are several ways to help: report bugs, write documentation, suggest new features, suggest new systems, code. For more information please contact djsilva@gmx.com.
 
-# List of publications
+## List of publications
 
 The heatrapy module was used in the following publications:
 

@@ -4,6 +4,8 @@ permalink: /installation/
 author_profile: true
 ---
 
+# Installation
+
 To install heatrapy use the pip package manager:
 
 ```bash

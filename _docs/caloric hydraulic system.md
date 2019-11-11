@@ -10,7 +10,7 @@ To compute a hydraulic active caloric regenerative system the function `fluid_ac
 
 ```python
 >>> ht.fluid_active_regenerator(
-...     file_name, amb_temperature=298, fluid_length=160,
+...        file_name, amb_temperature=298, fluid_length=160,
 ...		MCM_length=50, right_reservoir_length=20,
 ...		left_reservoir_length=20,
 ...		MCM_material=((0.000, 'Gd'),),

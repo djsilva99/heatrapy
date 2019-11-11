@@ -10,7 +10,7 @@ To compute a fully solid state caloric system the function `solid_active_regener
 
 ```python
 >>> ht.solid_active_regenerator(
-...     file_name, amb_temperature=293,
+...        file_name, amb_temperature=293,
 ...		left_thermalswitch_length=2,
 ...		right_thermalswitch_length=2, MCM_length=20,
 ...		right_reservoir_length=3, left_reservoir_length=3,

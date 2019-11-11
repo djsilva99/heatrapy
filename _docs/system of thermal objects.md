@@ -10,7 +10,7 @@ The `system_objects` class can be used to compute heat transfer processes betwee
 
 ```python
 >>> foo = ht.system_objects(
-...     number_objects=2, materials=('Cu', 'Cu'),
+...        number_objects=2, materials=('Cu', 'Cu'),
 ...		objects_length=(10, 10), amb_temperature=293,
 ...		dx=0.01, dt=0.1, file_name='data',
 ...		initial_state=False,
@@ -56,7 +56,7 @@ Finally, to compute the overall system type
 
 ```python
 >>> foo.compute(
-...     time_interval, write_interval,
+...        time_interval, write_interval,
 ...		solver='implicit_k')
 ...	)
 ```
