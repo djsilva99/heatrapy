@@ -10,13 +10,13 @@ The `single_object` class solves numerically the heat conduction equation for a 
 
 ```python
 >>> foo = ht.single_object(
-...        amb_temperature, materials=('Cu',),
-...		borders=(1, 11), materials_order=(0,),
-...		dx=0.01, dt=0.1, file_name='data.txt',
-...		boundaries=(0, 0), Q=[], Q0=[],
-...		heat_points=(1, -2),
-...		initial_state=False, h_left=50000.,
-...		h_right=50000.
+...     amb_temperature, materials=('Cu',),
+...	borders=(1, 11), materials_order=(0,),
+...	dx=0.01, dt=0.1, file_name='data.txt',
+...	boundaries=(0, 0), Q=[], Q0=[],
+...	heat_points=(1, -2),
+...	initial_state=False, h_left=50000.,
+...	h_right=50000.
 ...	)
 ```
 
@@ -41,9 +41,9 @@ To compute the `single_object` type
 
 ```python
 >>> foo.compute(
-...        time_interval, write_interval,
-...		solver='explicit_k(x)', modeTemp=False,
-...		numFlag=0.5, modeTempPoint=1
+...     time_interval, write_interval,
+...	solver='explicit_k(x)', modeTemp=False,
+...	numFlag=0.5, modeTempPoint=1
 ...	)
 ```
 

@@ -43,8 +43,8 @@ The output data is stored in file example.txt. To visualize the temperature as a
 >>> example_visualization = pp.statplot()
 >>> example_visualization.loadFile('example.txt')
 >>> example_visualization.verticalPlot(
-...        [0], [0], [[3]], y_title='temperature (K)'
-...)
+...     [0], [0], [[3]], y_title='temperature (K)'
+... )
 ```
 
 This code will output the following time-dependent temperature plot:
