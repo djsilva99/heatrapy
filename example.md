@@ -1,6 +1,6 @@
 ---
 layout: single
-permalink: /examples/
+permalink: /example/
 author_profile: true
 title: Example
 ---
