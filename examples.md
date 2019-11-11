@@ -2,9 +2,8 @@
 layout: single
 permalink: /examples/
 author_profile: true
+title: Example
 ---
-
-# Example
 
 The following example computes a simple 1-dimensional model with 0.5 m of gadolinium (Gd). The system is initial at 293 K. One end of the system is at a fixed temperature of 300 K, while the other end is insulated. The used time step is 1 second, and the used space step is 0.05 m, so that the overall number of space points is 10. The system is initially deactivated. To create the model we initialize the object `example`:
 
