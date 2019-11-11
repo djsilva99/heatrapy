@@ -2,6 +2,7 @@
 layout: home
 permalink: /examples/
 author_profile: true
+sidebar:
 ---
 
 # Example
@@ -10,7 +11,7 @@ The following example computes a simple 1-dimensional model with 0.5 m of gadoli
 
 ```python
 >>> example = ht.single_object(
-...       293, materials=['Gd'], borders=[1,11],
+...        293, materials=['Gd'], borders=[1,11],
 ...	   materials_order=[0], 293, materials=['Gd'],
 ...	   borders=[1,11], materials_order=[0],
 ...	   dx=0.05, dt=1., file_name='example.txt',
@@ -44,7 +45,7 @@ The output data is stored in file example.txt. To visualize the temperature as a
 >>> example_visualization = pp.statplot()
 >>> example_visualization.loadFile('example.txt')
 >>> example_visualization.verticalPlot(
-...       [0], [0], [[3]], y_title='temperature (K)'
+...     [0], [0], [[3]], y_title='temperature (K)'
 ...	)
 ```
 
