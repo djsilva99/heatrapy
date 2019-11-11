@@ -11,10 +11,12 @@ sidebar:
 The `object` class is the building block of the whole package. It creates thermal objects to be used in the more complex systems when the ```system_objects``` and ```single_object``` classes are called. It includes two methods to apply and remove fields. To create a thermal object type:
 
 ```python
->>> foo = ht.object(amb_temperature, materials=('Cu',), borders=(1, 11),
-...                 materials_order=(0,), dx=0.01, dt=0.1, file_name='data.txt',
-...                 boundaries=(0, 0), Q=[], Q0=[], initial_state=False,
-...                 heat_save=False)
+>>> foo = ht.object(
+...     amb_temperature, materials=('Cu',), borders=(1, 11),
+...		materials_order=(0,), dx=0.01, dt=0.1,
+...		file_name='data.txt', boundaries=(0, 0), Q=[],
+...		Q0=[], initial_state=False, heat_save=False
+...	)
 ```
 
 The input variables are the following:

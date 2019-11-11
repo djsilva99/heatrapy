@@ -6,9 +6,7 @@ sidebar:
   nav: "docs"
 ---
 
-This module allows to create thermal objects, establish thermal contact between them, activate or deactivate part of the materials, and compute the respective heat transfer processes, in 1D. The computation uses the finite difference method. At the momento it includes two different systems for caloric devices: a fully solid state device and an hydraulic active regenerative device. The computation is performed by executing the respective function, which is described in the System section.
-
-The package is based on three classes that create generic models:
+The heatrapy module is based on thermal objects that can be created, activated, deactivated, can establish contact with other thermal objects and can be computed (its heat transfer processes). Navigate with the left sidebar for the full documentation. As a brief generic information, the heatrapy module is based on three classes that create generic models:
 
 **object**
 

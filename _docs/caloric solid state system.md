@@ -9,30 +9,31 @@ sidebar:
 To compute a fully solid state caloric system the function `solid_active_regenerator` must be called. The active regenerative processes can be used with the several allowed modes for application and removal of fields. Cascades of materials can also be computed. To run one simulation type
 
 ```python
->>> ht.solid_active_regenerator(file_name, amb_temperature=293,
-...                             left_thermalswitch_length=2,
-...                             right_thermalswitch_length=2, MCM_length=20,
-...                             right_reservoir_length=3, left_reservoir_length=3,
-...                             MCM_material=((0.002, 'Gd'),),
-...                             left_thermalswitch_material='idealTS_hot',
-...                             right_thermalswitch_material='idealTS_cold',
-...                             left_reservoir_material='Cu',
-...                             right_reservoir_material='Cu',
-...                             freq=.1, dt=.01, dx=0.002, stop_criteria=5e-3,
-...                             solver='implicit_k(x)', min_cycle_number=30,
-...                             max_cycle_number=31, field_removal_steps=3,
-...                             field_applied_steps=1,
-...                             field_removal_mode='accelerated_right',
-...                             field_applied_mode='accelerated_left',
-...                             cycle_points=25, boundaries=(293, 293), note=None,
-...                             temperature_sensor='default',
-...                             heat_points='default', mode='refrigerator',
-...                             version=None, resting_time_hot='default',
-...                             resting_time_cold='default',
-...                             starting_field='applied',
-...                             type_study='fixed_temperature_span',
-...                             h_left=50000., h_right=50000.,
-...                             mod_freq='default')
+>>> ht.solid_active_regenerator(
+...     file_name, amb_temperature=293,
+...		left_thermalswitch_length=2,
+...		right_thermalswitch_length=2, MCM_length=20,
+...		right_reservoir_length=3, left_reservoir_length=3,
+...		MCM_material=((0.002, 'Gd'),),
+...		left_thermalswitch_material='idealTS_hot',
+...		right_thermalswitch_material='idealTS_cold',
+...		left_reservoir_material='Cu',
+...		right_reservoir_material='Cu', freq=.1, dt=.01,
+...		dx=0.002, stop_criteria=5e-3,
+...		solver='implicit_k(x)', min_cycle_number=30,
+...		max_cycle_number=31, field_removal_steps=3,
+...		field_applied_steps=1,
+...		field_removal_mode='accelerated_right',
+...		field_applied_mode='accelerated_left',
+...		cycle_points=25, boundaries=(293, 293), note=None,
+...		temperature_sensor='default',
+...		heat_points='default', mode='refrigerator',
+...		version=None, resting_time_hot='default',
+...		resting_time_cold='default',
+...		starting_field='applied',
+...		type_study='fixed_temperature_span',
+...		h_left=50000., h_right=50000., mod_freq='default'
+...	)
 ```
 
 The input variables are the following:

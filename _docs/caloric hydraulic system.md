@@ -9,31 +9,31 @@ sidebar:
 To compute a hydraulic active caloric regenerative system the function `fluid_active_regenerator` must be called. The active regenerative processes can be used with the several allowed modes for application and removal of fields. Cascades of materials can also be computed. To run one simulation type
 
 ```python
->>> ht.fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
-...                             MCM_length=50, right_reservoir_length=20,
-...                             left_reservoir_length=20,
-...                             MCM_material=((0.000, 'Gd'),),
-...                             fluid_material='water',
-...                             left_reservoir_material='Cu',
-...                             right_reservoir_material='Cu', freq=0.17, dt=0.1,
-...                             dx=0.001, stop_criteria=1e-6,
-...                             solver='implicit_k(x)', min_cycle_number=1,
-...                             max_cycle_number=5000, cycle_points=25, note=None,
-...                             boundaries=((2, 298), (3, 0)), mode='heat_pump',
-...                             version=None, leftHEXpositions=10,
-...                             rightHEXpositions=10, starting_field='applied',
-...                             temperature_sensor=(3, -3), field_removal_steps=1,
-...                             field_applied_steps=1,
-...                             field_removal_mode='accelerated_left',
-...                             field_applied_mode='accelerated_right',
-...                             applied_static_field_time_ratio=(0., 0.),
-...                             removed_static_field_time_ratio=(0., 0.),
-...                             h_mcm_fluid=1,
-...                             h_leftreservoir_fluid=1,
-...                             h_rightreservoir_fluid=1,
-...                             mcm_discontinuity='default',
-...                             type_study='no_load', stroke=.02,
-...                             mod_freq='default'):
+>>> ht.fluid_active_regenerator(
+...     file_name, amb_temperature=298, fluid_length=160,
+...		MCM_length=50, right_reservoir_length=20,
+...		left_reservoir_length=20,
+...		MCM_material=((0.000, 'Gd'),),
+...		fluid_material='water',
+...		left_reservoir_material='Cu',
+...		right_reservoir_material='Cu', freq=0.17, dt=0.1,
+...		dx=0.001, stop_criteria=1e-6,
+...		solver='implicit_k(x)', min_cycle_number=1,
+...		max_cycle_number=5000, cycle_points=25, note=None,
+...		boundaries=((2, 298), (3, 0)), mode='heat_pump',
+...		version=None, leftHEXpositions=10,
+...		rightHEXpositions=10, starting_field='applied',
+...		temperature_sensor=(3, -3), field_removal_steps=1,
+...		field_applied_steps=1,
+...		field_removal_mode='accelerated_left',
+...		field_applied_mode='accelerated_right',
+...		applied_static_field_time_ratio=(0., 0.),
+...		removed_static_field_time_ratio=(0., 0.),
+...		h_mcm_fluid=1, h_leftreservoir_fluid=1,
+...		h_rightreservoir_fluid=1,
+...		mcm_discontinuity='default', type_study='no_load',
+...		stroke=.02, mod_freq='default'
+...	)
 ```
 
 The input variables are the following:

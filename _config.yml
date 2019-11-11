@@ -1,5 +1,3 @@
-# theme: minimal-mistakes-jekyll
-
 # Site Settings
 locale                   : "en-US"
 title                    : "Heatapy"
@@ -8,9 +6,6 @@ subtitle                 : "Python framework for Computing transient heat transf
 name                     : "Heatrapy project"
 description              : "Python framework for Computing transient heat transfer processes."
 logo_path                : "/assets/heatrapy.png"
-#url                      : "https://djsilva99.github.io"
-#baseurl                  : "/heatrapy"
-#repository               : "djsilva99/heatrapy"
 
 # Collections
 collections:
@@ -27,19 +22,8 @@ defaults:
       sidebar:
         nav: "docs"
 
-# Site Footer
-footer:
-  links:
-    - label: "GitHub"
-      icon: "fab fa-fw fa-github"
-      # url:
-
 # Plugins (previously gems:)
 plugins:
-#  - jekyll-paginate
-#  - jekyll-sitemap
-#  - jekyll-gist
-#  - jekyll-feed
   - jekyll-include-cache
 
 
