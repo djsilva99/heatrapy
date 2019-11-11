@@ -17,7 +17,7 @@ The `single_object` class solves numerically the heat conduction equation for a 
 ...	heat_points=(1, -2),
 ...	initial_state=False, h_left=50000.,
 ...	h_right=50000.
-...	)
+... )
 ```
 
 The input variables are the following:
@@ -44,7 +44,7 @@ To compute the `single_object` type
 ...     time_interval, write_interval,
 ...	solver='explicit_k(x)', modeTemp=False,
 ...	numFlag=0.5, modeTempPoint=1
-...	)
+... )
 ```
 
 This method computes the system for `time_interval`, and writes into the `file_name` file every `write_interval` time steps. The four different solvers pointed out for the `system_objects` class can be used. `heat_points` is a list that defines the points where the heat flux are calculated if `modeTemp` is `True` the compute method stops when the point `modeTempPoint` changes `numFlag` relative to the initial value

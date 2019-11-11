@@ -33,7 +33,7 @@ To compute a hydraulic active caloric regenerative system the function `fluid_ac
 ...	h_rightreservoir_fluid=1,
 ...	mcm_discontinuity='default', type_study='no_load',
 ...	stroke=.02, mod_freq='default'
-...	)
+... )
 ```
 
 The input variables are the following:

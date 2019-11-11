@@ -28,7 +28,7 @@ main:
     url: /installation/
   - title: "Documentation"
     url: /docs/documentation/
-  - title: "Examples"
-    url: /examples/
+  - title: "Example"
+    url: /example/
   - title: "Contributing"
     url: /contributing/

@@ -16,7 +16,7 @@ The `object` class is the building block of the whole package. It creates therma
 ...	materials_order=(0,), dx=0.01, dt=0.1,
 ...	file_name='data.txt', boundaries=(0, 0), Q=[],
 ...	Q0=[], initial_state=False, heat_save=False
-...	)
+... )
 ```
 
 The input variables are the following:

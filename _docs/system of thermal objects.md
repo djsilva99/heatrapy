@@ -15,7 +15,7 @@ The `system_objects` class can be used to compute heat transfer processes betwee
 ...	dx=0.01, dt=0.1, file_name='data',
 ...	initial_state=False,
 ...	boundaries=((2, 0), (3, 0))
-...	)
+... )
 ```
 
 The input variables are the following:
@@ -57,8 +57,8 @@ Finally, to compute the overall system type
 ```python
 >>> foo.compute(
 ...     time_interval, write_interval,
-...	solver='implicit_k')
-...	)
+...	solver='implicit_k'
+... )
 ```
 
 This method computes the system for `time_interval`, and writes into the `file_name` file every `write_interval` time steps. Four different `solvers` can be used: `'explicit_general'`, `'explicit_k(x)'`, `'implicit_general'`, and `'implicit_k(x)'`. The implicit solvers use the Crank-Nicholsen method. While the solvers ending with general is only suited to x-independent thermal conductivities, the solvers ending with k(x) take into account x-dependent thermal conductivities. In general, the solver `implicit_k(x)` works for all the systems but is computationally more heavy (more time consuming).
