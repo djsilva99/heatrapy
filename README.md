@@ -6,7 +6,7 @@ This package is a module for simulating dynamic heat transfer processes involvin
 
 For full documentation visit the <a href='https://djsilva99.github.io/heatrapy'>heatrapy website</a>.
 
-author: Daniel Silva (djsilva99@gmail.com) <br> current version: v1.0.0
+author: Daniel Silva (djsilva@gmx.com) <br> current version: v1.0.0
 
 ![resSwitch-screenshot](https://github.com/danieljosesilva/heatrapy/blob/master/img/example.gif)
 
