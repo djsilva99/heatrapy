@@ -8,9 +8,9 @@ subtitle                 : "Python framework for Computing transient heat transf
 name                     : "Heatrapy project"
 description              : "Python framework for Computing transient heat transfer processes."
 logo_path                : "/assets/heatrapy.png"
-url                      : "https://djsilva99.github.io"
-baseurl                  : "/heatrapy"
-repository               : "djsilva99/heatrapy"
+#url                      : "https://djsilva99.github.io"
+#baseurl                  : "/heatrapy"
+#repository               : "djsilva99/heatrapy"
 
 # Collections
 collections:
@@ -43,4 +43,4 @@ plugins:
   - jekyll-include-cache
 
 
-remote_theme: "mmistakes/minimal-mistakes@gh-pages"
+remote_theme: "mmistakes/minimal-mistakes@4.17.2"
