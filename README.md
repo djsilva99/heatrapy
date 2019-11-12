@@ -10,6 +10,22 @@ author: Daniel Silva (djsilva@gmx.com) <br> current version: v1.0.0
 
 ![resSwitch-screenshot](https://github.com/danieljosesilva/heatrapy/blob/master/img/example.gif)
 
+
+### Installation
+
+To install heatrapy use the pip package manager:
+
+```bash
+$ pip install heatrapy
+```
+
+To import the heatrapy module type in the python shell:
+
+```python
+>>> import heatrapy as ht
+```
+
+
 ### Contributing
 
 You are more than welcome to contribute to this project. There are several ways to help: report bugs, write documentation, suggest new features, suggest new systems, code. For more information please contact djsilva@gmx.com.
