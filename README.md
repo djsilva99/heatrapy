@@ -28,4 +28,11 @@ To import the heatrapy module type in the python shell:
 
 ### Contributing
 
-You are more than welcome to contribute to this project. There are several ways to help: report bugs, write documentation, suggest new features, suggest new systems, code. For more information please contact djsilva@gmx.com.
+Before making a pull request run the text scripts by going to the parent folder of the cloned repository and executing:
+```bash
+$ python -m heatrapy.test.unit_tests
+$ python -m heatrapy.test.integration
+```
+Note that these test will produce a data.txt file.
+
+Besides coding, feel free to report bugs, suggest new features and new systems.

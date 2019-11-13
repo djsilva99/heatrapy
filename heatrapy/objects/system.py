@@ -305,7 +305,6 @@ class single_object(object):
         cond05 = isinstance(dx, int) or isinstance(dx, float)
         cond06 = isinstance(dt, int) or isinstance(dt, float)
         cond07 = isinstance(file_name, str)
-        cond07 = cond07 or isinstance(file_name, str)
         cond08 = isinstance(boundaries, tuple)
         cond09 = isinstance(heat_points, tuple)
         cond10 = isinstance(initial_state, bool)

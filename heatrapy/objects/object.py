@@ -62,6 +62,7 @@ class object:
         condition = cond01 and cond02 and cond03 and cond04 and cond05
         condition = condition and cond06 and cond07 and cond08 and cond09
         condition = condition and cond10 and cond11 and cond12
+        print(cond01,cond02,cond03,cond04,cond05,cond06,cond07,cond08,cond09,cond10)
         if not condition:
             raise ValueError
 
