@@ -523,6 +523,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
             print('COP:', cooling_power / working_power)
         if mode == 'heat_pump':
             print('COP:', heating_power / working_power)
+        return heating_power, cooling_power
     else:
         temperature_span = (-final_temperature_right +
                             final_temperature_left)
@@ -530,6 +531,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
             print('No load temperature span (K):', temperature_span)
         if mode == 'heat_pump':
             print('No load temperature span (K):', -temperature_span)
+        return temperature_span
     print('Final time (s):', a.time_passed)
     print('Simulation duration:', hours + ':' + minutes + ':' + seconds)
     print('')

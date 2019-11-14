@@ -31,8 +31,8 @@ To import the heatrapy module type in the python shell:
 Before making a pull request run the text scripts by going to the parent folder of the cloned repository and executing:
 ```bash
 $ python -m heatrapy.test.unit_tests
-$ python -m heatrapy.test.integration
+$ python -m heatrapy.test.integration_tests
 ```
-Note that these test will produce a data.txt file.
+Note that these test will produce a .txt files.
 
 Besides coding, feel free to report bugs, suggest new features and new systems.

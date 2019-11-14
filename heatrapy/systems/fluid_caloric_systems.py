@@ -1856,6 +1856,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                               abs(value1-value2)))/abs(value1-value2))
                 print('Final cycle error:', error)
                 print('No load temperature span (K):', temperature_span)
+                return temperature_span
             if type_study == 'fixed_temperature_span':
                 cooling_power = (-AMR.q2+q2)*freq
                 heating_power = (AMR.q1-q1)*freq
@@ -1867,6 +1868,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 print('Heating power (W/m2):', heating_power)
                 print('Working power (W/m2)', working_power)
                 print('COP:', COP)
+                return (cooling_power, heating_power)
         if mode == 'heat_pump':
             if type_study == 'no_load':
                 v1 = int(left_reservoir_length/2)
@@ -1879,6 +1881,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                               abs(value1-value2)))/abs(value1-value2))
                 print('Final cycle error:', error)
                 print('No load temperature span (K):', temperature_span)
+                return temperature_span
             if type_study == 'fixed_temperature_span':
                 cooling_power = (-AMR.q2+q2)*freq
                 heating_power = (AMR.q1-q1)*freq
@@ -1889,6 +1892,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 print('Heating power (W/m2):', heating_power)
                 print('Working power (W/m2)', working_power)
                 print('COP:', heating_power/working_power)
+                return (cooling_power, heating_power)
         print('Final time (s):', AMR.objects[0].time_passed)
         print('Simulation duration:', hours + ':' + minutes + ':' + seconds)
         print('')
@@ -1899,3 +1903,4 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
 
     else:
         print('simulation not complete')
+        return None
