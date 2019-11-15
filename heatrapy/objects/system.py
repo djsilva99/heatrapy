@@ -126,7 +126,7 @@ class system_objects:
 
         self.contacts.remove(removing_contact)
 
-    def compute(self, timeInterval, write_interval, solver='implicit_k'):
+    def compute(self, timeInterval, write_interval, solver='implicit_k(x)'):
         """Computes the thermal process
 
         Computes the system for timeInterval, and writes into the file_name
@@ -144,7 +144,6 @@ class system_objects:
 
         # computes
         for j in range(nt):
-
             for obj in self.objects:
                 obj.Q0 = copy.copy(obj.Q0_ref)
 
@@ -305,7 +304,6 @@ class single_object(object):
         cond05 = isinstance(dx, int) or isinstance(dx, float)
         cond06 = isinstance(dt, int) or isinstance(dt, float)
         cond07 = isinstance(file_name, str)
-        cond07 = cond07 or isinstance(file_name, str)
         cond08 = isinstance(boundaries, tuple)
         cond09 = isinstance(heat_points, tuple)
         cond10 = isinstance(initial_state, bool)
