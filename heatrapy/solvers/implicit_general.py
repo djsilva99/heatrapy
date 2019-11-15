@@ -14,7 +14,6 @@ def implicit_general(obj):
     Used to compute one time step of systems with fixed thermal contuctivity.
 
     """
-
     # initializes the matrixes for the equation systems
     a = np.zeros((obj.num_points, obj.num_points))
     b = np.zeros(obj.num_points)

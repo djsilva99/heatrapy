@@ -7,12 +7,10 @@ Used to create a thermal object and apply or remove fields.
 from .. import mats
 import os
 import copy
-from .. import solvers
 
 
-class object:
-
-    """object class
+class Object:
+    """Object class.
 
     This class creates thermal objects to be used in more complex systems.
     It includes two methods to apply and remove fields.
@@ -23,7 +21,7 @@ class object:
                  materials_order=(0,), dx=0.01, dt=0.1, file_name='data.txt',
                  boundaries=(0, 0), Q=[], Q0=[], initial_state=False,
                  heat_save=False, materials_path=False):
-        """Initializes the object.
+        """Thermal object initialization.
 
         amb_temperature: ambient temperature of the whole system
         materials: list of strings of all the used materials present in the
@@ -43,7 +41,6 @@ class object:
         heat_save: True if saving the heat at the two borders.
 
         """
-
         # check the validity of inputs
         cond01 = isinstance(amb_temperature, float)
         cond01 = cond01 or isinstance(amb_temperature, int)
@@ -62,7 +59,6 @@ class object:
         condition = cond01 and cond02 and cond03 and cond04 and cond05
         condition = condition and cond06 and cond07 and cond08 and cond09
         condition = condition and cond10 and cond11 and cond12
-        # print(cond01,cond02,cond03,cond04,cond05,cond06,cond07,cond08,cond09,cond10)
         if not condition:
             raise ValueError
 
@@ -95,7 +91,7 @@ class object:
                     '/../database/' + materials[i] + '/' + 'lheat0.txt'
                 lheata = os.path.dirname(os.path.realpath(__file__)) + \
                     '/../database/' + materials[i] + '/' + 'lheata.txt'
-                self.materials[i] = mats.calmatpro(
+                self.materials[i] = mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
         else:
             for i in range(len(materials)):
@@ -109,7 +105,7 @@ class object:
                 rhoa = materials_path + materials[i] + '/' + 'rhoa.txt'
                 lheat0 = materials_path + materials[i] + '/' + 'lheat0.txt'
                 lheata = materials_path + materials[i] + '/' + 'lheata.txt'
-                self.materials[i] = mats.calmatpro(
+                self.materials[i] = mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
 
         # defines which are the properties of each material point
@@ -147,13 +143,13 @@ class object:
             )
             self.lheat.append([])
             for lh in self.materials[self.materials_index[i]].lheat0():
-                if self.temperature[i][1]<lh[0] and lh[1]>0.:
+                if self.temperature[i][1] < lh[0] and lh[1] > 0.:
                     self.lheat[-1].append([lh[0], 0.])
-                if self.temperature[i][1]>lh[0] and lh[1]>0.:
+                if self.temperature[i][1] > lh[0] and lh[1] > 0.:
                     self.lheat[-1].append([lh[0], lh[1]])
-                if self.temperature[i][1]<lh[0] and lh[1]<0.:
+                if self.temperature[i][1] < lh[0] and lh[1] < 0.:
                     self.lheat[-1].append([lh[0], -lh[1]])
-                if self.temperature[i][1]>lh[0] and lh[1]<0.:
+                if self.temperature[i][1] > lh[0] and lh[1] < 0.:
                     self.lheat[-1].append([lh[0], 0.])
         self.temperature.append([amb_temperature, amb_temperature])
         self.rho.append(None)
@@ -191,13 +187,12 @@ class object:
         f.close()
 
     def activate(self, initial_point, final_point):
-        """Activation of the material
+        """Activation of the material.
 
         activates a given space interval of the material,
         between the initial_point and final_point.
 
         """
-
         initial_point = int(initial_point)
         final_point = int(final_point)
         for i in range(initial_point, final_point):
@@ -216,13 +211,13 @@ class object:
                 valh = self.materials[self.materials_index[i]].lheata()
                 self.latent_heat[i] = valh
                 for lh in self.latent_heat[i]:
-                    if self.temperature[i][0]<lh[0] and lh[1]>0.:
+                    if self.temperature[i][0] < lh[0] and lh[1] > 0.:
                         self.lheat[i].append([lh[0], 0.])
-                    if self.temperature[i][0]>lh[0] and lh[1]>0.:
+                    if self.temperature[i][0] > lh[0] and lh[1] > 0.:
                         self.lheat[i].append([lh[0], lh[1]])
-                    if self.temperature[i][0]<lh[0] and lh[1]<0.:
+                    if self.temperature[i][0] < lh[0] and lh[1] < 0.:
                         self.lheat[i].append([lh[0], -lh[1]])
-                    if self.temperature[i][0]>lh[0] and lh[1]<0.:
+                    if self.temperature[i][0] > lh[0] and lh[1] < 0.:
                         self.lheat[i].append([lh[0], 0.])
                 self.state[i] = True
 
@@ -231,13 +226,12 @@ class object:
                 print(message)
 
     def deactivate(self, initial_point, final_point):
-        """Deactivation of the material
+        """Deactivation of the material.
 
         deactivates a given space interval of the material,
         between the initial_point and final_point.
 
         """
-
         initial_point = int(initial_point)
         final_point = int(final_point)
         for i in range(initial_point, final_point):
@@ -256,13 +250,13 @@ class object:
                 valh = self.materials[self.materials_index[i]].lheat0()
                 self.latent_heat[i] = valh
                 for lh in self.latent_heat[i]:
-                    if self.temperature[i][0]<lh[0] and lh[1]>0.:
+                    if self.temperature[i][0] < lh[0] and lh[1] > 0.:
                         self.lheat[i].append([lh[0], 0.])
-                    if self.temperature[i][0]>lh[0] and lh[1]>0.:
+                    if self.temperature[i][0] > lh[0] and lh[1] > 0.:
                         self.lheat[i].append([lh[0], lh[1]])
-                    if self.temperature[i][0]<lh[0] and lh[1]<0.:
+                    if self.temperature[i][0] < lh[0] and lh[1] < 0.:
                         self.lheat[i].append([lh[0], -lh[1]])
-                    if self.temperature[i][0]>lh[0] and lh[1]<0.:
+                    if self.temperature[i][0] > lh[0] and lh[1] < 0.:
                         self.lheat[i].append([lh[0], 0.])
                 self.state[i] = False
 

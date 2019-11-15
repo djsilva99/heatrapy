@@ -6,7 +6,7 @@ a complex single object for using in more complex thermal computing.
 
 """
 
-from .object import object
-from .system import system_objects, single_object
+from .object import Object
+from .system import SystemObjects, SingleObject
 
-__all__ = [object, system_objects, single_object]
+__all__ = [Object, SystemObjects, SingleObject]

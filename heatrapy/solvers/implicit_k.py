@@ -15,7 +15,6 @@ def implicit_k(obj):
     contuctivity.
 
     """
-
     # initializes the matrixes for the equation systems
     a = np.zeros((obj.num_points, obj.num_points))
     b = np.zeros(obj.num_points)

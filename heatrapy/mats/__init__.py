@@ -4,6 +4,6 @@ This submodule access the properties of materials
 
 """
 
-from .calmatpro import calmatpro
+from .calmatpro import CalMatPro
 
-__all__ = [calmatpro]
+__all__ = [CalMatPro]

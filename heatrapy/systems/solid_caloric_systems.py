@@ -35,7 +35,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                              type_study='fixed_temperature_span',
                              h_left=50000., h_right=50000.,
                              mod_freq='default', materials_path=False):
-    """solid_active_regenerator class
+    """solid_active_regenerator class.
 
     computes the thermal processes for 1-dimensional fully solid state
     ferroic-based systems. The active regenerative processes can be used with
@@ -89,7 +89,6 @@ def solid_active_regenerator(file_name, amb_temperature=293,
         the file_name, and second the sensor point.
 
     """
-
     # check the validity of inputs
 
     cond01 = isinstance(file_name, str)
@@ -234,19 +233,19 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                lRl + ltsl + MCM_length + rtsl + rRl + 1)
     heat_points = (leftHeatSensor, rightHeatSensor)
 
-    a = objects.single_object(amb_temperature, dx=dx, dt=dt,
-                              file_name=file_name, materials=materials,
-                              borders=borders, materials_order=(0, 1, 2, 3, 4),
-                              boundaries=boundaries, heat_points=heat_points,
-                              initial_state=initial_state, h_left=50000.,
-                              h_right=50000., materials_path=materials_path)
+    a = objects.SingleObject(amb_temperature, dx=dx, dt=dt,
+                             file_name=file_name, materials=materials,
+                             borders=borders, materials_order=(0, 1, 2, 3, 4),
+                             boundaries=boundaries, heat_points=heat_points,
+                             initial_state=initial_state, h_left=50000.,
+                             h_right=50000., materials_path=materials_path)
 
     # defines the material cascade
     k = left_reservoir_length + left_thermalswitch_length
     for i in range(len(MCM_material)):
         from .. import mats
         import os
-        if materials_path == False:
+        if materials_path is False:
             tadi = os.path.dirname(os.path.realpath(__file__)) + \
                 '/../database/' + MCM_material[i][1] + '/' + 'tadi.txt'
             tadd = os.path.dirname(os.path.realpath(__file__)) + \
@@ -267,7 +266,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                 '/../database/' + MCM_material[i][1] + '/' + 'lheat0.txt'
             lheata = os.path.dirname(os.path.realpath(__file__)) + \
                 '/../database/' + MCM_material[i][1] + '/' + 'lheata.txt'
-            a.materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
+            a.materials.append(mats.CalMatPro(tadi, tadd, cpa, cp0, k0, ka,
                                             rho0, rhoa, lheat0, lheata))
         else:
             tadi = materials_path + MCM_material[i][1] + '/' + 'tadi.txt'
@@ -280,7 +279,7 @@ def solid_active_regenerator(file_name, amb_temperature=293,
             rhoa = materials_path + MCM_material[i][1] + '/' + 'rhoa.txt'
             lheat0 = materials_path + MCM_material[i][1] + '/' + 'lheat0.txt'
             lheata = materials_path + MCM_material[i][1] + '/' + 'lheata.txt'
-            a.materials.append(mats.calmatpro(tadi, tadd, cpa, cp0, k0, ka,
+            a.materials.append(mats.CalMatPro(tadi, tadd, cpa, cp0, k0, ka,
                                               rho0, rhoa, lheat0, lheata))
 
         for j in range(k, k+int(MCM_material[i][0]/dx+1)):

@@ -4,7 +4,6 @@ Used to compute thermal processes
 
 """
 
-import numpy as np
 import copy
 
 
@@ -14,7 +13,6 @@ def explicit_general(obj):
     Used to compute one time step of systems with fixed thermal contuctivity.
 
     """
-
     x = copy.deepcopy(obj.temperature)
 
     # computes
@@ -25,11 +23,11 @@ def explicit_general(obj):
                         obj.dx * obj.dx)
         beta = obj.dt / (obj.rho[i] * obj.Cp[i])
 
-        Tnew = ((1 + beta * obj.Q[i]) * obj.temperature[i][0] +
-                alpha * (obj.temperature[i - 1][0] - 2 *
-                         obj.temperature[i][0] + obj.temperature[i + 1][0]) +
-                beta * (obj.Q0[i] - obj.Q[i] * obj.amb_temperature))
-        x[i][1] = Tnew
+        t_new = ((1 + beta * obj.Q[i]) * obj.temperature[i][0] +
+                 alpha * (obj.temperature[i - 1][0] - 2 *
+                          obj.temperature[i][0] + obj.temperature[i + 1][0]) +
+                 beta * (obj.Q0[i] - obj.Q[i] * obj.amb_temperature))
+        x[i][1] = t_new
 
     # left boundary for next time step
     if obj.boundaries[0] == 0:

@@ -8,12 +8,11 @@ from .. import mats
 import os
 import copy
 from .. import solvers
-from . import object
+from . import Object
 
 
-class system_objects:
-
-    """system_objects class
+class SystemObjects:
+    """System_objects class.
 
     This class creates a system of thermal objects, establishes contact between
     them and computes the respective thermal processes.
@@ -24,7 +23,7 @@ class system_objects:
                  objects_length=(10, 10), amb_temperature=293, dx=0.01, dt=0.1,
                  file_name='data', initial_state=False,
                  boundaries=((2, 0), (3, 0)), materials_path=False):
-        """Initializes the object.
+        """System object initialization.
 
         amb_temperature: ambient temperature of the whole system
         materials: list of strings of all the used materials present in the
@@ -42,7 +41,6 @@ class system_objects:
             and False is removed field.
 
         """
-
         # check the validity of inputs
         cond01 = isinstance(amb_temperature, float)
         cond01 = cond01 or isinstance(amb_temperature, int)
@@ -68,7 +66,7 @@ class system_objects:
             else:
                 heat_save = True
 
-            self.objects.append(object(amb_temperature,
+            self.objects.append(Object(amb_temperature,
                                 materials=(materials[i],),
                                 borders=(1, objects_length[i]+1),
                                 materials_order=(0,), dx=dx, dt=dt,
@@ -89,35 +87,30 @@ class system_objects:
                 for j in range(len(self.objects[i[0]].temperature)):
                     self.objects[i[0]].temperature[j] = [i[1], i[1]]
 
-    def contactFilter(self, object):
-        """Filter self.contacts by thermal object id
+    def contact_filter(self, object):
+        """Filter self.contacts by thermal object id.
 
         object: thermal object id
 
         """
-
         filtered = [x for x in
                     self.contacts if (x[0][0] == object or x[1][0] == object)]
         return set(filtered)
 
-        self.contacts.add(contact)
-
-    def contactAdd(self, contact):
-        """Add contact to self.contacts
+    def contact_add(self, contact):
+        """Add contact to self.contacts.
 
         contact: thermal contact
 
         """
-
         self.contacts.add(contact)
 
-    def contactRemove(self, contact):
-        """Remove all contacts from an object
+    def contact_remove(self, contact):
+        """Remove all contacts from an object.
 
         contact: thermal object id
 
         """
-
         removing_contact = None
 
         for i in range(len(self.contacts)):
@@ -126,8 +119,8 @@ class system_objects:
 
         self.contacts.remove(removing_contact)
 
-    def compute(self, timeInterval, write_interval, solver='implicit_k(x)'):
-        """Computes the thermal process
+    def compute(self, time_interval, write_interval, solver='implicit_k(x)'):
+        """Compute the thermal process.
 
         Computes the system for timeInterval, and writes into the file_name
         file every write_interval time steps. Four different solvers can be
@@ -135,9 +128,8 @@ class system_objects:
         and 'implicit_k(x)'.
 
         """
-
         # number of time steps for the given timeInterval
-        nt = int(timeInterval / self.dt)
+        nt = int(time_interval / self.dt)
 
         # number of time steps counting from the last writing process
         nw = 0
@@ -188,7 +180,8 @@ class system_objects:
 
                     # implicit k constant
                     if solver == 'implicit_general':
-                        obj.temperature, obj.lheat = solvers.implicit_general(obj)
+                        value = solvers.implicit_general(obj)
+                        obj.temperature, obj.lheat = value
 
                     # implicit k dependent on x
                     if solver == 'implicit_k(x)':
@@ -196,7 +189,8 @@ class system_objects:
 
                     # explicit k constant
                     if solver == 'explicit_general':
-                        obj.temperature, obj.lheat = solvers.explicit_general(obj)
+                        value = solvers.explicit_general(obj)
+                        obj.temperature, obj.lheat = value
 
                     # explicit k dependent on x
                     if solver == 'explicit_k(x)':
@@ -244,9 +238,8 @@ class system_objects:
                 nw = nw + 1
 
 
-class single_object(object):
-
-    """single_object class
+class SingleObject(Object):
+    """Single_object class.
 
     This class solves numerically the heat conduction equation for 1 dimension
     of an active material(s). Three solvers can be used: explicit with
@@ -325,7 +318,7 @@ class single_object(object):
         self.h_right = h_right
 
         # loads the data for each material
-        if materials_path == False:
+        if materials_path is False:
             for i in range(len(materials)):
                 tadi = os.path.dirname(os.path.realpath(__file__)) + \
                     '/../database/' + materials[i] + '/' + 'tadi.txt'
@@ -347,7 +340,7 @@ class single_object(object):
                     '/../database/' + materials[i] + '/' + 'lheat0.txt'
                 lheata = os.path.dirname(os.path.realpath(__file__)) + \
                     '/../database/' + materials[i] + '/' + 'lheata.txt'
-                self.materials[i] = mats.calmatpro(
+                self.materials[i] = mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
         else:
             for i in range(len(materials)):
@@ -361,7 +354,7 @@ class single_object(object):
                 rhoa = materials_path + materials[i] + '/' + 'rhoa.txt'
                 lheat0 = materials_path + materials[i] + '/' + 'lheat0.txt'
                 lheata = materials_path + materials[i] + '/' + 'lheata.txt'
-                self.materials[i] = mats.calmatpro(
+                self.materials[i] = mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
 
         # defines which are the properties of each material point
@@ -399,13 +392,13 @@ class single_object(object):
             )
             self.lheat.append([])
             for lh in self.materials[self.materials_index[i]].lheat0():
-                if self.temperature[i][1]<lh[0] and lh[1]>0.:
+                if self.temperature[i][1] < lh[0] and lh[1] > 0.:
                     self.lheat[-1].append([lh[0], 0.])
-                if self.temperature[i][1]>lh[0] and lh[1]>0.:
+                if self.temperature[i][1] > lh[0] and lh[1] > 0.:
                     self.lheat[-1].append([lh[0], lh[1]])
-                if self.temperature[i][1]<lh[0] and lh[1]<0.:
+                if self.temperature[i][1] < lh[0] and lh[1] < 0.:
                     self.lheat[-1].append([lh[0], -lh[1]])
-                if self.temperature[i][1]>lh[0] and lh[1]<0.:
+                if self.temperature[i][1] > lh[0] and lh[1] < 0.:
                     self.lheat[-1].append([lh[0], 0.])
         self.temperature.append([amb_temperature, amb_temperature])
         self.rho.append(None)
@@ -442,13 +435,12 @@ class single_object(object):
         f.write(line)
         f.close()
 
-    def changeHeatPower(self, Q=[], Q0=[]):
-        """Heat power source change
+    def change_heat_power(self, Q=[], Q0=[]):
+        """Heat power source change.
 
         Changes the coeficients for the heat power sources
 
         """
-
         for power in Q:
             for j in range(power[1], power[2]):
                 self.Q[j] = power[0]
@@ -456,9 +448,9 @@ class single_object(object):
             for j in range(power[1], power[2]):
                 self.Q0[j] = power[0]
 
-    def compute(self, timeInterval, write_interval, solver='explicit_k(x)',
-                modeTemp=False, numFlag=0.5, modeTempPoint=1):
-        """Computes the thermal process
+    def compute(self, time_interval, write_interval, solver='explicit_k(x)',
+                mode_temp=False, num_flag=0.5, mode_temp_point=1):
+        """Compute the thermal process.
 
         Computes the system for timeInterval, and writes into the file_name
         file every write_interval time steps. Four different solvers can be
@@ -469,15 +461,14 @@ class single_object(object):
         the initial value
 
         """
-
         # number of time steps for the given timeInterval
-        nt = int(timeInterval / self.dt)
+        nt = int(time_interval / self.dt)
 
         # number of time steps counting from the last writing process
         nw = 0
 
         # saves the reference temperature for the modeTemp
-        initModeTemp = self.temperature[modeTempPoint][0]
+        init_mode_temp = self.temperature[mode_temp_point][0]
 
         # computes
         for j in range(nt):
@@ -534,9 +525,9 @@ class single_object(object):
 
             # stops the simulation if modeTemp is True ...
             # and the stop condition is verified
-            if modeTemp is True:
-                value = self.temperature[modeTempPoint][0] - initModeTemp
-                if abs(value) > numFlag:
+            if mode_temp is True:
+                value = self.temperature[mode_temp_point][0] - init_mode_temp
+                if abs(value) > num_flag:
                     nw = 0
                     f = open(self.file_name, 'a')
                     f.write(line)

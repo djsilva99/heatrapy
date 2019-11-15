@@ -8,7 +8,11 @@ import numpy as np
 
 
 def operating_mode(mode, time_before, time_after, field_steps, freq, j):
+    """Sweeping time intevals.
 
+    Calculates sweeping time intevals according to the operating mode.
+
+    """
     period = 1./freq
 
     # mode 1

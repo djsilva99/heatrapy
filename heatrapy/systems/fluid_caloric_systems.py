@@ -168,24 +168,33 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
         initial_state = False
 
     cycle_number = 0
-    AMR = objects.system_objects(number_objects=4,
-                                 materials=(fluid_material,
-                                            MCM_material[0][1],
-                                            left_reservoir_material,
-                                            right_reservoir_material),
-                                 objects_length=(fluid_length, MCM_length,
-                                                 left_reservoir_length,
-                                                 right_reservoir_length),
-                                 amb_temperature=amb_temperature, dx=dx, dt=dt,
-                                 file_name=file_name,
-                                 initial_state=initial_state,
-                                 boundaries=boundaries)
+    amr = objects.SystemObjects(
+        number_objects=4,
+        materials=(
+            fluid_material,
+            MCM_material[0][1],
+            left_reservoir_material,
+            right_reservoir_material
+        ),
+        objects_length=(
+            fluid_length,
+            MCM_length,
+            left_reservoir_length,
+            right_reservoir_length
+        ),
+        amb_temperature=amb_temperature,
+        dx=dx,
+        dt=dt,
+        file_name=file_name,
+        initial_state=initial_state,
+        boundaries=boundaries
+    )
 
     k = 1
     for i in range(len(MCM_material)):
         from .. import mats
         import os
-        if materials_path == False:
+        if materials_path is False:
             tadi = os.path.dirname(os.path.realpath(__file__)) + \
                 '/../database/' + MCM_material[i][1] + '/' + 'tadi.txt'
             tadd = os.path.dirname(os.path.realpath(__file__)) + \
@@ -206,8 +215,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                 '/../database/' + MCM_material[i][1] + '/' + 'lheat0.txt'
             lheata = os.path.dirname(os.path.realpath(__file__)) + \
                 '/../database/' + MCM_material[i][1] + '/' + 'lheata.txt'
-            AMR.objects[1].materials.append(
-                mats.calmatpro(
+            amr.objects[1].materials.append(
+                mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata
                 )
             )
@@ -222,15 +231,15 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             rhoa = materials_path + MCM_material[i][1] + '/' + 'rhoa.txt'
             lheat0 = materials_path + MCM_material[i][1] + '/' + 'lheat0.txt'
             lheata = materials_path + MCM_material[i][1] + '/' + 'lheata.txt'
-            AMR.objects[1].materials.append(
-                mats.calmatpro(
+            amr.objects[1].materials.append(
+                mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata
                 )
             )
 
         for j in range(k, k+int(MCM_material[i][0]/dx)):
-            len_mat = len(AMR.objects[1].materials)
-            AMR.objects[1].materialsIndex[j] = len_mat - 1
+            len_mat = len(amr.objects[1].materials)
+            amr.objects[1].materialsIndex[j] = len_mat - 1
         k = k + int(MCM_material[i][0]/dx)
 
     if mcm_discontinuity != 'default':
@@ -252,21 +261,21 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             '/../database/vacuum/rho0.txt'
         rhoa = os.path.dirname(os.path.realpath(__file__)) + \
             '/../database/vacuum/rhoa.txt'
-        AMR.objects[1].materials.append(mats.calmatpro(tadi, tadd, cpa,
+        amr.objects[1].materials.append(mats.CalMatPro(tadi, tadd, cpa,
                                                        cp0, k0, ka, rho0,
                                                        rhoa))
 
         j = 1
-        for i in range(1, len(AMR.objects[1].temperature)-1):
-            i_cond1 = (j * len(AMR.objects[1].temperature) /
+        for i in range(1, len(amr.objects[1].temperature)-1):
+            i_cond1 = (j * len(amr.objects[1].temperature) /
                        (mcm_discontinuity[0] + 1) +
                        int(mcm_discontinuity[1] / (2 * dx)))
-            i_cond2 = (j * len(AMR.objects[1].temperature) /
+            i_cond2 = (j * len(amr.objects[1].temperature) /
                        (mcm_discontinuity[0] + 1) -
                        int(mcm_discontinuity[1] / (2 * dx)))
             if i < i_cond1 and i >= i_cond2:
-                val = len(AMR.objects[1].materials)-1
-                AMR.objects[1].materials_index[i] = val
+                val = len(amr.objects[1].materials)-1
+                amr.objects[1].materials_index[i] = val
             if i == i_cond1 and j < mcm_discontinuity[0]:
                 j = j + 1
 
@@ -340,8 +349,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
 
     if type_study == 'no_load':
 
-        value1 = AMR.objects[0].temperature[temperature_sensor[0]][0]
-        value2 = AMR.objects[0].temperature[temperature_sensor[1]][0]
+        value1 = amr.objects[0].temperature[temperature_sensor[0]][0]
+        value2 = amr.objects[0].temperature[temperature_sensor[1]][0]
 
         if starting_field == 'applied':
 
@@ -349,14 +358,14 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             while condition:
 
                 vl1 = int(left_reservoir_length/2)
-                val = AMR.objects[2].temperature[vl1][0]
+                val = amr.objects[2].temperature[vl1][0]
                 value1 = val
                 vl2 = int(right_reservoir_length/2)
-                val = AMR.objects[3].temperature[vl2][0]
+                val = amr.objects[3].temperature[vl2][0]
                 value2 = val
 
                 if mod_freq != 'default':
-                    val = AMR.objects[1].temperature[mod_freq[1]][0]
+                    val = amr.objects[1].temperature[mod_freq[1]][0]
                     temperature_sensor = val
                     input = open(mod_freq[0], 'r')
                     s = input.readlines()
@@ -423,10 +432,10 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                         right_reservoir_length) / 2 -
                                     steps / 2)
                         for i in range(MCM_length):
-                            cond1 = (p * len(AMR.objects[1].temperature) /
+                            cond1 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) +
                                      int(mcm_discontinuity[1] / (2 * dx)))
-                            cond2 = (p * len(AMR.objects[1].temperature) /
+                            cond2 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) -
                                      int(mcm_discontinuity[1] / (2 * dx)))
                             if not (i+1 < cond1 and i+1 >= cond2):
@@ -447,16 +456,16 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         contacts.add(((0, i+init_pos+n), (3, i+1),
                                       h_rightreservoir_fluid))
 
-                    AMR.contacts = contacts
+                    amr.contacts = contacts
 
                     cond1 = (1/(2.*freq) -
                              applied_static_field_time_ratio[1]/freq)
                     if n*time_step < applied_static_field_time_ratio[0]/freq:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
 
                     elif n*time_step > cond1:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
                     else:
 
@@ -489,12 +498,12 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_applied_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_applied_steps + 1)
-                                    AMR.objects[1].activate(first, second)
+                                    amr.objects[1].activate(first, second)
                                     j = j + j_inc
                                     delta_t = time_step-previous_time
                                 else:
                                     delta_t = time_step
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 time_passed = time_passed + delta_t
                                 cond = False
@@ -513,7 +522,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_applied_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_applied_steps + 1)
-                                    AMR.objects[1].activate(first, second)
+                                    amr.objects[1].activate(first, second)
                                     j = j + j_inc
                                     delta_t = time_step-previous_time
                                     flag = False
@@ -523,7 +532,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     time_passed = 0.
                                     flag = True
                                 previous_time = delta_t
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
 
                                 com = ['constant_left', 'accelerated_left',
@@ -584,10 +593,10 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                         rightHEXpositions +
                                         right_reservoir_length) / 2 + steps/2)
                         for i in range(MCM_length):
-                            cond1 = (p * len(AMR.objects[1].temperature) /
+                            cond1 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) +
                                      int(mcm_discontinuity[1] / (2 * dx)))
-                            cond2 = (p * len(AMR.objects[1].temperature) /
+                            cond2 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) -
                                      int(mcm_discontinuity[1] / (2 * dx)))
                             if not (i+1 < cond1 and i+1 >= cond2):
@@ -606,16 +615,16 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         contacts.add(((0, i+init_pos-n), (3, i+1),
                                       h_rightreservoir_fluid))
 
-                    AMR.contacts = contacts
+                    amr.contacts = contacts
 
                     cond1 = (1 / (2. * freq) -
                              removed_static_field_time_ratio[1] / freq)
                     if n*time_step < removed_static_field_time_ratio[0]/freq:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
 
                     elif n*time_step > cond1:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
                     else:
 
@@ -649,13 +658,13 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_removal_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_removal_steps + 1)
-                                    AMR.objects[1].deactivate(first,
+                                    amr.objects[1].deactivate(first,
                                                               second)
                                     j = j + j_inc
                                     delta_t = time_step - previous_time
                                 else:
                                     delta_t = time_step
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 time_passed = time_passed + delta_t
                                 cond = False
@@ -675,7 +684,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_removal_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_removal_steps + 1)
-                                    AMR.objects[1].deactivate(first,
+                                    amr.objects[1].deactivate(first,
                                                               second)
                                     j = j + j_inc
                                     delta_t = time_step-previous_time
@@ -686,7 +695,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     time_passed = 0.
                                     flag = True
                                 previous_time = delta_t
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
@@ -707,8 +716,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     cond1 = cycle_number < min_cycle_number
                     vl1 = int(left_reservoir_length/2)
                     vl2 = int(right_reservoir_length/2)
-                    cond2 = ((abs(abs(AMR.objects[2].temperature[vl1][0] -
-                                      AMR.objects[3].temperature[vl2][0]) -
+                    cond2 = ((abs(abs(amr.objects[2].temperature[vl1][0] -
+                                      amr.objects[3].temperature[vl2][0]) -
                                   abs(value1-value2)))/abs(value1-value2))
                     cond2 = cond2 > stop_criteria
                     cond3 = cycle_number < max_cycle_number - 1
@@ -720,14 +729,14 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             condition = True
             while condition:
                 vl1 = left_reservoir_length/2
-                val = AMR.objects[2].temperature[vl1][0]
+                val = amr.objects[2].temperature[vl1][0]
                 value1 = val
                 vl2 = right_reservoir_length/2
-                val = AMR.objects[3].temperature[vl2][0]
+                val = amr.objects[3].temperature[vl2][0]
                 value2 = val
 
                 if mod_freq != 'default':
-                    val = AMR.objects[1].temperature[mod_freq[1]][0]
+                    val = amr.objects[1].temperature[mod_freq[1]][0]
                     temperature_sensor = val
                     input = open(mod_freq[0], 'r')
                     s = input.readlines()
@@ -792,10 +801,10 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                         right_reservoir_length) / 2 +
                                     steps / 2)
                         for i in range(MCM_length):
-                            val1 = (p * len(AMR.objects[1].temperature) /
+                            val1 = (p * len(amr.objects[1].temperature) /
                                     (mcm_discontinuity[0] + 1) +
                                     int(mcm_discontinuity[1] / (2 * dx)))
-                            val2 = (p * len(AMR.objects[1].temperature) /
+                            val2 = (p * len(amr.objects[1].temperature) /
                                     (mcm_discontinuity[0] + 1) -
                                     int(mcm_discontinuity[1] / (2 * dx)))
                             if not (i+1 < val1 and i+1 >= val2):
@@ -814,15 +823,15 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         contacts.add(((0, i+init_pos-n), (3, i+1),
                                       h_rightreservoir_fluid))
 
-                    AMR.contacts = contacts
+                    amr.contacts = contacts
                     val = (1 / (2. * freq) -
                            removed_static_field_time_ratio[1] / freq)
                     if n*time_step < removed_static_field_time_ratio[0]/freq:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
 
                     elif n*time_step > val:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
                     else:
 
@@ -856,13 +865,13 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_removal_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_removal_steps + 1)
-                                    AMR.objects[1].deactivate(first,
+                                    amr.objects[1].deactivate(first,
                                                               second)
                                     j = j+j_inc
                                     delta_t = time_step - previous_time
                                 else:
                                     delta_t = time_step
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 time_passed = time_passed + delta_t
                                 cond = False
@@ -882,7 +891,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_removal_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_removal_steps + 1)
-                                    AMR.objects[1].deactivate(first,
+                                    amr.objects[1].deactivate(first,
                                                               second)
                                     j = j + j_inc
                                     delta_t = time_step-previous_time
@@ -893,7 +902,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     time_passed = 0.
                                     flag = True
                                 previous_time = delta_t
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
@@ -955,10 +964,10 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                         right_reservoir_length) / 2 -
                                     steps / 2)
                         for i in range(MCM_length):
-                            cond1 = (p * len(AMR.objects[1].temperature) /
+                            cond1 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) +
                                      int(mcm_discontinuity[1] / (2 * dx)))
-                            cond2 = (p * len(AMR.objects[1].temperature) /
+                            cond2 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) -
                                      int(mcm_discontinuity[1] / (2 * dx)))
                             if not (i+1 < cond1 and i+1 >= cond2):
@@ -979,16 +988,16 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         contacts.add(((0, i+init_pos+n), (3, i+1),
                                       h_rightreservoir_fluid))
 
-                    AMR.contacts = contacts
+                    amr.contacts = contacts
 
                     cond1 = (1/(2.*freq) -
                              applied_static_field_time_ratio[1]/freq)
                     if n*time_step < applied_static_field_time_ratio[0]/freq:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
 
                     elif n*time_step > cond1:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
                     else:
 
@@ -1021,12 +1030,12 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_applied_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_applied_steps + 1)
-                                    AMR.objects[1].activate(first, second)
+                                    amr.objects[1].activate(first, second)
                                     j = j+j_inc
                                     delta_t = time_step-previous_time
                                 else:
                                     delta_t = time_step
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 time_passed = time_passed + delta_t
                                 cond = False
@@ -1046,7 +1055,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_applied_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_applied_steps + 1)
-                                    AMR.objects[1].activate(first, second)
+                                    amr.objects[1].activate(first, second)
                                     j = j+j_inc
                                     delta_t = time_step-previous_time
                                     flag = False
@@ -1056,7 +1065,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     time_passed = 0.
                                     flag = True
                                 previous_time = delta_t
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
 
                                 com = ['constant_left', 'accelerated_left',
@@ -1078,8 +1087,8 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     cond1 = cycle_number < min_cycle_number
                     vl1 = left_reservoir_length/2
                     vl2 = right_reservoir_length/2
-                    cond2 = ((abs(abs(AMR.objects[2].temperature[vl1][0] -
-                                      AMR.objects[3].temperature[vl2][0]) -
+                    cond2 = ((abs(abs(amr.objects[2].temperature[vl1][0] -
+                                      amr.objects[3].temperature[vl2][0]) -
                                   abs(value1-value2)))/abs(value1-value2))
                     cond2 = cond2 > stop_criteria
                     cond3 = cycle_number < max_cycle_number - 1
@@ -1095,16 +1104,16 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
         if starting_field == 'applied':
 
             condition = True
-            q1 = AMR.q1
+            q1 = amr.q1
 
             while condition:
 
-                value1 = AMR.q1 - q1
-                q1 = AMR.q1
-                q2 = AMR.q2
+                value1 = amr.q1 - q1
+                q1 = amr.q1
+                q2 = amr.q2
 
                 if mod_freq != 'default':
-                    val = AMR.objects[1].temperature[mod_freq[1]][0]
+                    val = amr.objects[1].temperature[mod_freq[1]][0]
                     temperature_sensor = val
                     input = open(mod_freq[0], 'r')
                     s = input.readlines()
@@ -1171,10 +1180,10 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                         right_reservoir_length) / 2 -
                                     steps / 2)
                         for i in range(MCM_length):
-                            cond1 = (p * len(AMR.objects[1].temperature) /
+                            cond1 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) +
                                      int(mcm_discontinuity[1] / (2 * dx)))
-                            cond2 = (p * len(AMR.objects[1].temperature) /
+                            cond2 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) -
                                      int(mcm_discontinuity[1] / (2 * dx)))
                             if not (i+1 < cond1 and i+1 >= cond2):
@@ -1195,16 +1204,16 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         contacts.add(((0, i+init_pos+n), (3, i+1),
                                       h_rightreservoir_fluid))
 
-                    AMR.contacts = contacts
+                    amr.contacts = contacts
 
                     cond1 = (1/(2.*freq) -
                              applied_static_field_time_ratio[1]/freq)
                     if n*time_step < applied_static_field_time_ratio[0]/freq:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
 
                     elif n*time_step > cond1:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
                     else:
 
@@ -1237,12 +1246,12 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_applied_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_applied_steps + 1)
-                                    AMR.objects[1].activate(first, second)
+                                    amr.objects[1].activate(first, second)
                                     j = j+j_inc
                                     delta_t = time_step-previous_time
                                 else:
                                     delta_t = time_step
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 time_passed = time_passed + delta_t
                                 cond = False
@@ -1262,7 +1271,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_applied_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_applied_steps + 1)
-                                    AMR.objects[1].activate(first, second)
+                                    amr.objects[1].activate(first, second)
                                     j = j+j_inc
                                     delta_t = time_step-previous_time
                                     flag = False
@@ -1272,7 +1281,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     time_passed = 0.
                                     flag = True
                                 previous_time = delta_t
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
 
                                 com = ['constant_left', 'accelerated_left',
@@ -1333,11 +1342,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                         rightHEXpositions +
                                         right_reservoir_length) / 2 + steps/2)
                         for i in range(MCM_length):
-                            cond1 = (p * len(AMR.objects[1].temperature) /
+                            cond1 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) +
                                      int(mcm_discontinuity[1] /
                                          (2 * dx)))
-                            cond2 = (p * len(AMR.objects[1].temperature) /
+                            cond2 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) -
                                      int(mcm_discontinuity[1] / (2 * dx)))
                             if not (i+1 < cond1 and i+1 >= cond2):
@@ -1356,16 +1365,16 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         contacts.add(((0, i+init_pos-n), (3, i+1),
                                       h_rightreservoir_fluid))
 
-                    AMR.contacts = contacts
+                    amr.contacts = contacts
 
                     cond1 = (1 / (2. * freq) -
                              removed_static_field_time_ratio[1] / freq)
                     if n*time_step < removed_static_field_time_ratio[0]/freq:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
 
                     elif n*time_step > cond1:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
                     else:
 
@@ -1399,13 +1408,13 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_removal_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_removal_steps + 1)
-                                    AMR.objects[1].deactivate(first,
+                                    amr.objects[1].deactivate(first,
                                                               second)
                                     j = j + j_inc
                                     delta_t = time_step - previous_time
                                 else:
                                     delta_t = time_step
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 time_passed = time_passed + delta_t
                                 cond = False
@@ -1425,7 +1434,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_removal_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_removal_steps + 1)
-                                    AMR.objects[1].deactivate(first,
+                                    amr.objects[1].deactivate(first,
                                                               second)
                                     j = j + j_inc
                                     delta_t = time_step-previous_time
@@ -1436,7 +1445,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     time_passed = 0.
                                     flag = True
                                 previous_time = delta_t
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
@@ -1455,7 +1464,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     condition = cycle_number < max_cycle_number - 1
                 else:
                     cond1 = cycle_number < min_cycle_number
-                    cond2 = abs((AMR.q1-q1)-value1)/value1 > stop_criteria
+                    cond2 = abs((amr.q1-q1)-value1)/value1 > stop_criteria
                     cond3 = cycle_number < max_cycle_number
                     condition = (cond1 or cond2) and cond3
                 cycle_number = cycle_number + 1
@@ -1464,12 +1473,12 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             condition = True
             while condition:
 
-                value1 = AMR.q1 - q1
-                q1 = AMR.q1
-                q2 = AMR.q2
+                value1 = amr.q1 - q1
+                q1 = amr.q1
+                q2 = amr.q2
 
                 if mod_freq != 'default':
-                    val = AMR.objects[1].temperature[mod_freq[1]][0]
+                    val = amr.objects[1].temperature[mod_freq[1]][0]
                     temperature_sensor = val
                     input = open(mod_freq[0], 'r')
                     s = input.readlines()
@@ -1534,11 +1543,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                         rightHEXpositions +
                                         right_reservoir_length) / 2 + steps/2)
                         for i in range(MCM_length):
-                            cond1 = (p * len(AMR.objects[1].temperature) /
+                            cond1 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) +
                                      int(mcm_discontinuity[1] /
                                          (2 * dx)))
-                            cond2 = (p * len(AMR.objects[1].temperature) /
+                            cond2 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) -
                                      int(mcm_discontinuity[1] / (2 * dx)))
                             if not (i+1 < cond1 and i+1 >= cond2):
@@ -1557,16 +1566,16 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         contacts.add(((0, i+init_pos-n), (3, i+1),
                                       h_rightreservoir_fluid))
 
-                    AMR.contacts = contacts
+                    amr.contacts = contacts
 
                     cond1 = (1 / (2. * freq) -
                              removed_static_field_time_ratio[1] / freq)
                     if n*time_step < removed_static_field_time_ratio[0]/freq:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
 
                     elif n*time_step > cond1:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
                     else:
 
@@ -1600,13 +1609,13 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_removal_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_removal_steps + 1)
-                                    AMR.objects[1].deactivate(first,
+                                    amr.objects[1].deactivate(first,
                                                               second)
                                     j = j + j_inc
                                     delta_t = time_step - previous_time
                                 else:
                                     delta_t = time_step
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 time_passed = time_passed + delta_t
                                 cond = False
@@ -1626,7 +1635,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_removal_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_removal_steps + 1)
-                                    AMR.objects[1].deactivate(first,
+                                    amr.objects[1].deactivate(first,
                                                               second)
                                     j = j + j_inc
                                     delta_t = time_step-previous_time
@@ -1637,7 +1646,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     time_passed = 0.
                                     flag = True
                                 previous_time = delta_t
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
@@ -1699,10 +1708,10 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                         right_reservoir_length) / 2 -
                                     steps / 2)
                         for i in range(MCM_length):
-                            cond1 = (p * len(AMR.objects[1].temperature) /
+                            cond1 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) +
                                      int(mcm_discontinuity[1] / (2 * dx)))
-                            cond2 = (p * len(AMR.objects[1].temperature) /
+                            cond2 = (p * len(amr.objects[1].temperature) /
                                      (mcm_discontinuity[0] + 1) -
                                      int(mcm_discontinuity[1] / (2 * dx)))
                             if not (i+1 < cond1 and i+1 >= cond2):
@@ -1723,16 +1732,16 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                         contacts.add(((0, i+init_pos+n), (3, i+1),
                                       h_rightreservoir_fluid))
 
-                    AMR.contacts = contacts
+                    amr.contacts = contacts
 
                     cond1 = (1/(2.*freq) -
                              applied_static_field_time_ratio[1]/freq)
                     if n*time_step < applied_static_field_time_ratio[0]/freq:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
 
                     elif n*time_step > cond1:
-                        AMR.compute(time_step, write_interval,
+                        amr.compute(time_step, write_interval,
                                     solver=solver)
                     else:
 
@@ -1765,12 +1774,12 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_applied_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_applied_steps + 1)
-                                    AMR.objects[1].activate(first, second)
+                                    amr.objects[1].activate(first, second)
                                     j = j+j_inc
                                     delta_t = time_step-previous_time
                                 else:
                                     delta_t = time_step
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
                                 time_passed = time_passed + delta_t
                                 cond = False
@@ -1790,7 +1799,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                              field_applied_steps + 1)
                                     second = ((j+1) * MCM_length /
                                               field_applied_steps + 1)
-                                    AMR.objects[1].activate(first, second)
+                                    amr.objects[1].activate(first, second)
                                     j = j+j_inc
                                     delta_t = time_step-previous_time
                                     flag = False
@@ -1800,7 +1809,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     time_passed = 0.
                                     flag = True
                                 previous_time = delta_t
-                                AMR.compute(delta_t, write_interval,
+                                amr.compute(delta_t, write_interval,
                                             solver=solver)
 
                                 com = ['constant_left', 'accelerated_left',
@@ -1820,7 +1829,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                     condition = cycle_number < max_cycle_number - 1
                 else:
                     cond1 = cycle_number < min_cycle_number
-                    cond2 = abs((AMR.q1-q1)-value1)/value1 > stop_criteria
+                    cond2 = abs((amr.q1-q1)-value1)/value1 > stop_criteria
                     cond3 = cycle_number < max_cycle_number
                     condition = (cond1 or cond2) and cond3
                 cycle_number = cycle_number + 1
@@ -1848,21 +1857,21 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             if type_study == 'no_load':
                 v1 = int(left_reservoir_length/2)
                 v2 = int(right_reservoir_length/2)
-                val = (abs(AMR.objects[2].temperature[v1][0] -
-                       AMR.objects[3].temperature[v2][0]))
+                val = (abs(amr.objects[2].temperature[v1][0] -
+                       amr.objects[3].temperature[v2][0]))
                 temperature_span = val
-                error = ((abs(abs(AMR.objects[2].temperature[vl1][0] -
-                                  AMR.objects[3].temperature[vl2][0]) -
+                error = ((abs(abs(amr.objects[2].temperature[vl1][0] -
+                                  amr.objects[3].temperature[vl2][0]) -
                               abs(value1-value2)))/abs(value1-value2))
                 print('Final cycle error:', error)
                 print('No load temperature span (K):', temperature_span)
                 return temperature_span
             if type_study == 'fixed_temperature_span':
-                cooling_power = (-AMR.q2+q2)*freq
-                heating_power = (AMR.q1-q1)*freq
-                working_power = (AMR.q2-q2+AMR.q1-q1)*freq
+                cooling_power = (-amr.q2+q2)*freq
+                heating_power = (amr.q1-q1)*freq
+                working_power = (amr.q2-q2+amr.q1-q1)*freq
                 COP = cooling_power/working_power
-                error = abs((AMR.q1-q1)-value1)/value1
+                error = abs((amr.q1-q1)-value1)/value1
                 print('Final cycle error:', error)
                 print('Cooling power (W/m2):', cooling_power)
                 print('Heating power (W/m2):', heating_power)
@@ -1873,27 +1882,27 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
             if type_study == 'no_load':
                 v1 = int(left_reservoir_length/2)
                 v2 = int(right_reservoir_length/2)
-                val = (abs(AMR.objects[2].temperature[v1][0] -
-                       AMR.objects[3].temperature[v2][0]))
+                val = (abs(amr.objects[2].temperature[v1][0] -
+                       amr.objects[3].temperature[v2][0]))
                 temperature_span = val
-                error = ((abs(abs(AMR.objects[2].temperature[vl1][0] -
-                                  AMR.objects[3].temperature[vl2][0]) -
+                error = ((abs(abs(amr.objects[2].temperature[vl1][0] -
+                                  amr.objects[3].temperature[vl2][0]) -
                               abs(value1-value2)))/abs(value1-value2))
                 print('Final cycle error:', error)
                 print('No load temperature span (K):', temperature_span)
                 return temperature_span
             if type_study == 'fixed_temperature_span':
-                cooling_power = (-AMR.q2+q2)*freq
-                heating_power = (AMR.q1-q1)*freq
-                working_power = (AMR.q2-q2+AMR.q1-q1)*freq
-                error = abs((AMR.q1-q1)-value1)/value1
+                cooling_power = (-amr.q2+q2)*freq
+                heating_power = (amr.q1-q1)*freq
+                working_power = (amr.q2-q2+amr.q1-q1)*freq
+                error = abs((amr.q1-q1)-value1)/value1
                 print('Final cycle error:', error)
                 print('Cooling power (W/m2):', cooling_power)
                 print('Heating power (W/m2):', heating_power)
                 print('Working power (W/m2)', working_power)
                 print('COP:', heating_power/working_power)
                 return (cooling_power, heating_power)
-        print('Final time (s):', AMR.objects[0].time_passed)
+        print('Final time (s):', amr.objects[0].time_passed)
         print('Simulation duration:', hours + ':' + minutes + ':' + seconds)
         print('')
         print('------------------------------------------------------')

@@ -4,7 +4,6 @@ Used to compute thermal processes
 
 """
 
-import numpy as np
 import copy
 
 
@@ -15,7 +14,6 @@ def explicit_k(obj):
     conductivity.
 
     """
-
     x = copy.deepcopy(obj.temperature)
 
     # computes
@@ -23,14 +21,14 @@ def explicit_k(obj):
         eta = obj.dt / (2. * obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
         beta = obj.dt / (obj.rho[i] * obj.Cp[i])
 
-        Tnew = ((1 + beta * obj.Q[i]) * obj.temperature[i][0] +
-                eta * ((obj.k[i + 1] + obj.k[i]) * obj.temperature[i + 1][0] -
-                       (obj.k[i - 1] + obj.k[i + 1] + 2 * obj.k[i]) *
-                       obj.temperature[i][0] + (obj.k[i - 1] + obj.k[i]) *
-                       obj.temperature[i - 1][0]) +
-                beta * (obj.Q0[i] - obj.Q[i] * obj.amb_temperature))
+        t_new = ((1 + beta * obj.Q[i]) * obj.temperature[i][0] +
+                 eta * ((obj.k[i + 1] + obj.k[i]) * obj.temperature[i + 1][0] -
+                        (obj.k[i - 1] + obj.k[i + 1] + 2 * obj.k[i]) *
+                        obj.temperature[i][0] + (obj.k[i - 1] + obj.k[i]) *
+                        obj.temperature[i - 1][0]) +
+                 beta * (obj.Q0[i] - obj.Q[i] * obj.amb_temperature))
 
-        x[i][1] = Tnew
+        x[i][1] = t_new
 
     # left boundary for next time step
     if obj.boundaries[0] == 0:

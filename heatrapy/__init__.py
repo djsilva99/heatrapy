@@ -53,7 +53,7 @@ elastocaloric, and barocaloric.
 """
 
 from .systems import solid_active_regenerator, fluid_active_regenerator
-from .objects import object, system_objects, single_object
+from .objects import Object, SystemObjects, SingleObject
 
-__all__ = [object, system_objects, single_object, solid_active_regenerator,
+__all__ = [Object, SystemObjects, SingleObject, solid_active_regenerator,
            fluid_active_regenerator]
