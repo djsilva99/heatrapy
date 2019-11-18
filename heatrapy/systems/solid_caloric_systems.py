@@ -353,11 +353,11 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                                                 field_applied_steps, freq,
                                                 j)
                 a.compute(delta_t, int(1 / (freq * dt * cycle_points)),
-                          solver=solver)
+                          solver=solver, verbose=False)
 
             a.compute(resting_time_hot * period,
                       int(1 / (freq * dt * cycle_points)),
-                      solver=solver)
+                      solver=solver, verbose=False)
 
             # REMOVAL OF FIELD AND COMPUTATION
 
@@ -383,11 +383,12 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                                                 field_removal_steps, freq,
                                                 j)
                 a.compute(delta_t, int(1 / (freq * dt * cycle_points)),
-                          solver=solver)
+                          solver=solver, verbose=False)
 
             time_interval = resting_time_cold * period
             write_interval = int(1 / (freq * dt * cycle_points))
-            a.compute(time_interval, write_interval, solver=solver)
+            a.compute(time_interval, write_interval, solver=solver,
+                      verbose=False)
 
         if starting_field == 'removal':
 
@@ -415,11 +416,12 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                                                 field_removal_steps, freq,
                                                 j)
                 a.compute(delta_t, int(1 / (freq * dt * cycle_points)),
-                          solver=solver)
+                          solver=solver, verbose=False)
 
             time_interval = resting_time_cold * period
             write_interval = int(1 / (freq * dt * cycle_points))
-            a.compute(time_interval, write_interval, solver=solver)
+            a.compute(time_interval, write_interval, solver=solver,
+                      verbose=False)
 
         # APPLICATION OF FIELD AND COMPUTATION
 
@@ -445,11 +447,11 @@ def solid_active_regenerator(file_name, amb_temperature=293,
                                                 field_applied_steps, freq,
                                                 j)
                 a.compute(delta_t, int(1 / (freq * dt * cycle_points)),
-                          solver=solver)
+                          solver=solver, verbose=False)
 
             a.compute(resting_time_hot * period,
                       int(1 / (freq * dt * cycle_points)),
-                      solver=solver)
+                      solver=solver, verbose=False)
 
         # updates the error values and prints information in log file
         value1 = value2

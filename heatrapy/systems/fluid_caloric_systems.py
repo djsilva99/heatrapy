@@ -462,11 +462,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                              applied_static_field_time_ratio[1]/freq)
                     if n*time_step < applied_static_field_time_ratio[0]/freq:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
 
                     elif n*time_step > cond1:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
                     else:
 
                         # MCE
@@ -504,7 +504,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                 else:
                                     delta_t = time_step
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 time_passed = time_passed + delta_t
                                 cond = False
                                 flag = True
@@ -533,7 +533,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     flag = True
                                 previous_time = delta_t
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
 
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
@@ -621,11 +621,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                              removed_static_field_time_ratio[1] / freq)
                     if n*time_step < removed_static_field_time_ratio[0]/freq:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
 
                     elif n*time_step > cond1:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
                     else:
 
                         # MCE
@@ -665,7 +665,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                 else:
                                     delta_t = time_step
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 time_passed = time_passed + delta_t
                                 cond = False
                                 flag = True
@@ -696,7 +696,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     flag = True
                                 previous_time = delta_t
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
                                 if field_removal_mode not in com:
@@ -828,11 +828,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                            removed_static_field_time_ratio[1] / freq)
                     if n*time_step < removed_static_field_time_ratio[0]/freq:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
 
                     elif n*time_step > val:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
                     else:
 
                         # MCE
@@ -872,7 +872,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                 else:
                                     delta_t = time_step
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 time_passed = time_passed + delta_t
                                 cond = False
                                 flag = True
@@ -903,7 +903,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     flag = True
                                 previous_time = delta_t
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
                                 if field_removal_mode not in com:
@@ -994,11 +994,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                              applied_static_field_time_ratio[1]/freq)
                     if n*time_step < applied_static_field_time_ratio[0]/freq:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
 
                     elif n*time_step > cond1:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
                     else:
 
                         # MCE
@@ -1036,7 +1036,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                 else:
                                     delta_t = time_step
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 time_passed = time_passed + delta_t
                                 cond = False
                                 flag = True
@@ -1066,7 +1066,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     flag = True
                                 previous_time = delta_t
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
 
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
@@ -1210,11 +1210,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                              applied_static_field_time_ratio[1]/freq)
                     if n*time_step < applied_static_field_time_ratio[0]/freq:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
 
                     elif n*time_step > cond1:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
                     else:
 
                         # MCE
@@ -1252,7 +1252,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                 else:
                                     delta_t = time_step
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 time_passed = time_passed + delta_t
                                 cond = False
                                 flag = True
@@ -1282,7 +1282,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     flag = True
                                 previous_time = delta_t
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
 
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
@@ -1371,11 +1371,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                              removed_static_field_time_ratio[1] / freq)
                     if n*time_step < removed_static_field_time_ratio[0]/freq:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
 
                     elif n*time_step > cond1:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
                     else:
 
                         # MCE
@@ -1415,7 +1415,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                 else:
                                     delta_t = time_step
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 time_passed = time_passed + delta_t
                                 cond = False
                                 flag = True
@@ -1446,7 +1446,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     flag = True
                                 previous_time = delta_t
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
                                 if field_removal_mode not in com:
@@ -1572,11 +1572,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                              removed_static_field_time_ratio[1] / freq)
                     if n*time_step < removed_static_field_time_ratio[0]/freq:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
 
                     elif n*time_step > cond1:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
                     else:
 
                         # MCE
@@ -1616,7 +1616,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                 else:
                                     delta_t = time_step
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 time_passed = time_passed + delta_t
                                 cond = False
                                 flag = True
@@ -1647,7 +1647,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     flag = True
                                 previous_time = delta_t
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']
                                 if field_removal_mode not in com:
@@ -1738,11 +1738,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                              applied_static_field_time_ratio[1]/freq)
                     if n*time_step < applied_static_field_time_ratio[0]/freq:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
 
                     elif n*time_step > cond1:
                         amr.compute(time_step, write_interval,
-                                    solver=solver)
+                                    solver=solver, verbose=False)
                     else:
 
                         # MCE
@@ -1780,7 +1780,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                 else:
                                     delta_t = time_step
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
                                 time_passed = time_passed + delta_t
                                 cond = False
                                 flag = True
@@ -1810,7 +1810,7 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
                                     flag = True
                                 previous_time = delta_t
                                 amr.compute(delta_t, write_interval,
-                                            solver=solver)
+                                            solver=solver, verbose=False)
 
                                 com = ['constant_left', 'accelerated_left',
                                        'decelerated_left']

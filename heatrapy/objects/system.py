@@ -119,7 +119,8 @@ class SystemObjects:
 
         self.contacts.remove(removing_contact)
 
-    def compute(self, time_interval, write_interval, solver='implicit_k(x)'):
+    def compute(self, time_interval, write_interval, solver='implicit_k(x)',
+                verbose=True):
         """Compute the thermal process.
 
         Computes the system for timeInterval, and writes into the file_name
@@ -234,8 +235,13 @@ class SystemObjects:
 
             if nw == write_interval:
                 nw = 0
+                if verbose:
+                    print('progress:', int(100*j/nt), '%', end='\r')
             else:
                 nw = nw + 1
+
+        if verbose:
+            print('Finished simulation')
 
 
 class SingleObject(Object):
@@ -449,7 +455,8 @@ class SingleObject(Object):
                 self.Q0[j] = power[0]
 
     def compute(self, time_interval, write_interval, solver='explicit_k(x)',
-                mode_temp=False, num_flag=0.5, mode_temp_point=1):
+                mode_temp=False, num_flag=0.5, mode_temp_point=1,
+                verbose=True):
         """Compute the thermal process.
 
         Computes the system for timeInterval, and writes into the file_name
@@ -551,3 +558,8 @@ class SingleObject(Object):
 
             if nw == write_interval:
                 nw = 0
+                if verbose:
+                    print('pogress:', int(100*j/nt), '%', end="\r")
+
+        if verbose:
+            print('Finished simulation')
