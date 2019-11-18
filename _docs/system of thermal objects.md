@@ -57,9 +57,9 @@ Finally, to compute the overall system type
 ```python
 >>> foo.compute(
 ...     time_interval, write_interval,
-...	solver='implicit_k'
+...	solver='implicit_k', verbose=True
 ... )
 ```
 
-This method computes the system for `time_interval`, and writes into the `file_name` file every `write_interval` time steps. Four different `solvers` can be used: `'explicit_general'`, `'explicit_k(x)'`, `'implicit_general'`, and `'implicit_k(x)'`. The implicit solvers use the Crank-Nicholsen method. While the solvers ending with general is only suited to x-independent thermal conductivities, the solvers ending with k(x) take into account x-dependent thermal conductivities. In general, the solver `implicit_k(x)` works for all the systems but is computationally more heavy (more time consuming).
+This method computes the system for `time_interval`, and writes into the `file_name` file every `write_interval` time steps. Four different `solvers` can be used: `'explicit_general'`, `'explicit_k(x)'`, `'implicit_general'`, and `'implicit_k(x)'`. The implicit solvers use the Crank-Nicholsen method. While the solvers ending with general is only suited to x-independent thermal conductivities, the solvers ending with k(x) take into account x-dependent thermal conductivities. In general, the solver `implicit_k(x)` works for all the systems but is computationally more heavy (more time consuming). The variable `verbose` allows to watch the progress of the computation if set to `True`.
 
