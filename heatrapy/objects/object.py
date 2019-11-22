@@ -18,7 +18,7 @@ class Object:
     """
 
     def __init__(self, amb_temperature, materials=('Cu',), borders=(1, 11),
-                 materials_order=(0,), dx=0.01, dt=0.1, file_name='data.txt',
+                 materials_order=(0,), dx=0.01, dt=0.1, file_name=None,
                  boundaries=(0, 0), Q=[], Q0=[], initial_state=False,
                  heat_save=False, materials_path=False):
         """Thermal object initialization.
@@ -50,7 +50,7 @@ class Object:
         cond05 = isinstance(dx, int) or isinstance(dx, float)
         cond06 = isinstance(dt, int) or isinstance(dt, float)
         cond07 = isinstance(file_name, str)
-        cond07 = cond07 or isinstance(file_name, str)
+        cond07 = cond07 or (file_name is None)
         cond08 = isinstance(boundaries, tuple)
         cond09 = isinstance(Q, list)
         cond10 = isinstance(Q0, list)
@@ -176,15 +176,16 @@ class Object:
         self.Q0_ref = copy.copy(self.Q0)
         # print(self.Q0_ref)
 
-        line = 'time(s)'
-        for i in range(len(self.temperature)):
-            line = line + ',T[' + str(i) + '] (K)'
-        if heat_save:
-            line = line + ',Q (J/m)'
-        line = line + '\n'
-        f = open(self.file_name, 'a')
-        f.write(line)
-        f.close()
+        if file_name:
+            line = 'time(s)'
+            for i in range(len(self.temperature)):
+                line = line + ',T[' + str(i) + '] (K)'
+            if heat_save:
+                line = line + ',Q (J/m)'
+            line = line + '\n'
+            f = open(self.file_name, 'a')
+            f.write(line)
+            f.close()
 
     def activate(self, initial_point, final_point):
         """Activation of the material.

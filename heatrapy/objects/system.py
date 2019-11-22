@@ -21,7 +21,7 @@ class SystemObjects:
 
     def __init__(self, number_objects=2, materials=('Cu', 'Cu'),
                  objects_length=(10, 10), amb_temperature=293, dx=0.01, dt=0.1,
-                 file_name='data', initial_state=False,
+                 file_name=None, initial_state=False,
                  boundaries=((2, 0), (3, 0)), materials_path=False):
         """System object initialization.
 
@@ -50,7 +50,7 @@ class SystemObjects:
         cond05 = isinstance(dx, int) or isinstance(dx, float)
         cond06 = isinstance(dt, int) or isinstance(dt, float)
         cond07 = isinstance(file_name, str)
-        cond07 = cond07 or isinstance(file_name, str)
+        cond07 = cond07 or (file_name is None)
         cond08 = isinstance(boundaries, tuple)
         cond09 = isinstance(initial_state, bool)
         condition = cond01 and cond02 and cond03 and cond04 and cond05
@@ -66,13 +66,15 @@ class SystemObjects:
             else:
                 heat_save = True
 
+            if file_name:
+                file_name = file_name + '_' + str(i) + '.txt'
+
             self.objects.append(Object(amb_temperature,
                                 materials=(materials[i],),
                                 borders=(1, objects_length[i]+1),
                                 materials_order=(0,), dx=dx, dt=dt,
-                                file_name=file_name+'_'+str(i)+'.txt',
-                                boundaries=(0, 0), Q=[], Q0=[],
-                                initial_state=initial_state,
+                                file_name=file_name, boundaries=(0, 0),
+                                Q=[], Q0=[], initial_state=initial_state,
                                 heat_save=heat_save,
                                 materials_path=materials_path))
 
@@ -199,14 +201,15 @@ class SystemObjects:
 
                     # writes the temperature to file_name file ...
                     # if the number of time steps is verified
-                    if nw + 1 == write_interval or j == 0 or j == nt - 1:
-                        line = '%f' % obj.time_passed
-                        for i in obj.temperature:
-                            new_line = ',%f' % i[1]
-                            line = line + new_line
-                        f = open(obj.file_name, 'a')
-                        f.write(line+'\n')
-                        f.close()
+                    if obj.file_name:
+                        if nw + 1 == write_interval or j == 0 or j == nt - 1:
+                            line = '%f' % obj.time_passed
+                            for i in obj.temperature:
+                                new_line = ',%f' % i[1]
+                                line = line + new_line
+                            f = open(obj.file_name, 'a')
+                            f.write(line+'\n')
+                            f.close()
 
                 else:
 
@@ -222,16 +225,17 @@ class SystemObjects:
 
                     # writes the temperature to file_name file ...
                     # if the number of time steps is verified
-                    if nw + 1 == write_interval or j == 0 or j == nt - 1:
-                        line = '%f' % obj.time_passed
-                        for i in obj.temperature:
-                            new_line = ',%f' % i[1]
+                    if obj.file_name:
+                        if nw + 1 == write_interval or j == 0 or j == nt - 1:
+                            line = '%f' % obj.time_passed
+                            for i in obj.temperature:
+                                new_line = ',%f' % i[1]
+                                line = line + new_line
+                            new_line = ',%f' % q
                             line = line + new_line
-                        new_line = ',%f' % q
-                        line = line + new_line
-                        f = open(obj.file_name, 'a')
-                        f.write(line+'\n')
-                        f.close()
+                            f = open(obj.file_name, 'a')
+                            f.write(line+'\n')
+                            f.close()
 
             if nw == write_interval:
                 nw = 0
@@ -259,11 +263,11 @@ class SingleObject(Object):
     """
 
     def __init__(self, amb_temperature, materials=('Cu',), borders=(1, 11),
-                 materials_order=(0,), dx=0.01, dt=0.1, file_name='data.txt',
+                 materials_order=(0,), dx=0.01, dt=0.1, file_name=None,
                  boundaries=(0, 0), Q=[], Q0=[], heat_points=(1, -2),
                  initial_state=False, h_left=50000., h_right=50000.,
                  materials_path=False):
-        """Initializes the object.
+        """Object initialization.
 
         amb_temperature: ambient temperature of the whole system
         materials: list of strings of all the used materials present in the
@@ -293,7 +297,6 @@ class SingleObject(Object):
         h_right: right heat transfer coefficient
 
         """
-
         # check the validity of inputs
         cond01 = isinstance(amb_temperature, float)
         cond01 = cond01 or isinstance(amb_temperature, int)
@@ -303,6 +306,7 @@ class SingleObject(Object):
         cond05 = isinstance(dx, int) or isinstance(dx, float)
         cond06 = isinstance(dt, int) or isinstance(dt, float)
         cond07 = isinstance(file_name, str)
+        cond07 = cond07 or (file_name is None)
         cond08 = isinstance(boundaries, tuple)
         cond09 = isinstance(heat_points, tuple)
         cond10 = isinstance(initial_state, bool)
@@ -432,14 +436,15 @@ class SingleObject(Object):
         self.heatLeft = 0.
         self.heatRight = 0.
 
-        line = 'time(s)'
-        for i in range(len(self.temperature)):
-            line = line + ',T[' + str(i) + '] (K)'
-        line = line + ',heat[' + str(self.heat_points[0]) + '](W)' + \
-            ',heat[' + str(self.heat_points[1]) + '](J)\n'
-        f = open(self.file_name, 'a')
-        f.write(line)
-        f.close()
+        if file_name:
+            line = 'time(s)'
+            for i in range(len(self.temperature)):
+                line = line + ',T[' + str(i) + '] (K)'
+            line = line + ',heat[' + str(self.heat_points[0]) + '](W)' + \
+                ',heat[' + str(self.heat_points[1]) + '](J)\n'
+            f = open(self.file_name, 'a')
+            f.write(line)
+            f.close()
 
     def change_heat_power(self, Q=[], Q0=[]):
         """Heat power source change.
@@ -536,25 +541,27 @@ class SingleObject(Object):
                 value = self.temperature[mode_temp_point][0] - init_mode_temp
                 if abs(value) > num_flag:
                     nw = 0
-                    f = open(self.file_name, 'a')
-                    f.write(line)
-                    f.close()
+                    if self.file_name:
+                        f = open(self.file_name, 'a')
+                        f.write(line)
+                        f.close()
                     break
 
             # writes the temperature to file_name file ...
             # if the number of time steps is verified
-            if nw == write_interval or j == 0 or j == nt - 1:
-                line = '%f,' % self.time_passed
-                for i in self.temperature:
-                    new_line = '%f,' % i[1]
+            if self.file_name:
+                if nw == write_interval or j == 0 or j == nt - 1:
+                    line = '%f,' % self.time_passed
+                    for i in self.temperature:
+                        new_line = '%f,' % i[1]
+                        line = line + new_line
+                    new_line = '%f,' % self.heatLeft
                     line = line + new_line
-                new_line = '%f,' % self.heatLeft
-                line = line + new_line
-                new_line = '%f' % self.heatRight
-                line = line + new_line + '\n'
-                f = open(self.file_name, 'a')
-                f.write(line)
-                f.close()
+                    new_line = '%f' % self.heatRight
+                    line = line + new_line + '\n'
+                    f = open(self.file_name, 'a')
+                    f.write(line)
+                    f.close()
 
             if nw == write_interval:
                 nw = 0
