@@ -14,8 +14,8 @@ The `object` class is the building block of the whole package. It creates therma
 >>> foo = ht.object(
 ...     amb_temperature, materials=('Cu',), borders=(1, 11),
 ...	materials_order=(0,), dx=0.01, dt=0.1,
-...	file_name='data.txt', boundaries=(0, 0), Q=[],
-...	Q0=[], initial_state=False, heat_save=False
+...	file_name=None, boundaries=(0, 0), Q=[], Q0=[],
+... initial_state=False, heat_save=False
 ... )
 ```
 
@@ -27,7 +27,7 @@ The input variables are the following:
 * `materials_order`: tuple of the `materials` tuple index that defines the material properties given by `borders`
 * `dx`: the space step
 * `dt`: the times step
-* `file_name`: file name where the temperature and heat flux are saved
+* `file_name`: file name where the temperature and heat flux are saved. If `None` no file is saved.
 * `boundaries`: tuple of two entries that define the boundary condition for temperature. If 0 the boundary condition is insulation
 * `Q`: list of fixed heat source coefficient.
 * `Q0`: list of temperature dependent heat source coefficient.

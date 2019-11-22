@@ -12,7 +12,7 @@ The `system_objects` class can be used to compute heat transfer processes betwee
 >>> foo = ht.system_objects(
 ...     number_objects=2, materials=('Cu', 'Cu'),
 ...	objects_length=(10, 10), amb_temperature=293,
-...	dx=0.01, dt=0.1, file_name='data',
+...	dx=0.01, dt=0.1, file_name=None,
 ...	initial_state=False,
 ...	boundaries=((2, 0), (3, 0))
 ... )
@@ -26,7 +26,7 @@ The input variables are the following:
 * `objects_length`: tuple of the object lengths (spacial steps)
 * `dx`: the space step
 * `dt`: the times step
-* `file_name`: file name where the temperature and heat flux are saved
+* `file_name`: file name where the temperature and heat flux are saved. If None no data file is saved.
 * `boundaries`: tuple of two entries that define the boundary condition for temperature. The first corresponds to the thermal object while the second defines the temperature. If 0 the boundary condition is insulation
 * `initial_state`: initial state of the materials. True if applied field and False is removed field.
 

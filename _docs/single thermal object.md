@@ -12,7 +12,7 @@ The `single_object` class solves numerically the heat conduction equation for a 
 >>> foo = ht.single_object(
 ...     amb_temperature, materials=('Cu',),
 ...	borders=(1, 11), materials_order=(0,),
-...	dx=0.01, dt=0.1, file_name='data.txt',
+...	dx=0.01, dt=0.1, file_name=None,
 ...	boundaries=(0, 0), Q=[], Q0=[],
 ...	heat_points=(1, -2),
 ...	initial_state=False, h_left=50000.,
@@ -28,7 +28,7 @@ The input variables are the following:
 * `materials_order`: tuple of the `materials` list indexes that defines the material properties given by `borders`
 * `dx`: the space step
 * `dt`: the times step
-* `file_name`: file name where the temperature and heat flux are saved
+* `file_name`: file name where the temperature and heat flux are saved. If `None` no data file is saved.
 * `boundaries`: tuple of two entries that define the boundary condition for temperature. If 0 the boundary condition is insulation
 * `Q`: list of fixed heat source coefficient.
 * `Q0`: list of temperature dependent heat source coefficient.
