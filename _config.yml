@@ -1,6 +1,6 @@
 # Site Settings
 locale                   : "en-US"
-title                    : "Heatapy"
+title                    : "Heatrapy"
 title_separator          : "-"
 subtitle                 : "Python framework for computing transient heat transfer processes"
 name                     : "Heatrapy project"

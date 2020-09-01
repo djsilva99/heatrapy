@@ -9,12 +9,11 @@ The following example computes a simple 1-dimensional model with 0.5 m of gadoli
 
 ```python
 >>> example = ht.single_object(
-...     293, materials=['Gd'], borders=[1,11],
+...     293, materials=['Gd'], borders=(1,11),
 ...	materials_order=[0], 293, materials=['Gd'],
-...	borders=[1,11], materials_order=[0],
-...	dx=0.05, dt=1., file_name='example.txt',
-...	boundaries=[300,0], Q=[], Q0=[],
-...	initial_state=False
+...	materials_order=[0], dx=0.05, dt=1.,
+...	file_name='example.txt', boundaries=[300,0],
+...	Q=[], Q0=[], initial_state=False
 ... )
 ```
 
