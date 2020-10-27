@@ -15,7 +15,7 @@ The `SystemObjects` class can be used to compute heat transfer processes between
 ...	dx=0.01, dt=0.1, file_name=None,
 ...	initial_state=False,
 ...	boundaries=((2, 0), (3, 0)),
-... materials_path=False
+...     materials_path=False
 ... )
 ```
 

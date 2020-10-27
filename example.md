@@ -13,7 +13,7 @@ The following example computes a simple 1-dimensional model with 0.5 m of gadoli
 ...	materials_order=(0,), dx=0.05, dt=1.,
 ...	file_name='example.txt', boundaries=(300,0),
 ...	Q=[], Q0=[], initial_state=False,
-... materials_path=False
+...     materials_path=False
 ... )
 ```
 

@@ -33,7 +33,7 @@ To compute a fully solid state caloric system the function `solid_active_regener
 ...	starting_field='applied',
 ...	type_study='fixed_temperature_span',
 ...	h_left=50000., h_right=50000., mod_freq='default',
-... materials_path=False
+...     materials_path=False
 ... )
 ```
 

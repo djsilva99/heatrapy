@@ -15,8 +15,8 @@ The `Object` class is the building block of the whole package. It creates therma
 ...     amb_temperature, materials=('Cu',), borders=(1, 11),
 ...	materials_order=(0,), dx=0.01, dt=0.1,
 ...	file_name=None, boundaries=(0, 0), Q=[], Q0=[],
-... initial_state=False, heat_save=False,
-... materials_path=False
+...     initial_state=False, heat_save=False,
+...     materials_path=False
 ... )
 ```
 
