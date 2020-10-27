@@ -32,7 +32,8 @@ To compute a fully solid state caloric system the function `solid_active_regener
 ...	resting_time_cold='default',
 ...	starting_field='applied',
 ...	type_study='fixed_temperature_span',
-...	h_left=50000., h_right=50000., mod_freq='default'
+...	h_left=50000., h_right=50000., mod_freq='default',
+... materials_path=False
 ... )
 ```
 
@@ -71,4 +72,4 @@ The input variables are the following:
 * `h_left`: left heat transfer coefficient
 * `h_right`: right heat transfer coefficient
 * `mod_freq`: if not `'default'`, i.e. if tuple, allows to modulate the frequency according to a specific temperature. The first element is the file_name, and second the sensor point.
-
+* `materials_path`: string indicating the path to the materials folder. If False, then the materials forder is the builtin heatrapy database folder.

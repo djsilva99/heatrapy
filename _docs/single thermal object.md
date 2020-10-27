@@ -6,17 +6,17 @@ sidebar:
   nav: "docs"
 ---
 
-The `single_object` class solves numerically the heat conduction equation for a single thermal object, in which domains can have different materials. This class inherits the methods of the `object` class. To create a single thermal object type
+The `SingleObject` class solves numerically the heat conduction equation for a single thermal object, in which domains can have different materials. This class inherits the methods of the `Object` class. To create a single thermal object type
 
 ```python
->>> foo = ht.single_object(
+>>> foo = ht.SingleObject(
 ...     amb_temperature, materials=('Cu',),
 ...	borders=(1, 11), materials_order=(0,),
 ...	dx=0.01, dt=0.1, file_name=None,
 ...	boundaries=(0, 0), Q=[], Q0=[],
 ...	heat_points=(1, -2),
 ...	initial_state=False, h_left=50000.,
-...	h_right=50000.
+...	h_right=50000., materials_path=False,
 ... )
 ```
 
@@ -36,6 +36,7 @@ The input variables are the following:
 * `initial_state`: initial state of the materials. `True` if the field is applied and `False` if the field is removed.
 * `h_left`: left heat transfer coefficient
 * `h_right`: right heat transfer coefficient
+* `materials_path`: string indicating the path to the materials folder. If False, then the materials forder is the builtin heatrapy database folder.
 
 To compute the `single_object` type
 

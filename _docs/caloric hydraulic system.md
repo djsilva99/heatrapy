@@ -32,7 +32,7 @@ To compute a hydraulic active caloric regenerative system the function `fluid_ac
 ...	h_mcm_fluid=1, h_leftreservoir_fluid=1,
 ...	h_rightreservoir_fluid=1,
 ...	mcm_discontinuity='default', type_study='no_load',
-...	stroke=.02, mod_freq='default'
+...	stroke=.02, mod_freq='default', materials_path=False
 ... )
 ```
 
@@ -75,4 +75,4 @@ The input variables are the following:
 * `applied_static_field_time_ratio`: tuple with the resting time ratios before and after the application of the field.
 * `removed_static_field_time_ratio`: tuple with the resting time ratios before and after the removal of the field.
 * `mcm_discontinuity`: if not `'default'` the MCM is divided into n pieces. The input is a tuple where the first entry is the number of discontinuities, while the second is the thickness of each discontinuity in meters.
-
+* `materials_path`: string indicating the path to the materials folder. If False, then the materials forder is the builtin heatrapy database folder.
