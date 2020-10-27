@@ -42,6 +42,12 @@ class Object:
 
         """
         # check the validity of inputs
+        materials = tuple(materials)
+        borders = tuple(borders)
+        materials_order = tuple(materials_order)
+        boundaries = tuple(boundaries)
+        Q = list(Q)
+        Q0 = list(Q0)
         cond01 = isinstance(amb_temperature, float)
         cond01 = cond01 or isinstance(amb_temperature, int)
         cond02 = isinstance(materials, tuple)

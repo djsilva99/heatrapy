@@ -104,6 +104,11 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
     """
 
     # check the validity of inputs
+    boundaries = tuple(boundaries)
+    MCM_material = tuple(MCM_material)
+    temperature_sensor = tuple(temperature_sensor)
+    applied_static_field_time_ratio = tuple(applied_static_field_time_ratio)
+    removed_static_field_time_ratio = tuple(removed_static_field_time_ratio)
     cond01 = isinstance(amb_temperature, float)
     cond01 = cond01 or isinstance(amb_temperature, int)
     cond02 = isinstance(fluid_length, int)

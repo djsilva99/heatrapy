@@ -11,21 +11,21 @@ class SingleObjects(unittest.TestCase):
     """Test all single_objects components."""
 
     def test_implicit_general(self):
-        """Test single_object with the implicit_general solver."""
+        """Test singleObject with the implicit_general solver."""
         solution = 245
         example = ht.SingleObject(300, boundaries=(0, 200))
         example.compute(30, 5, solver='implicit_general')
         self.assertEqual(int(example.temperature[5][0]), solution)
 
     def test_explicit_general(self):
-        """Test single_object with the explicit_general solver."""
+        """Test singleObject with the explicit_general solver."""
         solution = 245
         example = ht.SingleObject(300, boundaries=(0, 200))
         example.compute(30, 5, solver='explicit_general')
         self.assertEqual(int(example.temperature[5][0]), solution)
 
     def test_explicit_k(self):
-        """Test single_object with the explicit_k(k) solver."""
+        """Test singleObject with the explicit_k(k) solver."""
         solution = 270
         example = ht.SingleObject(
             300, boundaries=(0, 200), materials=('Cu', 'Gd'),
@@ -35,7 +35,7 @@ class SingleObjects(unittest.TestCase):
         self.assertEqual(int(example.temperature[5][0]), solution)
 
     def test_implicit_k(self):
-        """Test single_object with the implicit_k(k) solver."""
+        """Test singleObject with the implicit_k(k) solver."""
         solution = 270
         example = ht.SingleObject(
             300, boundaries=(0, 200), materials=('Cu', 'Gd'),
@@ -49,7 +49,7 @@ class SystemObjects(unittest.TestCase):
     """Test all system_objects components."""
 
     def test_implicit_general(self):
-        """Test system_objects with the implicit_general solver."""
+        """Test systemObjects with the implicit_general solver."""
         solution = 246
         example = ht.SystemObjects()
         example.objects[0].temperature = [[200., 200.] for i in range(12)]
@@ -58,7 +58,7 @@ class SystemObjects(unittest.TestCase):
         self.assertEqual(int(example.objects[0].temperature[5][0]), solution)
 
     def test_explicit_general(self):
-        """Test system_objects with the explicit_general solver."""
+        """Test systemObjects with the explicit_general solver."""
         solution = 246
         example = ht.SystemObjects()
         example.objects[0].temperature = [[200., 200.] for i in range(12)]
@@ -67,7 +67,7 @@ class SystemObjects(unittest.TestCase):
         self.assertEqual(int(example.objects[0].temperature[5][0]), solution)
 
     def test_implicit_k(self):
-        """Test system_objects with the implicit_k(x) solver."""
+        """Test systemObjects with the implicit_k(x) solver."""
         solution = 246
         example = ht.SystemObjects()
         example.objects[0].temperature = [[200., 200.] for i in range(12)]
@@ -76,7 +76,7 @@ class SystemObjects(unittest.TestCase):
         self.assertEqual(int(example.objects[0].temperature[5][0]), solution)
 
     def test_explicit_k(self):
-        """Test system_objects with the explicit_k(x) solver."""
+        """Test systemObjects with the explicit_k(x) solver."""
         solution = 246
         example = ht.SystemObjects()
         example.objects[0].temperature = [[200., 200.] for i in range(12)]

@@ -90,7 +90,8 @@ def solid_active_regenerator(file_name, amb_temperature=293,
 
     """
     # check the validity of inputs
-
+    MCM_material = tuple(MCM_material)
+    boundaries = tuple(boundaries)
     cond01 = isinstance(file_name, str)
     cond01 = cond01 or isinstance(file_name, str)
     cond02 = isinstance(amb_temperature, float)

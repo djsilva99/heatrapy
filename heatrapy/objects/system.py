@@ -42,6 +42,9 @@ class SystemObjects:
 
         """
         # check the validity of inputs
+        materials = tuple(materials)
+        objects_length = tuple(objects_length)
+        boundaries = tuple(boundaries)
         cond01 = isinstance(amb_temperature, float)
         cond01 = cond01 or isinstance(amb_temperature, int)
         cond02 = isinstance(materials, tuple)
@@ -298,6 +301,13 @@ class SingleObject(Object):
 
         """
         # check the validity of inputs
+        materials = tuple(materials)
+        borders = tuple(borders)
+        materials_order = tuple(materials_order)
+        boundaries = tuple(boundaries)
+        heat_points = tuple(heat_points)
+        Q = list(Q)
+        Q0 = list(Q0)
         cond01 = isinstance(amb_temperature, float)
         cond01 = cond01 or isinstance(amb_temperature, int)
         cond02 = isinstance(materials, tuple)
@@ -312,9 +322,12 @@ class SingleObject(Object):
         cond10 = isinstance(initial_state, bool)
         cond11 = isinstance(h_left, int) or isinstance(h_left, float)
         cond12 = isinstance(h_right, int) or isinstance(h_right, float)
+        cond13 = isinstance(Q, list)
+        cond14 = isinstance(Q0, list)
         condition = cond01 and cond02 and cond03 and cond04 and cond05
         condition = condition and cond06 and cond07 and cond08 and cond09
-        condition = condition and cond10 and cond11 and cond12
+        condition = condition and cond10 and cond11 and cond12 and cond13
+        condition = condition and cond14
         if not condition:
             raise ValueError
 

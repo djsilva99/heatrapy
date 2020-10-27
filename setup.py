@@ -14,7 +14,7 @@ description += 'systems.'
 
 
 setup(name='heatrapy',
-      version='1.0.3',
+      version='1.1.0',
       description='Library for simulating heat transfer processes',
       long_description=description,
       classifiers=[
