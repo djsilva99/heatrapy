@@ -8,7 +8,7 @@ with the regenerative heat process.
 from .. import objects
 import time
 import numpy as np
-from .. import fields
+from ... import fields
 
 
 def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
@@ -201,25 +201,25 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
         import os
         if materials_path is False:
             tadi = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'tadi.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'tadi.txt'
             tadd = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'tadd.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'tadd.txt'
             cpa = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'cpa.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'cpa.txt'
             cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'cp0.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'cp0.txt'
             k0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'k0.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'k0.txt'
             ka = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'ka.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'ka.txt'
             rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'rho0.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'rho0.txt'
             rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'rhoa.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'rhoa.txt'
             lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'lheat0.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'lheat0.txt'
             lheata = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../database/' + MCM_material[i][1] + '/' + 'lheata.txt'
+                '/../../database/' + MCM_material[i][1] + '/' + 'lheata.txt'
             amr.objects[1].materials.append(
                 mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata
@@ -251,21 +251,21 @@ def fluid_active_regenerator(file_name, amb_temperature=298, fluid_length=160,
         from .. import mats
         import os
         tadi = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vacuum/tadi.txt'
+            '/../../database/vacuum/tadi.txt'
         tadd = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vacuum/tadd.txt'
+            '/../../database/vacuum/tadd.txt'
         cpa = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vacuum/cpa.txt'
+            '/../../database/vacuum/cpa.txt'
         cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vacuum/cp0.txt'
+            '/../../database/vacuum/cp0.txt'
         k0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vacuum/k0.txt'
+            '/../../database/vacuum/k0.txt'
         ka = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vacuum/ka.txt'
+            '/../../database/vacuum/ka.txt'
         rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vacuum/rho0.txt'
+            '/../../database/vacuum/rho0.txt'
         rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-            '/../database/vacuum/rhoa.txt'
+            '/../../database/vacuum/rhoa.txt'
         amr.objects[1].materials.append(mats.CalMatPro(tadi, tadd, cpa,
                                                        cp0, k0, ka, rho0,
                                                        rhoa))

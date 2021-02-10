@@ -52,17 +52,8 @@ elastocaloric, and barocaloric.
 
 """
 
-from .dimension_1.systems import solid_active_regenerator as solid_active_regenerator_1D
-from .dimension_1.systems import fluid_active_regenerator as fluid_active_regenerator_1D
-from .dimension_1.objects import Object as Object_1D
-from .dimension_1.objects import SystemObjects as SystemObjects_1D
-from .dimension_1.objects import SingleObject as SingleObject_1D
+from .systems import solid_active_regenerator, fluid_active_regenerator
+from .objects import Object, SystemObjects, SingleObject
 
-#from .dimension_1.systems import solid_active_regenerator, fluid_active_regenerator
-#from .dimension_1.objects import Object, SystemObjects, SingleObject
-
-#__all__ = [Object, SystemObjects, SingleObject, solid_active_regenerator,
-#           fluid_active_regenerator]
-
-__all__ = [Object_1D, SystemObjects_1D, SingleObject_1D, solid_active_regenerator_1D,
-           fluid_active_regenerator_1D]
+__all__ = [Object, SystemObjects, SingleObject, solid_active_regenerator,
+           fluid_active_regenerator]

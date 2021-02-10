@@ -4,7 +4,7 @@ Used to create a thermal object and apply or remove fields.
 
 """
 
-from .. import mats
+from ... import mats
 import os
 import copy
 
@@ -78,25 +78,25 @@ class Object:
         if materials_path == False:
             for i in range(len(materials)):
                 tadi = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'tadi.txt'
+                    '/../../database/' + materials[i] + '/' + 'tadi.txt'
                 tadd = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'tadd.txt'
+                    '/../../database/' + materials[i] + '/' + 'tadd.txt'
                 cpa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'cpa.txt'
+                    '/../../database/' + materials[i] + '/' + 'cpa.txt'
                 cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'cp0.txt'
+                    '/../../database/' + materials[i] + '/' + 'cp0.txt'
                 k0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'k0.txt'
+                    '/../../database/' + materials[i] + '/' + 'k0.txt'
                 ka = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'ka.txt'
+                    '/../../database/' + materials[i] + '/' + 'ka.txt'
                 rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'rho0.txt'
+                    '/../../database/' + materials[i] + '/' + 'rho0.txt'
                 rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'rhoa.txt'
+                    '/../../database/' + materials[i] + '/' + 'rhoa.txt'
                 lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'lheat0.txt'
+                    '/../../database/' + materials[i] + '/' + 'lheat0.txt'
                 lheata = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../database/' + materials[i] + '/' + 'lheata.txt'
+                    '/../../database/' + materials[i] + '/' + 'lheata.txt'
                 self.materials[i] = mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
         else:
