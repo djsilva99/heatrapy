@@ -3,7 +3,7 @@ certifi==2020.6.20
 cffi==1.14.3
 chardet==3.0.4
 colorama==0.4.4
-cryptography==3.2
+cryptography==3.3.2
 docutils==0.16
 idna==2.10
 importlib-metadata==2.0.0
