@@ -66,6 +66,7 @@ class SystemObjects:
 
         # initial definitions
         self.objects = []
+        file_name_obj = None
         for i in range(number_objects):
             if i not in [l[0] for l in boundaries] or (i, 0) in boundaries:
                 heat_save = False
@@ -73,12 +74,12 @@ class SystemObjects:
                 heat_save = True
 
             if file_name:
-                file_name = file_name + '_' + str(i) + '.txt'
+                file_name_obj = file_name + '_' + str(i) + '.txt'
 
             self.objects.append(Object(amb_temperature,
                                 material=materials[i],
                                 dx=dx, dt=dt,
-                                file_name=file_name, boundaries=boundaries[i],
+                                file_name=file_name_obj, boundaries=boundaries[i],
                                 Q=[], Q0=[], initial_state=initial_state,
                                 heat_save=heat_save,
                                 materials_path=materials_path))
@@ -132,7 +133,7 @@ class SystemObjects:
                 # removing_contact = contact_list[i]
                 self.contacts.remove(contact_list[i])
 
-    def compute(self, time_interval, write_interval, solver='implicit_k(x)',
+    def compute(self, time_interval, write_interval, solver='explicit_k(x)',
                 verbose=True):
         """Compute the thermal process.
 
@@ -174,8 +175,8 @@ class SystemObjects:
                 # if cond1 or (object_number, 0) in self.boundaries:
 
                 # defines the material properties
-                for i in range(self.size[0]):
-                    for j in range(self.size[1]):
+                for i in range(obj.size[0]):
+                    for j in range(obj.size[1]):
                         if obj.state[i][j] is True:
                             ind = obj.materials_index[i][j]
                             obj.rho[i][j] = obj.materials[ind].rhoa(
@@ -195,23 +196,51 @@ class SystemObjects:
 
                 # SOLVERS
 
-                # implicit k constant
-                if solver == 'implicit_general':
-                    value = solvers.implicit_general(obj)
-                    obj.temperature, obj.lheat = value
+                # # implicit k constant
+                # if solver == 'implicit_general':
+                #     value = solvers.implicit_general(obj)
+                #     obj.temperature, obj.lheat = value
 
-                # implicit k dependent on x
-                if solver == 'implicit_k(x)':
-                    obj.temperature, obj.lheat = solvers.implicit_k(obj)
+                # # implicit k dependent on x
+                # if solver == 'implicit_k(x)':
+                #     obj.temperature, obj.lheat = solvers.implicit_k(obj)
+
+                # # explicit k constant
+                # if solver == 'explicit_general':
+                #     value = solvers.explicit_general(obj)
+                #     obj.temperature, obj.lheat = value
+
+                # # explicit k dependent on x
+                # if solver == 'explicit_k(x)':
+                #     obj.temperature, obj.lheat = solvers.explicit_k(obj)
 
                 # explicit k constant
                 if solver == 'explicit_general':
-                    value = solvers.explicit_general(obj)
-                    obj.temperature, obj.lheat = value
+                    temp = []
+                    for i in range(obj.size[0]):
+                        temp.append([])
+                        for j in range(obj.size[1]):
+                            temp[-1].append(obj.temperature[i][j][0])
+                    obj.temperature, obj.lheat = solvers.explicit_general(obj)
+                    temp = []
+                    for i in range(obj.size[0]):
+                        temp.append([])
+                        for j in range(obj.size[1]):
+                            temp[-1].append(obj.temperature[i][j][0])
 
-                # explicit k dependent on x
+                # explicit k constant
                 if solver == 'explicit_k(x)':
+                    temp = []
+                    for i in range(obj.size[0]):
+                        temp.append([])
+                        for j in range(obj.size[1]):
+                            temp[-1].append(obj.temperature[i][j][0])
                     obj.temperature, obj.lheat = solvers.explicit_k(obj)
+                    temp = []
+                    for i in range(obj.size[0]):
+                        temp.append([])
+                        for j in range(obj.size[1]):
+                            temp[-1].append(obj.temperature[i][j][0])
 
                 # writes the temperature to file_name file ...
                 # if the number of time steps is verified
@@ -260,6 +289,7 @@ class SystemObjects:
                 #             f = open(obj.file_name, 'a')
                 #             f.write(line+'\n')
                 #             f.close()
+            # print(obj.temperature)
 
             if nw == write_interval:
                 nw = 0
@@ -702,13 +732,13 @@ class SingleObject(Object):
 
             # SOLVERS
 
-            # implicit k constant
-            if solver == 'implicit_general':
-                self.object.temperature, self.object.lheat = solvers.implicit_general(self.object)
+            # # implicit k constant
+            # if solver == 'implicit_general':
+            #     self.object.temperature, self.object.lheat = solvers.implicit_general(self.object)
 
-            # implicit k dependent on x
-            if solver == 'implicit_k(x)':
-                self.object.temperature, self.object.lheat = solvers.implicit_k(self.object)
+            # # implicit k dependent on x
+            # if solver == 'implicit_k(x)':
+            #     self.object.temperature, self.object.lheat = solvers.implicit_k(self.object)
 
             # explicit k constant
             if solver == 'explicit_general':
@@ -724,9 +754,23 @@ class SingleObject(Object):
                     for j in range(self.object.size[1]):
                         temp[-1].append(self.object.temperature[i][j][0])
 
-            # explicit k dependent on x
+            # explicit k constant
             if solver == 'explicit_k(x)':
+                temp = []
+                for i in range(self.object.size[0]):
+                    temp.append([])
+                    for j in range(self.object.size[1]):
+                        temp[-1].append(self.object.temperature[i][j][0])
                 self.object.temperature, self.object.lheat = solvers.explicit_k(self.object)
+                temp = []
+                for i in range(self.object.size[0]):
+                    temp.append([])
+                    for j in range(self.object.size[1]):
+                        temp[-1].append(self.object.temperature[i][j][0])
+
+            # # explicit k dependent on x
+            # if solver == 'explicit_k(x)':
+            #     self.object.temperature, self.object.lheat = solvers.explicit_k(self.object)
 
             nw = nw + 1
 

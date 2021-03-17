@@ -231,6 +231,7 @@ class Object:
             else:
                 message = 'point %f already activated' % float(i)
                 print(message)
+        # print('ok')
 
     def deactivate(self, initial_point, final_point):
         """Deactivation of the material.

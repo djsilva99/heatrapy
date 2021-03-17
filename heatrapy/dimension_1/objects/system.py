@@ -9,7 +9,8 @@ import os
 import copy
 from .. import solvers
 from . import Object
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 class SystemObjects:
     """System_objects class.
@@ -269,7 +270,7 @@ class SingleObject(Object):
                  materials_order=(0,), dx=0.01, dt=0.1, file_name=None,
                  boundaries=(0, 0), Q=[], Q0=[], heat_points=(1, -2),
                  initial_state=False, h_left=50000., h_right=50000.,
-                 materials_path=False):
+                 materials_path=False, draw=['temperature',], draw_scale=None):
         """Object initialization.
 
         amb_temperature: ambient temperature of the whole system
@@ -459,6 +460,77 @@ class SingleObject(Object):
             f.write(line)
             f.close()
 
+        self.draw = draw
+        self.draw_scale = draw_scale
+        for drawing in self.draw:
+            if drawing == 'temperature':
+                self.figure = plt.figure()
+                self.ax = self.figure.add_subplot(111)
+                temp = []
+                for i in range(len(self.temperature)):
+                    temp.append(self.temperature[i][0])
+                if not self.draw_scale:
+                    vmax = max(temp)
+                    vmin = min(temp)
+                    if vmax == vmin:
+                        vmin = vmin - 0.1
+                        vmax = vmax + 0.1
+                    temp = np.array(temp)
+                    self.online, = self.ax.plot([self.dx*j for j in range(len(temp))], temp)
+                    self.ax.set_ylim([vmin, vmax])
+                else:
+                    temp = np.array(temp)
+                    self.online, = self.ax.plot([self.dx*j for j in range(len(temp))], temp)
+                    self.ax.set_ylim(self.draw_scale)
+                self.ax.set_title('Temperature (K)')
+                self.ax.set_xlabel('x axis (m)')
+                self.ax.set_ylabel('temperature (K)')
+                plt.show(block=False)
+
+    def activate(self, initial_point, final_point):
+        super(SingleObject, self).activate(initial_point, final_point)
+        if self.draw:
+            for drawing in self.draw:
+                if drawing == 'temperature':
+                    temp = []
+                    for i in range(len(self.temperature)):
+                        temp.append(self.temperature[i][0])
+                    if not self.draw_scale:
+                        vmax = max(temp)
+                        vmin = min(temp)
+                        if vmax == vmin:
+                            vmin = vmin - 0.1
+                            vmax = vmax + 0.1
+                        temp = np.array(temp)
+                        self.online.set_ydata(temp)
+                        self.ax.set_ylim([vmin, vmax])
+                    else:
+                        temp = np.array(temp)
+                        self.online.set_ydata(temp)
+                    self.figure.canvas.draw()
+
+    def deactivate(self, initial_point, final_point):
+        super(SingleObject, self).deactivate(initial_point, final_point)
+        if self.draw:
+            for drawing in self.draw:
+                if drawing == 'temperature':
+                    temp = []
+                    for i in range(len(self.temperature)):
+                        temp.append(self.temperature[i][0])
+                    if not self.draw_scale:
+                        vmax = max(temp)
+                        vmin = min(temp)
+                        if vmax == vmin:
+                            vmin = vmin - 0.1
+                            vmax = vmax + 0.1
+                        temp = np.array(temp)
+                        self.online.set_ydata(temp)
+                        self.ax.set_ylim([vmin, vmax])
+                    else:
+                        temp = np.array(temp)
+                        self.online.set_ydata(temp)
+                    self.figure.canvas.draw()
+
     def change_heat_power(self, Q=[], Q0=[]):
         """Heat power source change.
 
@@ -559,6 +631,27 @@ class SingleObject(Object):
                         f.write(line)
                         f.close()
                     break
+
+            if self.draw:
+                for drawing in self.draw:
+                    if drawing == 'temperature':
+                        if nw + 1 == write_interval or j == 0 or j == nt - 1:
+                            temp = []
+                            for i in range(len(self.temperature)):
+                                temp.append(self.temperature[i][0])
+                            if not self.draw_scale:
+                                vmax = max(temp)
+                                vmin = min(temp)
+                                if vmax == vmin:
+                                    vmin = vmin - 0.1
+                                    vmax = vmax + 0.1
+                                temp = np.array(temp)
+                                self.online.set_ydata(temp)
+                                self.ax.set_ylim([vmin, vmax])
+                            else:
+                                temp = np.array(temp)
+                                self.online.set_ydata(temp)
+                            self.figure.canvas.draw()
 
             # writes the temperature to file_name file ...
             # if the number of time steps is verified

@@ -10,79 +10,136 @@ import copy
 def explicit_k(obj):
     """explicit_k solver.
 
-    Used to compute one time step of systems with x-dependent thermal
-    conductivity.
+    Used to compute one time step of systems with fixed thermal contuctivity.
 
     """
     x = copy.deepcopy(obj.temperature)
+    temp_k = copy.deepcopy(obj.k)
+    # bottom boundary
+    x.append([])
+    temp_k.append([])
+    if obj.boundaries[3] == 0:
+        for j in range(obj.size[1]):
+            x[-1].append(obj.temperature[-1][j])
+            temp_k[-1].append(obj.k[-1][j])
+    else:
+        for j in range(obj.size[1]):
+            x[-1].append([obj.boundaries[3], obj.boundaries[3]])
+            temp_k[-1].append(obj.k[-1][j])
+
+    # top boundary
+    x.insert(0, [])
+    temp_k.insert(0, [])
+    if obj.boundaries[2] == 0:
+        for j in range(obj.size[1]):
+            x[0].append(obj.temperature[0][j])
+            temp_k[0].append(obj.k[0][j])
+    else:
+        for j in range(obj.size[1]):
+            x[0].append([obj.boundaries[2], obj.boundaries[2]])
+            temp_k[0].append(obj.k[0][j])
+
+    # left boundary
+    if obj.boundaries[0] == 0:
+        for i in range(obj.size[0]+2):
+            x[i].insert(0, x[i][0])
+            temp_k[i].insert(0, temp_k[i][0])
+    else:
+        for i in range(obj.size[0]+2):
+            x[i].insert(0, [obj.boundaries[0], obj.boundaries[0]])
+            temp_k[i].insert(0, temp_k[i][0])
+
+    # right boundary
+    if obj.boundaries[1] == 0:
+        for i in range(obj.size[0]+2):
+            x[i].append(x[i][-1])
+            temp_k[i].append(temp_k[i][-1])
+    else:
+        for i in range(obj.size[0]+2):
+            x[i].append([obj.boundaries[1], obj.boundaries[1]])
+            temp_k[i].append(temp_k[i][-1])
+
+    final_x = copy.deepcopy(x)
 
     # computes
-    for i in range(1, obj.num_points - 1):
-        eta = obj.dt / (2. * obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
-        beta = obj.dt / (obj.rho[i] * obj.Cp[i])
+    for i in range(1, obj.size[0]+1):
+        for j in range(1, obj.size[1]+1):
+            # print(i,j)
+            alpha = obj.dt / (2 * obj.rho[i-1][j-1] * obj.Cp[i-1][j-1] *
+                              obj.dx * obj.dx)
 
-        t_new = ((1 + beta * obj.Q[i]) * obj.temperature[i][0] +
-                 eta * ((obj.k[i + 1] + obj.k[i]) * obj.temperature[i + 1][0] -
-                        (obj.k[i - 1] + obj.k[i + 1] + 2 * obj.k[i]) *
-                        obj.temperature[i][0] + (obj.k[i - 1] + obj.k[i]) *
-                        obj.temperature[i - 1][0]) +
-                 beta * (obj.Q0[i] - obj.Q[i] * obj.amb_temperature))
+            gamma = obj.dt / (2 * obj.rho[i-1][j-1] * obj.Cp[i-1][j-1] *
+                              obj.dy * obj.dy)
 
-        x[i][1] = t_new
+            beta = obj.dt / (obj.rho[i-1][j-1] * obj.Cp[i-1][j-1])
 
-    # left boundary for next time step
-    if obj.boundaries[0] == 0:
-        x[0][1] = obj.temperature[1][1]
-    else:
-        x[0][1] = obj.boundaries[0]
+            t_new = ((1 + beta * obj.Q[i-1][j-1]) * x[i][j][0] +
+                     alpha * ((temp_k[i+1][j]+temp_k[i][j])*x[i+1][j][0] - \
+                              (temp_k[i-1][j] + 2 * temp_k[i][j] + temp_k[i+1][j])*x[i][j][0] + \
+                              (temp_k[i-1][j]+temp_k[i][j])*x[i-1][j][0]) +
+                     gamma * ((temp_k[i][j+1]+temp_k[i][j])*x[i][j+1][0] - \
+                              (temp_k[i][j-1] + 2 * temp_k[i][j] + temp_k[i][j+1])*x[i][j][0] + \
+                              (temp_k[i][j-1]+temp_k[i][j])*x[i][j-1][0]) +
+                     beta * (obj.Q0[i-1][j-1] - obj.Q[i-1][j-1] * obj.amb_temperature))
+            final_x[i][j][1] = t_new
 
-    # right boundary for next time step
-    if obj.boundaries[1] == 0:
-        x[obj.num_points - 1][1] = obj.temperature[obj.num_points - 2][1]
-    else:
-        x[obj.num_points - 1][1] = obj.boundaries[1]
-
+    x = final_x
     # updates temperature for next iteration
-    for i in range(0, obj.num_points):
-        x[i][0] = x[i][1]
+    for i in range(len(x)):
+        for j in range(len(x[1])):
+            x[i][j][0] = x[i][j][1]
+
+    # remove boundaries
+    removed_temp = x.pop(0)
+    removed_temp = x.pop()
+    for i in range(len(x)):
+        removed_temp = x[i].pop(0)
+        removed_temp = x[i].pop()
+    del removed_temp
 
     nx = []
-    for i in range(len(x)):
-        nx.append(x[i][0])
+    for i in range(obj.size[0]):
+        nx.append([])
+        for j in range(obj.size[1]):
+            nx[-1].append(x[i][j][0])
 
+    # print(x)
+    # print('\n')
     # latent heat
     lheat = copy.copy(obj.lheat)
-    for i in range(1, obj.num_points - 1):
-        j = 0
-        for lh in obj.latent_heat[i]:
-            temper = obj.temperature[i][0]
-            if nx[i] > lh[0] and temper <= lh[0] and lheat[i][j][1] != lh[1]:
-                en = obj.Cp[i] * obj.rho[i] * (nx[i] - obj.temperature[i][0])
-                if en + lheat[i][j][1] >= lh[1]:
-                    lheat[i][j][1] = lh[1]
-                    energy_temp = lheat[i][j][1] + en - lh[1]
-                    nx[i] = obj.temperature[i][0] + \
-                        energy_temp / (obj.Cp[i] * obj.rho[i])
-                else:
-                    lheat[i][j][1] += en
-                    nx[i] = obj.temperature[i][0]
-            if nx[i] < lh[0] and temper >= lh[0] and lheat[i][j][1] != 0:
-                en = obj.Cp[i] * obj.rho[i] * (nx[i] - obj.temperature[i][0])
-                if en + lheat[i][j][1] <= 0.:
-                    lheat[i][j][1] = 0.
-                    energy_temp = (en + lheat[i][j][1])
-                    nx[i] = obj.temperature[i][0] + \
-                        energy_temp / (obj.Cp[i] * obj.rho[i])
-                else:
-                    lheat[i][j][1] += en
-                    nx[i] = obj.temperature[i][0]
-            j += 1
+    for i in range(obj.size[0]):
+        for j in range(obj.size[1]):
+            k = 0
+            for lh in obj.latent_heat[i][j]:
+                temper = obj.temperature[i][j][0]
+                if nx[i][j] > lh[0] and temper <= lh[0] and lheat[i][j][k][1] != lh[1]:
+                    en = obj.Cp[i][j] * obj.rho[i][j] * (nx[i][j] - obj.temperature[i][j][0])
+                    if en + lheat[i][j][k][1] >= lh[1]:
+                        lheat[i][j][k][1] = lh[1]
+                        energy_temp = lheat[i][j][k][1] + en - lh[1]
+                        nx[i][j] = obj.temperature[i][j][0] + \
+                            energy_temp / (obj.Cp[i][j] * obj.rho[i][j])
+                    else:
+                        lheat[i][j][k][1] += en
+                        nx[i][j] = obj.temperature[i][j][0]
+                if nx[i][j] < lh[0] and temper >= lh[0] and lheat[i][j][k][1] != 0:
+                    en = obj.Cp[i][j] * obj.rho[i][j] * (nx[i][j] - obj.temperature[i][j][0])
+                    if en + lheat[i][j][k][1] <= 0.:
+                        lheat[i][j][k][1] = 0.
+                        energy_temp = (en + lheat[i][j][k][1])
+                        nx[i][j] = obj.temperature[i][j][0] + \
+                            energy_temp / (obj.Cp[i][j] * obj.rho[i][j])
+                    else:
+                        lheat[i][j][k][1] += en
+                        nx[i][j] = obj.temperature[i][j][0]
+                k += 1
 
     y = copy.deepcopy(obj.temperature)
 
     # updates the temperature list
-    for i in range(obj.num_points):
-        y[i][1] = nx[i]
-        y[i][0] = nx[i]
+    for i in range(obj.size[0]):
+        for j in range(obj.size[1]):
+            y[i][j][1] = nx[i][j]
+            y[i][j][0] = nx[i][j]
 
     return y, lheat
