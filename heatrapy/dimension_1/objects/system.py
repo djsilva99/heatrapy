@@ -12,6 +12,7 @@ from . import Object
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 class SystemObjects:
     """System_objects class.
 
@@ -486,6 +487,31 @@ class SingleObject(Object):
                 self.ax.set_xlabel('x axis (m)')
                 self.ax.set_ylabel('temperature (K)')
                 plt.show(block=False)
+
+    def show_figure(self, figure_type):
+        if figure_type == 'temperature':
+            self.figure = plt.figure()
+            self.ax = self.figure.add_subplot(111)
+            temp = []
+            for i in range(len(self.temperature)):
+                temp.append(self.temperature[i][0])
+            if not self.draw_scale:
+                vmax = max(temp)
+                vmin = min(temp)
+                if vmax == vmin:
+                    vmin = vmin - 0.1
+                    vmax = vmax + 0.1
+                temp = np.array(temp)
+                self.online, = self.ax.plot([self.dx*j for j in range(len(temp))], temp)
+                self.ax.set_ylim([vmin, vmax])
+            else:
+                temp = np.array(temp)
+                self.online, = self.ax.plot([self.dx*j for j in range(len(temp))], temp)
+                self.ax.set_ylim(self.draw_scale)
+            self.ax.set_title('Temperature (K)')
+            self.ax.set_xlabel('x axis (m)')
+            self.ax.set_ylabel('temperature (K)')
+            plt.show(block=False)
 
     def activate(self, initial_point, final_point):
         super(SingleObject, self).activate(initial_point, final_point)

@@ -180,7 +180,6 @@ class Object:
 
         self.Q_ref = copy.copy(self.Q)
         self.Q0_ref = copy.copy(self.Q0)
-        # print(self.Q0_ref)
 
         if file_name:
             line = 'time(s)'
@@ -231,7 +230,6 @@ class Object:
             else:
                 message = 'point %f already activated' % float(i)
                 print(message)
-        # print('ok')
 
     def deactivate(self, initial_point, final_point):
         """Deactivation of the material.
