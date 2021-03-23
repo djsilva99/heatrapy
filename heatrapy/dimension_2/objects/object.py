@@ -1,6 +1,6 @@
 """Contains the class object.
 
-Used to create a thermal object and apply or remove fields.
+Used to create two-dimensional thermal objects, and apply some methods.
 
 """
 
@@ -13,35 +13,35 @@ import numpy as np
 class Object:
     """Object class.
 
-    This class creates thermal objects to be used in more complex systems.
-    It includes two methods to apply and remove fields.
+    This class creates thermal objects at 2D to be used in more complex
+    systems.
 
     """
 
-    def __init__(self, amb_temperature, material='Cu', dx=0.01, dy=0.01, dt=0.1,
-                 size=(10, 10), file_name=None, boundaries=(0, 0, 0, 0),
-                 Q=[], Q0=[], initial_state=False, heat_save=False,
-                 materials_path=False):
+    def __init__(self, amb_temperature, material='Cu', dx=0.01, dy=0.01,
+                 dt=0.1, size=(10, 10), file_name=None,
+                 boundaries=(0, 0, 0, 0), Q=[], Q0=[], initial_state=False,
+                 heat_save=False, materials_path=False):
         """Thermal object initialization.
 
         amb_temperature: ambient temperature of the whole system
-        materials: list of strings of all the used materials present in the
-            folder materials
-        borders: list of the points where there is a change of material
-        materials_order: list of the materials list indexes that defines the
-            material properties given by borders
-        dx: the space step
+        material: background material present at materials_path
+        dx: space step along the x-axis
+        dy: space step along the y-axis
         dt: the times step
-        file_name: file name where the temperature and heat flux are saved
-        boundaries: list of two entries that define the boundary condition
-            for temperature. If 0 the boundary condition is insulation
-        Q: list of fixed heat source coefficient.
-        Q0: list of temperature dependent heat source coefficient.
+        file_name: file name where the temperature is saved
+        boundaries: list of four entries that define the boundary condition
+            for temperature (left, right, bottom, top). If 0 the boundary
+            condition is insulation
+        Q: list in the form of matrix of fixed heat source coefficient.
+        Q0: list in the form of matrix of temperature dependent heat source
+            coefficient.
         initial_state: initial state of the materials. True if applied field
             and False is removed field.
         heat_save: True if saving the heat at the two borders.
 
         """
+        # check the validity of inputs
         boundaries = tuple(boundaries)
         Q = list(Q)
         Q0 = list(Q0)
@@ -121,7 +121,6 @@ class Object:
         self.materials_index = []
         self.state = []
         for i in range(self.size[0]):
-            # if self.temperature[-1] != []:
             self.state.append([])
             self.materials_index.append([])
             self.temperature.append([])
@@ -137,14 +136,18 @@ class Object:
                 self.temperature[-1].append([amb_temperature, amb_temperature])
                 self.state[-1].append(initial_state)
                 if initial_state:
-                    self.Cp[-1].append(self.materials[self.materials_index[i][j]].cpa(self.amb_temperature))
-                    self.rho[-1].append(self.materials[self.materials_index[i][j]].rhoa(self.amb_temperature))
-                    self.k[-1].append(self.materials[self.materials_index[i][j]].ka(self.amb_temperature))
+                    value = self.materials[self.materials_index[i][j]]
+                    self.Cp[-1].append(value.cpa(self.amb_temperature))
+                    value = self.materials[self.materials_index[i][j]]
+                    self.rho[-1].append(value.rhoa(self.amb_temperature))
+                    value = self.materials[self.materials_index[i][j]]
+                    self.k[-1].append(value.ka(self.amb_temperature))
                     self.latent_heat[-1].append(
                         self.materials[self.materials_index[i][j]].lheata()
                     )
                     self.lheat[-1].append([])
-                    for lh in self.materials[self.materials_index[i][j]].lheata():
+                    value = self.materials[self.materials_index[i][j]]
+                    for lh in value.lheata():
                         if self.temperature[i][j][1] < lh[0] and lh[1] > 0.:
                             self.lheat[-1].append([lh[0], 0.])
                         if self.temperature[i][j][1] > lh[0] and lh[1] > 0.:
@@ -154,16 +157,18 @@ class Object:
                         if self.temperature[i][j][1] > lh[0] and lh[1] < 0.:
                             self.lheat[-1].append([lh[0], 0.])
                 else:
-                    # print(i,j)
-                    # print(self.materials_index)
-                    self.Cp[-1].append(self.materials[self.materials_index[i][j]].cp0(self.amb_temperature))
-                    self.rho[-1].append(self.materials[self.materials_index[i][j]].rho0(self.amb_temperature))
-                    self.k[-1].append(self.materials[self.materials_index[i][j]].k0(self.amb_temperature))
+                    value = self.materials[self.materials_index[i][j]]
+                    self.Cp[-1].append(value.cp0(self.amb_temperature))
+                    value = self.materials[self.materials_index[i][j]]
+                    self.rho[-1].append(value.rho0(self.amb_temperature))
+                    value = self.materials[self.materials_index[i][j]]
+                    self.k[-1].append(value.k0(self.amb_temperature))
                     self.latent_heat[-1].append(
                         self.materials[self.materials_index[i][j]].lheat0()
                     )
                     self.lheat[-1].append([])
-                    for lh in self.materials[self.materials_index[i][j]].lheat0():
+                    value = self.materials[self.materials_index[i][j]]
+                    for lh in value.lheat0():
                         if self.temperature[i][j][1] < lh[0] and lh[1] > 0.:
                             self.lheat[-1].append([lh[0], 0.])
                         if self.temperature[i][j][1] > lh[0] and lh[1] > 0.:
@@ -198,56 +203,77 @@ class Object:
     def activate(self, initial_point, final_point, shape='square'):
         """Activation of the material.
 
-        activates a given space interval of the material,
-        between the initial_point and final_point.
+        Activates a given piece of material. If shape is 'square', then the
+        initial_point is the tuple (x,y) of the bottom left point and the
+        final_point is the tuple (x,y) of the top right point. If the shape is
+        'circle', the initial_point is the tuple (x,y) of the center of the
+        circle and final_point is its radius.
 
         """
+        # check the validity of inputs
+        if isinstance(shape, str):
+            if shape == 'square':
+                value = isinstance(initial_point, tuple)
+                if value and isinstance(final_point, tuple):
+                    condition = len(initial_point) == 2
+                    condition = condition and len(final_point) == 2
+                else:
+                    condition = False
+            if shape == 'circle':
+                value = isinstance(final_point, int)
+                value = value or isinstance(final_point, float)
+                value = value and isinstance(initial_point, tuple)
+                if value:
+                    condition = len(initial_point) == 2
+                else:
+                    condition = False
+            else:
+                condition = False
+        else:
+            condition = False
+        if not condition:
+            raise ValueError
+
         if shape == 'square':
             initial_point_x = int(initial_point[0])
             initial_point_y = int(initial_point[1])
             final_point_x = int(final_point[0])
             final_point_y = int(final_point[1])
-            # print(self.Cp)
-            # print(self.k)
-            # print(self.rho)
-            # print(self.lheat)
-            # print(self.state)
-            # print('\n')
             for i in range(initial_point_x, final_point_x):
                 for j in range(initial_point_y, final_point_y):
                     if self.state[i][j] is False:
-                        self.temperature[i][j][0] = self.temperature[i][j][0] + \
+                        value = self.temperature[i][j][0]
+                        self.temperature[i][j][0] = value + \
                             self.materials[self.materials_index[i][j]].tadi(
                                 self.temperature[i][j][0])
-                        self.rho[i][j] = self.materials[self.materials_index[i][j]].rhoa(
+                        value = self.materials_index[i][j]
+                        self.rho[i][j] = self.materials[value].rhoa(
                             self.temperature[i][j][0])
-                        self.Cp[i][j] = self.materials[self.materials_index[i][j]].cpa(
+                        self.Cp[i][j] = self.materials[value].cpa(
                             self.temperature[i][j][0])
-                        self.k[i][j] = self.materials[self.materials_index[i][j]].ka(
+                        self.k[i][j] = self.materials[value].ka(
                             self.temperature[i][j][0])
                         self.lheat[i][j] = []
-                        valh = self.materials[self.materials_index[i][j]].lheata()
+                        valh = self.materials[value].lheata()
                         self.latent_heat[i][j] = valh
                         for lh in self.latent_heat[i][j]:
-                            if self.temperature[i][j][0] < lh[0] and lh[1] > 0.:
+                            cond = self.temperature[i][j][0] < lh[0]
+                            if cond and lh[1] > 0.:
                                 self.lheat[i][j].append([lh[0], 0.])
-                            if self.temperature[i][j][0] > lh[0] and lh[1] > 0.:
+                            cond = self.temperature[i][j][0] > lh[0]
+                            if cond and lh[1] > 0.:
                                 self.lheat[i][j].append([lh[0], lh[1]])
-                            if self.temperature[i][j][0] < lh[0] and lh[1] < 0.:
+                            cond = self.temperature[i][j][0] < lh[0]
+                            if cond and lh[1] < 0.:
                                 self.lheat[i][j].append([lh[0], -lh[1]])
-                            if self.temperature[i][j][0] > lh[0] and lh[1] < 0.:
+                            cond = self.temperature[i][j][0] > lh[0]
+                            if cond and lh[1] < 0.:
                                 self.lheat[i][j].append([lh[0], 0.])
                         self.state[i][j] = True
                     else:
-                        message = 'point ({:d},{:d}) already activated'.format(i, j)
+                        message = 'point ({:d},{:d})'.format(i, j)
+                        message = message + ' already activated'
                         print(message)
-            # print(self.temperature)
-            # print(self.Cp)
-            # print(self.k)
-            # print(self.rho)
-            # print(self.lheat)
-            # print(self.state)
-            # print('\n\n\n\n')
 
         if shape == 'circle':
             initial_point_x = int(initial_point[0])
@@ -255,44 +281,77 @@ class Object:
             radius = int(final_point)
             for i in range(self.size[0]):
                 for j in range(self.size[1]):
-                    length = np.sqrt((i-initial_point_x)**2+(j-initial_point_y)**2)
+                    value = (i-initial_point_x)**2+(j-initial_point_y)**2
+                    length = np.sqrt(value)
                     if length <= radius:
                         if self.state[i][j] is False:
-                            # print(self.temperature)
-                            self.temperature[i][j][0] = self.temperature[i][j][0] + \
-                                self.materials[self.materials_index[i][j]].tadi(
+                            value = self.temperature[i][j][0]
+                            index_value = self.materials_index[i][j]
+                            self.temperature[i][j][0] = value + \
+                                self.materials[index_value].tadi(
                                     self.temperature[i][j][0])
-                            # print(self.temperature)
-                            self.rho[i][j] = self.materials[self.materials_index[i][j]].rhoa(
+                            self.rho[i][j] = self.materials[index_value].rhoa(
                                 self.temperature[i][j][0])
-                            self.Cp[i][j] = self.materials[self.materials_index[i][j]].cpa(
+                            self.Cp[i][j] = self.materials[index_value].cpa(
                                 self.temperature[i][j][0])
-                            self.k[i][j] = self.materials[self.materials_index[i][j]].ka(
+                            self.k[i][j] = self.materials[index_value].ka(
                                 self.temperature[i][j][0])
                             self.lheat[i][j] = []
-                            valh = self.materials[self.materials_index[i][j]].lheata()
+                            valh = self.materials[index_value].lheata()
                             self.latent_heat[i][j] = valh
                             for lh in self.latent_heat[i][j]:
-                                if self.temperature[i][j][0] < lh[0] and lh[1] > 0.:
+                                value = self.temperature[i][j][0] < lh[0]
+                                if value and lh[1] > 0.:
                                     self.lheat[i][j].append([lh[0], 0.])
-                                if self.temperature[i][j][0] > lh[0] and lh[1] > 0.:
+                                value = self.temperature[i][j][0] > lh[0]
+                                if value and lh[1] > 0.:
                                     self.lheat[i][j].append([lh[0], lh[1]])
-                                if self.temperature[i][j][0] < lh[0] and lh[1] < 0.:
+                                value = self.temperature[i][j][0] < lh[0]
+                                if value and lh[1] < 0.:
                                     self.lheat[i][j].append([lh[0], -lh[1]])
-                                if self.temperature[i][j][0] > lh[0] and lh[1] < 0.:
+                                value = self.temperature[i][j][0] > lh[0]
+                                if value and lh[1] < 0.:
                                     self.lheat[i][j].append([lh[0], 0.])
                             self.state[i][j] = True
                         else:
-                            message = 'point ({:d},{:d}) already activated'.format(i, j)
+                            message = 'point ({:d},{:d})'.format(i, j)
+                            message = message + ' already activated'
                             print(message)
 
     def deactivate(self, initial_point, final_point, shape='square'):
         """Deactivation of the material.
 
-        deactivates a given space interval of the material,
-        between the initial_point and final_point.
+        Deactivates a given piece of material. If shape is 'square', then the
+        initial_point is the tuple (x,y) of the bottom left point and the
+        final_point is the tuple (x,y) of the top right point. If the shape is
+        'circle', the initial_point is the tuple (x,y) of the center of the
+        circle and final_point is its radius.
 
         """
+        # check the validity of inputs
+        if isinstance(shape, str):
+            if shape == 'square':
+                value = isinstance(initial_point, tuple)
+                if value and isinstance(final_point, tuple):
+                    condition = len(initial_point) == 2
+                    condition = condition and len(final_point) == 2
+                else:
+                    condition = False
+            if shape == 'circle':
+                value = isinstance(final_point, int)
+                value = value or isinstance(final_point, float)
+                value = value and isinstance(initial_point, tuple)
+                if value:
+                    condition = len(initial_point) == 2
+                else:
+                    condition = False
+            else:
+                condition = False
+        else:
+            condition = False
+        if not condition:
+            raise ValueError
+
         if shape == 'square':
             initial_point_x = int(initial_point[0])
             initial_point_y = int(initial_point[1])
@@ -300,31 +359,38 @@ class Object:
             final_point_y = int(final_point[1])
             for i in range(initial_point_x, final_point_x):
                 for j in range(initial_point_y, final_point_y):
-                    if self.state[i][j] is True:
-                        self.temperature[i][j][0] = self.temperature[i][j][0] - \
+                    if self.state[i][j] is False:
+                        value = self.temperature[i][j][0]
+                        self.temperature[i][j][0] = value - \
                             self.materials[self.materials_index[i][j]].tadd(
                                 self.temperature[i][j][0])
-                        self.rho[i][j] = self.materials[self.materials_index[i][j]].rho0(
+                        value = self.materials_index[i][j]
+                        self.rho[i][j] = self.materials[value].rho0(
                             self.temperature[i][j][0])
-                        self.Cp[i][j] = self.materials[self.materials_index[i][j]].cp0(
+                        self.Cp[i][j] = self.materials[value].cp0(
                             self.temperature[i][j][0])
-                        self.k[i][j] = self.materials[self.materials_index[i][j]].k0(
+                        self.k[i][j] = self.materials[value].k0(
                             self.temperature[i][j][0])
                         self.lheat[i][j] = []
-                        valh = self.materials[self.materials_index[i][j]].lheat0()
+                        valh = self.materials[value].lheat0()
                         self.latent_heat[i][j] = valh
                         for lh in self.latent_heat[i][j]:
-                            if self.temperature[i][j][0] < lh[0] and lh[1] > 0.:
+                            cond = self.temperature[i][j][0] < lh[0]
+                            if cond and lh[1] > 0.:
                                 self.lheat[i][j].append([lh[0], 0.])
-                            if self.temperature[i][j][0] > lh[0] and lh[1] > 0.:
+                            cond = self.temperature[i][j][0] > lh[0]
+                            if cond and lh[1] > 0.:
                                 self.lheat[i][j].append([lh[0], lh[1]])
-                            if self.temperature[i][j][0] < lh[0] and lh[1] < 0.:
+                            cond = self.temperature[i][j][0] < lh[0]
+                            if cond and lh[1] < 0.:
                                 self.lheat[i][j].append([lh[0], -lh[1]])
-                            if self.temperature[i][j][0] > lh[0] and lh[1] < 0.:
+                            cond = self.temperature[i][j][0] > lh[0]
+                            if cond and lh[1] < 0.:
                                 self.lheat[i][j].append([lh[0], 0.])
                         self.state[i][j] = False
                     else:
-                        message = 'point ({:d},{:d}) already deactivated'.format(i, j)
+                        message = 'point ({:d},{:d})'.format(i, j)
+                        message = message + ' already deactivated'
                         print(message)
 
         if shape == 'circle':
@@ -333,43 +399,66 @@ class Object:
             radius = int(final_point)
             for i in range(self.size[0]):
                 for j in range(self.size[1]):
-                    length = np.sqrt((i-initial_point_x)**2+(j-initial_point_y)**2)
+                    value = (i-initial_point_x)**2+(j-initial_point_y)**2
+                    length = np.sqrt(value)
                     if length <= radius:
-                        if self.state[i][j] is True:
-                            self.temperature[i][j][0] = self.temperature[i][j][0] - \
-                                self.materials[self.materials_index[i][j]].tadd(
+                        if self.state[i][j] is False:
+                            value = self.temperature[i][j][0]
+                            index_value = self.materials_index[i][j]
+                            self.temperature[i][j][0] = value - \
+                                self.materials[index_value].tadd(
                                     self.temperature[i][j][0])
-                            self.rho[i][j] = self.materials[self.materials_index[i][j]].rho0(
+                            self.rho[i][j] = self.materials[index_value].rho0(
                                 self.temperature[i][j][0])
-                            self.Cp[i][j] = self.materials[self.materials_index[i][j]].cp0(
+                            self.Cp[i][j] = self.materials[index_value].cp0(
                                 self.temperature[i][j][0])
-                            self.k[i][j] = self.materials[self.materials_index[i][j]].k0(
+                            self.k[i][j] = self.materials[index_value].k0(
                                 self.temperature[i][j][0])
                             self.lheat[i][j] = []
-                            valh = self.materials[self.materials_index[i][j]].lheat0()
+                            valh = self.materials[index_value].lheat0()
                             self.latent_heat[i][j] = valh
                             for lh in self.latent_heat[i][j]:
-                                if self.temperature[i][j][0] < lh[0] and lh[1] > 0.:
+                                value = self.temperature[i][j][0] < lh[0]
+                                if value and lh[1] > 0.:
                                     self.lheat[i][j].append([lh[0], 0.])
-                                if self.temperature[i][j][0] > lh[0] and lh[1] > 0.:
+                                value = self.temperature[i][j][0] > lh[0]
+                                if value and lh[1] > 0.:
                                     self.lheat[i][j].append([lh[0], lh[1]])
-                                if self.temperature[i][j][0] < lh[0] and lh[1] < 0.:
+                                value = self.temperature[i][j][0] < lh[0]
+                                if value and lh[1] < 0.:
                                     self.lheat[i][j].append([lh[0], -lh[1]])
-                                if self.temperature[i][j][0] > lh[0] and lh[1] < 0.:
+                                value = self.temperature[i][j][0] > lh[0]
+                                if value and lh[1] < 0.:
                                     self.lheat[i][j].append([lh[0], 0.])
                             self.state[i][j] = False
                         else:
-                            message = 'point ({:d},{:d}) already deactivated'.format(i, j)
+                            message = 'point ({:d},{:d})'.format(i, j)
+                            message = message + ' already deactivated'
                             print(message)
 
     def square(self, material='Gd', initial_point=(3, 3), length=(3, 3),
                state=False, materials_path=False):
-        """Activation of the material.
+        """Material adding with rectangle shape.
 
-        activates a given space interval of the material,
-        between the initial_point and final_point.
+        Adds a new material with a rectangel shape, where initial_point is the
+        bottom left (x,y) tuple, length is the length along the two axis, state
+        is the initial state of the material and materials_path is the absolute
+        path of the materials databse.
 
         """
+        # check the validity of inputs
+        value = isinstance(initial_point, tuple)
+        if value and isinstance(length, tuple):
+            cond1 = len(initial_point) == 2
+            cond1 = cond1 and len(length) == 2
+        else:
+            cond1 = False
+        cond2 = isinstance(material, str)
+        cond3 = isinstance(state, bool)
+        cond4 = isinstance(materials_path, str) or materials_path is False
+        if not cond1 and cond2 and cond3 and cond4:
+            raise ValueError
+
         initial_point_x = int(initial_point[0])
         initial_point_y = int(initial_point[1])
         final_point_x = initial_point_x + int(length[0])
@@ -380,39 +469,41 @@ class Object:
             index = len(self.materials)
             self.materials_name.append(material)
             if materials_path is False:
+                value = self.materials_name[index]
                 tadi = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'tadi.txt'
+                    '/../../database/' + value + '/' + 'tadi.txt'
                 tadd = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'tadd.txt'
+                    '/../../database/' + value + '/' + 'tadd.txt'
                 cpa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'cpa.txt'
+                    '/../../database/' + value + '/' + 'cpa.txt'
                 cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'cp0.txt'
+                    '/../../database/' + value + '/' + 'cp0.txt'
                 k0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'k0.txt'
+                    '/../../database/' + value + '/' + 'k0.txt'
                 ka = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'ka.txt'
+                    '/../../database/' + value + '/' + 'ka.txt'
                 rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'rho0.txt'
+                    '/../../database/' + value + '/' + 'rho0.txt'
                 rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'rhoa.txt'
+                    '/../../database/' + value + '/' + 'rhoa.txt'
                 lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'lheat0.txt'
+                    '/../../database/' + value + '/' + 'lheat0.txt'
                 lheata = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'lheata.txt'
+                    '/../../database/' + value + '/' + 'lheata.txt'
                 self.materials.append(mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata))
             else:
-                tadi = materials_path + self.materials_name[index] + '/' + 'tadi.txt'
-                tadd = materials_path + self.materials_name[index] + '/' + 'tadd.txt'
-                cpa = materials_path + self.materials_name[index] + '/' + 'cpa.txt'
-                cp0 = materials_path + self.materials_name[index] + '/' + 'cp0.txt'
-                k0 = materials_path + self.materials_name[index] + '/' + 'k0.txt'
-                ka = materials_path + self.materials_name[index] + '/' + 'ka.txt'
-                rho0 = materials_path + self.materials_name[index] + '/' + 'rho0.txt'
-                rhoa = materials_path + self.materials_name[index] + '/' + 'rhoa.txt'
-                lheat0 = materials_path + self.materials_name[index] + '/' + 'lheat0.txt'
-                lheata = materials_path + self.materials_name[index] + '/' + 'lheata.txt'
+                value = self.materials_name[index]
+                tadi = materials_path + value + '/' + 'tadi.txt'
+                tadd = materials_path + value + '/' + 'tadd.txt'
+                cpa = materials_path + value + '/' + 'cpa.txt'
+                cp0 = materials_path + value + '/' + 'cp0.txt'
+                k0 = materials_path + value + '/' + 'k0.txt'
+                ka = materials_path + value + '/' + 'ka.txt'
+                rho0 = materials_path + value + '/' + 'rho0.txt'
+                rhoa = materials_path + value + '/' + 'rhoa.txt'
+                lheat0 = materials_path + value + '/' + 'lheat0.txt'
+                lheata = materials_path + value + '/' + 'lheata.txt'
                 self.materials.append(mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata))
 
@@ -431,13 +522,13 @@ class Object:
                     valh = self.materials[index].lheat0()
                     self.latent_heat[i][j] = valh
                     for lh in self.latent_heat[i][j]:
-                        if self.temperature[i][j][0] < lh[0] and lh[1] > 0.:
+                        if self.temperature[i][j][0] < lh[0] and lh[1] > 0:
                             self.lheat[i][j].append([lh[0], 0.])
-                        if self.temperature[i][j][0] > lh[0] and lh[1] > 0.:
+                        if self.temperature[i][j][0] > lh[0] and lh[1] > 0:
                             self.lheat[i][j].append([lh[0], lh[1]])
-                        if self.temperature[i][j][0] < lh[0] and lh[1] < 0.:
+                        if self.temperature[i][j][0] < lh[0] and lh[1] < 0:
                             self.lheat[i][j].append([lh[0], -lh[1]])
-                        if self.temperature[i][j][0] > lh[0] and lh[1] < 0.:
+                        if self.temperature[i][j][0] > lh[0] and lh[1] < 0:
                             self.lheat[i][j].append([lh[0], 0.])
 
                 else:
@@ -453,23 +544,37 @@ class Object:
                     valh = self.materials[index].lheata()
                     self.latent_heat[i][j] = valh
                     for lh in self.latent_heat[i][j]:
-                        if self.temperature[i][j][0] < lh[0] and lh[1] > 0.:
+                        if self.temperature[i][j][0] < lh[0] and lh[1] > 0:
                             self.lheat[i][j].append([lh[0], 0.])
-                        if self.temperature[i][j][0] > lh[0] and lh[1] > 0.:
+                        if self.temperature[i][j][0] > lh[0] and lh[1] > 0:
                             self.lheat[i][j].append([lh[0], lh[1]])
-                        if self.temperature[i][j][0] < lh[0] and lh[1] < 0.:
+                        if self.temperature[i][j][0] < lh[0] and lh[1] < 0:
                             self.lheat[i][j].append([lh[0], -lh[1]])
-                        if self.temperature[i][j][0] > lh[0] and lh[1] < 0.:
+                        if self.temperature[i][j][0] > lh[0] and lh[1] < 0:
                             self.lheat[i][j].append([lh[0], 0.])
 
     def circle(self, material='Gd', initial_point=(3, 3), radius=3,
                state=False, materials_path=False):
-        """Activation of the material.
+        """Material adding with circle shape.
 
-        activates a given space interval of the material,
-        between the initial_point and final_point.
+        Adds a new material with a circle shape, where initial_point is the
+        (x,y) tuple of the center of the circle, radius is the radius of the
+        circle, state is the initial state of the material and materials_path
+        is the absolute path of the materials database.
 
         """
+        # check the validity of inputs
+        if isinstance(initial_point, tuple):
+            cond1 = len(initial_point) == 2
+        else:
+            cond1 = False
+        cond2 = isinstance(radius, int) or isinstance(radius, float)
+        cond3 = isinstance(material, str)
+        cond4 = isinstance(state, bool)
+        cond5 = isinstance(materials_path, str) or materials_path is False
+        if not cond1 and cond2 and cond3 and cond4 and cond5:
+            raise ValueError
+
         initial_point_x = int(initial_point[0])
         initial_point_y = int(initial_point[1])
         if material in self.materials_name:
@@ -478,39 +583,41 @@ class Object:
             index = len(self.materials)
             self.materials_name.append(material)
             if materials_path is False:
+                value = self.materials_name[index]
                 tadi = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'tadi.txt'
+                    '/../../database/' + value + '/' + 'tadi.txt'
                 tadd = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'tadd.txt'
+                    '/../../database/' + value + '/' + 'tadd.txt'
                 cpa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'cpa.txt'
+                    '/../../database/' + value + '/' + 'cpa.txt'
                 cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'cp0.txt'
+                    '/../../database/' + value + '/' + 'cp0.txt'
                 k0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'k0.txt'
+                    '/../../database/' + value + '/' + 'k0.txt'
                 ka = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'ka.txt'
+                    '/../../database/' + value + '/' + 'ka.txt'
                 rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'rho0.txt'
+                    '/../../database/' + value + '/' + 'rho0.txt'
                 rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'rhoa.txt'
+                    '/../../database/' + value + '/' + 'rhoa.txt'
                 lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'lheat0.txt'
+                    '/../../database/' + value + '/' + 'lheat0.txt'
                 lheata = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + self.materials_name[index] + '/' + 'lheata.txt'
+                    '/../../database/' + value + '/' + 'lheata.txt'
                 self.materials.append(mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata))
             else:
-                tadi = materials_path + self.materials_name[index] + '/' + 'tadi.txt'
-                tadd = materials_path + self.materials_name[index] + '/' + 'tadd.txt'
-                cpa = materials_path + self.materials_name[index] + '/' + 'cpa.txt'
-                cp0 = materials_path + self.materials_name[index] + '/' + 'cp0.txt'
-                k0 = materials_path + self.materials_name[index] + '/' + 'k0.txt'
-                ka = materials_path + self.materials_name[index] + '/' + 'ka.txt'
-                rho0 = materials_path + self.materials_name[index] + '/' + 'rho0.txt'
-                rhoa = materials_path + self.materials_name[index] + '/' + 'rhoa.txt'
-                lheat0 = materials_path + self.materials_name[index] + '/' + 'lheat0.txt'
-                lheata = materials_path + self.materials_name[index] + '/' + 'lheata.txt'
+                value = self.materials_name[index]
+                tadi = materials_path + value + '/' + 'tadi.txt'
+                tadd = materials_path + value + '/' + 'tadd.txt'
+                cpa = materials_path + value + '/' + 'cpa.txt'
+                cp0 = materials_path + value + '/' + 'cp0.txt'
+                k0 = materials_path + value + '/' + 'k0.txt'
+                ka = materials_path + value + '/' + 'ka.txt'
+                rho0 = materials_path + value + '/' + 'rho0.txt'
+                rhoa = materials_path + value + '/' + 'rhoa.txt'
+                lheat0 = materials_path + value + '/' + 'lheat0.txt'
+                lheata = materials_path + value + '/' + 'lheata.txt'
                 self.materials.append(mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata))
 
@@ -531,13 +638,13 @@ class Object:
                         valh = self.materials[index].lheat0()
                         self.latent_heat[i][j] = valh
                         for lh in self.latent_heat[i][j]:
-                            if self.temperature[i][j][0] < lh[0] and lh[1] > 0.:
+                            if self.temperature[i][j][0] < lh[0] and lh[1] > 0:
                                 self.lheat[i][j].append([lh[0], 0.])
-                            if self.temperature[i][j][0] > lh[0] and lh[1] > 0.:
+                            if self.temperature[i][j][0] > lh[0] and lh[1] > 0:
                                 self.lheat[i][j].append([lh[0], lh[1]])
-                            if self.temperature[i][j][0] < lh[0] and lh[1] < 0.:
+                            if self.temperature[i][j][0] < lh[0] and lh[1] < 0:
                                 self.lheat[i][j].append([lh[0], -lh[1]])
-                            if self.temperature[i][j][0] > lh[0] and lh[1] < 0.:
+                            if self.temperature[i][j][0] > lh[0] and lh[1] < 0:
                                 self.lheat[i][j].append([lh[0], 0.])
 
                     else:
@@ -553,35 +660,62 @@ class Object:
                         valh = self.materials[index].lheata()
                         self.latent_heat[i][j] = valh
                         for lh in self.latent_heat[i][j]:
-                            if self.temperature[i][j][0] < lh[0] and lh[1] > 0.:
+                            if self.temperature[i][j][0] < lh[0] and lh[1] > 0:
                                 self.lheat[i][j].append([lh[0], 0.])
-                            if self.temperature[i][j][0] > lh[0] and lh[1] > 0.:
+                            if self.temperature[i][j][0] > lh[0] and lh[1] > 0:
                                 self.lheat[i][j].append([lh[0], lh[1]])
-                            if self.temperature[i][j][0] < lh[0] and lh[1] < 0.:
+                            if self.temperature[i][j][0] < lh[0] and lh[1] < 0:
                                 self.lheat[i][j].append([lh[0], -lh[1]])
-                            if self.temperature[i][j][0] > lh[0] and lh[1] < 0.:
+                            if self.temperature[i][j][0] > lh[0] and lh[1] < 0:
                                 self.lheat[i][j].append([lh[0], 0.])
 
-    def power_add(self, initial_point, final_point, power, shape='square', power_type='Q'):
+    def power_add(self, initial_point, final_point, power, shape='square',
+                  power_type='Q'):
+        """Power adding.
 
-        # if self.Q0 == []:
-        #     for i in range(self.size[0]):
-        #         self.Q0.append([])
-        #         for j in range(self.size[1]):
-        #             self.Q0[-1].append(0.)
-        # if self.Q == []:
-        #     for i in range(self.size[0]):
-        #         self.Q.append([])
-        #         for j in range(self.size[1]):
-        #             self.Q[-1].append(0.)
+        Adds a power matrix to the thermal object. If shape is 'square', then
+        the initial_point is the tuple (x,y) of the bottom left point and the
+        final_point is the tuple (x,y) of the top right point. If the shape is
+        'circle', the initial_point is the tuple (x,y) of the center of the
+        circle and final_point is its radius. power is the value of the power
+        to add, and power type is the type of power to be introduced, which has
+        the value 'Q' if it is temperature dependent and 'Q0' if it is
+        temperature independent.
+
+        """
+        # check the validity of inputs
+        if isinstance(shape, str):
+            if shape == 'square':
+                value = isinstance(initial_point, tuple)
+                if value and isinstance(final_point, tuple):
+                    cond1 = len(initial_point) == 2
+                    cond1 = cond1 and len(final_point) == 2
+                else:
+                    cond1 = False
+            elif shape == 'circle':
+                value = isinstance(final_point, int)
+                value = value or isinstance(final_point, float)
+                value = value and isinstance(initial_point, tuple)
+                if value:
+                    cond1 = len(initial_point) == 2
+                else:
+                    cond1 = False
+            else:
+                cond1 = False
+        else:
+            cond1 = False
+        cond2 = isinstance(power, int) or isinstance(power, float)
+        if isinstance(power_type, str):
+            if power_type == 'Q' or power_type == 'Q0':
+                cond3 = True
+            else:
+                cond3 = False
+        else:
+            cond3 = False
+        if not cond1 and cond2 and cond3:
+            raise ValueError
 
         if power_type == 'Q':
-            # if self.Q == []:
-            #     for i in range(self.size[0]):
-            #         self.Q.append([])
-            #         for j in range(self.size[1]):
-            #             self.Q[-1].append(0.)
-
             if shape == 'square':
                 initial_point_x = int(initial_point[0])
                 initial_point_y = int(initial_point[1])
@@ -590,24 +724,18 @@ class Object:
                 for i in range(initial_point_x, final_point_x):
                     for j in range(initial_point_y, final_point_y):
                         self.Q[i][j] = power
-
             if shape == 'circle':
                 initial_point_x = int(initial_point[0])
                 initial_point_y = int(initial_point[1])
                 radius = int(final_point)
                 for i in range(self.size[0]):
                     for j in range(self.size[1]):
-                        length = np.sqrt((i-initial_point_x)**2+(j-initial_point_y)**2)
+                        value = (i-initial_point_x)**2+(j-initial_point_y)**2
+                        length = np.sqrt(value)
                         if length <= radius:
                             self.Q[i][j] = power
 
         if power_type == 'Q0':
-            # if self.Q0 == []:
-            #     for i in range(self.size[0]):
-            #         self.Q0.append([])
-            #         for j in range(self.size[1]):
-            #             self.Q0[-1].append(0.)
-
             if shape == 'square':
                 initial_point_x = int(initial_point[0])
                 initial_point_y = int(initial_point[1])
@@ -616,19 +744,35 @@ class Object:
                 for i in range(initial_point_x, final_point_x):
                     for j in range(initial_point_y, final_point_y):
                         self.Q0[i][j] = power
-
             if shape == 'circle':
                 initial_point_x = int(initial_point[0])
                 initial_point_y = int(initial_point[1])
                 radius = int(final_point)
                 for i in range(self.size[0]):
                     for j in range(self.size[1]):
-                        length = np.sqrt((i-initial_point_x)**2+(j-initial_point_y)**2)
+                        value = (i-initial_point_x)**2+(j-initial_point_y)**2
+                        length = np.sqrt(value)
                         if length <= radius:
                             self.Q0[i][j] = power
 
     def power_reset(self, power_type='Q'):
-        # if power_type == 'Q':
+        """Power reset.
+
+        Resets the power matrix with power_type 'Q' or 'Q0', which corresponds
+        to the power temperature dependent and temperature independent,
+        respectively.
+
+        """
+        # check the validity of inputs
+        if isinstance(power_type, str):
+            if power_type == 'Q' or power_type == 'Q0':
+                condition = True
+            else:
+                condition = False
+        else:
+            condition = False
+        if not condition:
+            raise ValueError
+
         self.Q = []
-        # if power_type == 'Q0':
         self.Q0 = []

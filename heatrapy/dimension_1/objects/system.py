@@ -100,6 +100,11 @@ class SystemObjects:
         object: thermal object id
 
         """
+        # check the validity of inputs
+        condition = object in range(len(self.objects))
+        if not condition:
+            raise ValueError
+
         filtered = [x for x in
                     self.contacts if (x[0][0] == object or x[1][0] == object)]
         return set(filtered)
@@ -107,9 +112,24 @@ class SystemObjects:
     def contact_add(self, contact):
         """Add contact to self.contacts.
 
-        contact: thermal contact
+        contact: tuple of length 3 (one element for thermal object A, one for
+            thermal object B, and one for the heat transfer coefficient). Each
+            thermal object element is a tuple of length 2 where the first
+            element is the index of the thermal object and the second is the
+            spatial point index.
 
         """
+        # check the validity of inputs
+        if isinstance(contact, list):
+            if len(contact) == 3:
+                condition = True
+            else:
+                condition = False
+        else:
+            condition = False
+        if not condition:
+            raise ValueError
+
         self.contacts.add(contact)
 
     def contact_remove(self, contact):
@@ -118,6 +138,17 @@ class SystemObjects:
         contact: thermal object id
 
         """
+        # check the validity of inputs
+        if isinstance(contact, list):
+            if len(contact) == 3:
+                condition = True
+            else:
+                condition = False
+        else:
+            condition = False
+        if not condition:
+            raise ValueError
+
         removing_contact = None
 
         for i in range(len(self.contacts)):
@@ -133,9 +164,20 @@ class SystemObjects:
         Computes the system for timeInterval, and writes into the file_name
         file every write_interval time steps. Four different solvers can be
         used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
-        and 'implicit_k(x)'.
+        and 'implicit_k(x)'. If verbose = True, then the progress of the
+        computation is shown.
 
         """
+        # check the validity of inputs
+        cond1 = isinstance(time_interval, float)
+        cond1 = cond1 or isinstance(time_interval, int)
+        cond2 = isinstance(write_interval, int)
+        cond3 = isinstance(solver, str)
+        cond4 = isinstance(verbose, bool)
+        condition = cond1 and cond2 and cond3 and cond4
+        if not condition:
+            raise ValueError
+
         # number of time steps for the given timeInterval
         nt = int(time_interval / self.dt)
 
@@ -300,6 +342,12 @@ class SingleObject(Object):
             and False is removed field.
         h_left: left heat transfer coefficient
         h_right: right heat transfer coefficient
+        materials_path: absolute path of the mateirals database. If false, then
+            the materials database is the standard heatrapy database.
+        draw: list of strings representing the online plots. If the list is
+            empty, then no drawing is performed.
+        draw_scale: list of two values, representing the minimum and maximum
+            temperature to be drawn. If None, there are no limits.
 
         """
         # check the validity of inputs
@@ -326,10 +374,18 @@ class SingleObject(Object):
         cond12 = isinstance(h_right, int) or isinstance(h_right, float)
         cond13 = isinstance(Q, list)
         cond14 = isinstance(Q0, list)
+        cond15 = isinstance(draw, list)
+        # cond16 = isinstance(draw_scale, list) or draw_scale = None
+        if isinstance(draw_scale, list):
+            cond16 = (len(draw_scale) == 2)
+        elif draw_scale == None:
+            cond16 = True
+        else:
+            cond16 = False
         condition = cond01 and cond02 and cond03 and cond04 and cond05
         condition = condition and cond06 and cond07 and cond08 and cond09
         condition = condition and cond10 and cond11 and cond12 and cond13
-        condition = condition and cond14
+        condition = condition and cond14 and cond15 and cond16
         if not condition:
             raise ValueError
 
@@ -461,6 +517,7 @@ class SingleObject(Object):
             f.write(line)
             f.close()
 
+        # initializes the plotting
         self.draw = draw
         self.draw_scale = draw_scale
         for drawing in self.draw:
@@ -477,11 +534,13 @@ class SingleObject(Object):
                         vmin = vmin - 0.1
                         vmax = vmax + 0.1
                     temp = np.array(temp)
-                    self.online, = self.ax.plot([self.dx*j for j in range(len(temp))], temp)
+                    x_plot = [self.dx*j for j in range(len(temp))]
+                    self.online, = self.ax.plot(x_plot, temp)
                     self.ax.set_ylim([vmin, vmax])
                 else:
                     temp = np.array(temp)
-                    self.online, = self.ax.plot([self.dx*j for j in range(len(temp))], temp)
+                    x_plot = [self.dx*j for j in range(len(temp))]
+                    self.online, = self.ax.plot(x_plot, temp)
                     self.ax.set_ylim(self.draw_scale)
                 self.ax.set_title('Temperature (K)')
                 self.ax.set_xlabel('x axis (m)')
@@ -489,6 +548,17 @@ class SingleObject(Object):
                 plt.show(block=False)
 
     def show_figure(self, figure_type):
+        """Plotting.
+
+        Initializes a specific plotting. figure_type is a string identifying
+        the plotting.
+
+        """
+        # check the validity of inputs
+        condition = isinstance(figure_type, str)
+        if not condition:
+            raise ValueError
+
         if figure_type == 'temperature':
             self.figure = plt.figure()
             self.ax = self.figure.add_subplot(111)
@@ -502,11 +572,13 @@ class SingleObject(Object):
                     vmin = vmin - 0.1
                     vmax = vmax + 0.1
                 temp = np.array(temp)
-                self.online, = self.ax.plot([self.dx*j for j in range(len(temp))], temp)
+                x_plot = [self.dx*j for j in range(len(temp))]
+                self.online, = self.ax.plot(x_plot, temp)
                 self.ax.set_ylim([vmin, vmax])
             else:
                 temp = np.array(temp)
-                self.online, = self.ax.plot([self.dx*j for j in range(len(temp))], temp)
+                x_plot = [self.dx*j for j in range(len(temp))]
+                self.online, = self.ax.plot(x_plot, temp)
                 self.ax.set_ylim(self.draw_scale)
             self.ax.set_title('Temperature (K)')
             self.ax.set_xlabel('x axis (m)')
@@ -514,6 +586,16 @@ class SingleObject(Object):
             plt.show(block=False)
 
     def activate(self, initial_point, final_point):
+        """Activation.
+
+        Activates the thermal object between initial_point to final_point.
+        """
+        # check the validity of inputs
+        condition = isinstance(initial_point, int)
+        condition = condition and isinstance(final_point, int)
+        if not condition:
+            raise ValueError
+
         super(SingleObject, self).activate(initial_point, final_point)
         if self.draw:
             for drawing in self.draw:
@@ -536,6 +618,16 @@ class SingleObject(Object):
                     self.figure.canvas.draw()
 
     def deactivate(self, initial_point, final_point):
+        """Deactivation.
+
+        Deactivates the thermal object between initial_point to final_point.
+        """
+        # check the validity of inputs
+        condition = isinstance(initial_point, int)
+        condition = condition and isinstance(final_point, int)
+        if not condition:
+            raise ValueError
+
         super(SingleObject, self).deactivate(initial_point, final_point)
         if self.draw:
             for drawing in self.draw:
@@ -563,6 +655,11 @@ class SingleObject(Object):
         Changes the coeficients for the heat power sources
 
         """
+        # check the validity of inputs
+        condition = isinstance(Q, list) and isinstance(Q0, list)
+        if not condition:
+            raise ValueError
+
         for power in Q:
             for j in range(power[1], power[2]):
                 self.Q[j] = power[0]
@@ -571,27 +668,31 @@ class SingleObject(Object):
                 self.Q0[j] = power[0]
 
     def compute(self, time_interval, write_interval, solver='explicit_k(x)',
-                mode_temp=False, num_flag=0.5, mode_temp_point=1,
                 verbose=True):
         """Compute the thermal process.
 
         Computes the system for timeInterval, and writes into the file_name
         file every write_interval time steps. Four different solvers can be
         used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
-        and 'implicit_k(x)'. heat_points is a list that defines the points
-        where the heat flux are calculated if modeTemp is True the compute
-        method stops when the point modeTempPoint changes numFlag relative to
-        the initial value
+        and 'implicit_k(x)'. If verbose = True, then the progress of the
+        computation is shown.
 
         """
+        # check the validity of inputs
+        cond1 = isinstance(time_interval, float)
+        cond1 = cond1 or isinstance(time_interval, int)
+        cond2 = isinstance(write_interval, int)
+        cond3 = isinstance(solver, str)
+        cond4 = isinstance(verbose, bool)
+        condition = cond1 and cond2 and cond3 and cond4
+        if not condition:
+            raise ValueError
+
         # number of time steps for the given timeInterval
         nt = int(time_interval / self.dt)
 
         # number of time steps counting from the last writing process
         nw = 0
-
-        # saves the reference temperature for the modeTemp
-        init_mode_temp = self.temperature[mode_temp_point][0]
 
         # computes
         for j in range(nt):
@@ -645,18 +746,6 @@ class SingleObject(Object):
                                self.boundaries[1]) + self.heatRight)
 
             nw = nw + 1
-
-            # stops the simulation if modeTemp is True ...
-            # and the stop condition is verified
-            if mode_temp is True:
-                value = self.temperature[mode_temp_point][0] - init_mode_temp
-                if abs(value) > num_flag:
-                    nw = 0
-                    if self.file_name:
-                        f = open(self.file_name, 'a')
-                        f.write(line)
-                        f.close()
-                    break
 
             if self.draw:
                 for drawing in self.draw:

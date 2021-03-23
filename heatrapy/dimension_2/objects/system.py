@@ -1,6 +1,6 @@
 """Contains the classes system_objects and single_object.
 
-Used to compute system models
+Used to compute two-dimensional system models
 
 """
 
