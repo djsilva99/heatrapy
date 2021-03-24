@@ -220,7 +220,7 @@ class Object:
                     condition = condition and len(final_point) == 2
                 else:
                     condition = False
-            if shape == 'circle':
+            elif shape == 'circle':
                 value = isinstance(final_point, int)
                 value = value or isinstance(final_point, float)
                 value = value and isinstance(initial_point, tuple)
@@ -338,7 +338,7 @@ class Object:
                     condition = condition and len(final_point) == 2
                 else:
                     condition = False
-            if shape == 'circle':
+            elif shape == 'circle':
                 value = isinstance(final_point, int)
                 value = value or isinstance(final_point, float)
                 value = value and isinstance(initial_point, tuple)
@@ -360,7 +360,7 @@ class Object:
             final_point_y = int(final_point[1])
             for i in range(initial_point_x, final_point_x):
                 for j in range(initial_point_y, final_point_y):
-                    if self.state[i][j] is False:
+                    if self.state[i][j] is True:
                         value = self.temperature[i][j][0]
                         self.temperature[i][j][0] = value - \
                             self.materials[self.materials_index[i][j]].tadd(

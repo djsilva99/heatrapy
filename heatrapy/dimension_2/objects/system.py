@@ -279,7 +279,7 @@ class SingleObject(Object):
                  dt=0.1, size=(10, 10), file_name=None,
                  boundaries=(0, 0, 0, 0), Q=[], Q0=[], initial_state=False,
                  materials_path=False,
-                 draw=['temperature', 'state', 'materials'], draw_scale=None):
+                 draw=['temperature', 'materials'], draw_scale=None):
         """Object initialization.
 
         amb_temperature: ambient temperature of the whole system
@@ -318,7 +318,8 @@ class SingleObject(Object):
         cond11 = isinstance(Q, list)
         cond12 = isinstance(Q0, list)
         cond13 = isinstance(draw, list)
-        cond14 = isinstance(draw_scale, list)
+        cond14 = isinstance(draw_scale, list) or isinstance(draw_scale, tuple)
+        cond14 = cond14 or draw_scale is None
         condition = cond01 and cond02 and cond05
         condition = condition and cond06 and cond07 and cond08 and cond09
         condition = condition and cond10 and cond11 and cond12 and cond13
@@ -420,7 +421,7 @@ class SingleObject(Object):
                     self.ax_state.set_xlabel('x axis (m)')
                     self.ax_state.set_ylabel('y axis (m)')
                     plt.show(block=False)
-                    value = len(self.object.materials_name) > 1
+                value = len(self.object.materials_name) > 1
                 if drawing == 'materials' and value:
                     self.figure_materials = plt.figure()
                     self.ax_materials = self.figure_materials.add_subplot(111)
@@ -473,7 +474,7 @@ class SingleObject(Object):
                     self.ax_Q.set_xlabel('x axis (m)')
                     self.ax_Q.set_ylabel('y axis (m)')
                     plt.show(block=False)
-                    if drawing == 'Q0':
+                if drawing == 'Q0':
                     self.figure_Q0 = plt.figure()
                     self.ax_Q0 = self.figure_Q0.add_subplot(111)
                     temp = np.array(self.object.Q0)
@@ -506,7 +507,10 @@ class SingleObject(Object):
         if not condition:
             raise ValueError
 
+        if figure_type not in self.draw:
+            self.draw.append(figure_type)
         if figure_type == 'temperature':
+            self.figure = plt.figure()
             self.ax = self.figure.add_subplot(111)
             temp = []
             for i in range(self.object.size[0]):
@@ -520,14 +524,16 @@ class SingleObject(Object):
                 extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
                 self.im = self.ax.imshow(temp, vmax=vmax, vmin=vmin,
                                          cmap='jet', extent=extent,
-                                         origin='lower')
+                                         origin='lower',
+                                         interpolation='hamming')
             else:
                 temp = np.array(temp)
                 extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
                 self.im = self.ax.imshow(temp, vmax=self.draw_scale[0],
                                          vmin=self.draw_scale[1],
                                          cmap='jet', extent=extent,
-                                         origin='lower')
+                                         origin='lower',
+                                         interpolation='hamming')
             cbar_kw = {}
             cbarlabel = "temperature (K)"
             cbar = self.ax.figure.colorbar(self.im, ax=self.ax, **cbar_kw)
@@ -653,7 +659,7 @@ class SingleObject(Object):
                     condition = condition and len(final_point) == 2
                 else:
                     condition = False
-            if shape == 'circle':
+            elif shape == 'circle':
                 value = isinstance(final_point, int)
                 value = value or isinstance(final_point, float)
                 value = value and isinstance(initial_point, tuple)
@@ -708,7 +714,7 @@ class SingleObject(Object):
                     condition = condition and len(final_point) == 2
                 else:
                     condition = False
-            if shape == 'circle':
+            elif shape == 'circle':
                 value = isinstance(final_point, int)
                 value = value or isinstance(final_point, float)
                 value = value and isinstance(initial_point, tuple)
@@ -777,14 +783,14 @@ class SingleObject(Object):
         if isinstance(shape, str):
             if shape == 'square':
                 value = isinstance(initial_point, tuple)
-                if value and isinstance(final_point, tuple):
+                if value and isinstance(length, tuple):
                     condition = len(initial_point) == 2
-                    condition = condition and len(final_point) == 2
+                    condition = condition and len(length) == 2
                 else:
                     condition = False
-            if shape == 'circle':
-                value = isinstance(final_point, int)
-                value = value or isinstance(final_point, float)
+            elif shape == 'circle':
+                value = isinstance(length, int)
+                value = value or isinstance(length, float)
                 value = value and isinstance(initial_point, tuple)
                 if value:
                     condition = len(initial_point) == 2
@@ -848,13 +854,14 @@ class SingleObject(Object):
                 self.ax_materials.set_ylabel('y axis (m)')
                 plt.show(block=False)
 
-    def power_add(self, shape, power_type, initial_point, final_point, power):
-        """Power adding.
+    def change_power(self, shape, power_type, initial_point, final_point,
+                     power):
+        """Power change.
 
-        Adds a power matrix to the thermal object. If shape is 'square', then
-        the initial_point is the tuple (x,y) of the bottom left point and the
-        final_point is the tuple (x,y) of the top right point. If the shape is
-        'circle', the initial_point is the tuple (x,y) of the center of the
+        Changes the power matrix of the thermal object. If shape is 'square',
+        then the initial_point is the tuple (x,y) of the bottom left point and
+        the final_point is the tuple (x,y) of the top right point. If the shape
+        is 'circle', the initial_point is the tuple (x,y) of the center of the
         circle and final_point is its radius. power is the value of the power
         to add, and power type is the type of power to be introduced, which has
         the value 'Q' if it is temperature dependent and 'Q0' if it is
@@ -929,7 +936,8 @@ class SingleObject(Object):
         cond1 = isinstance(time_interval, float)
         cond1 = cond1 or isinstance(time_interval, int)
         cond2 = isinstance(write_interval, int)
-        cond3 = isinstance(solver, str)
+        all_solvers = ['explicit_general', 'explicit_k(x)']
+        cond3 = isinstance(solver, str) and solver in all_solvers
         cond4 = isinstance(verbose, bool)
         condition = cond1 and cond2 and cond3 and cond4
         if not condition:
@@ -1019,13 +1027,16 @@ class SingleObject(Object):
                                 for j in range(self.object.size[1]):
                                     value = self.object.temperature[i][j][0]
                                     temp[-1].append(value)
-                            self.im.set_array(temp)
-                            if not self.draw_scale:
-                                vmax = max(max(temp, key=max))
-                                vmin = min(min(temp, key=min))
-                                self.im.set_clim(vmin=vmin)
-                                self.im.set_clim(vmax=vmax)
-                            self.figure.canvas.draw()
+                            try:
+                                self.im.set_array(temp)
+                                if not self.draw_scale:
+                                    vmax = max(max(temp, key=max))
+                                    vmin = min(min(temp, key=min))
+                                    self.im.set_clim(vmin=vmin)
+                                    self.im.set_clim(vmax=vmax)
+                                self.figure.canvas.draw()
+                            except:
+                                pass
 
             if nw == write_interval:
                 nw = 0

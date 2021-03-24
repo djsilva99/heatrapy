@@ -374,9 +374,13 @@ class SingleObject(Object):
         cond12 = isinstance(h_right, int) or isinstance(h_right, float)
         cond13 = isinstance(Q, list)
         cond14 = isinstance(Q0, list)
-        cond15 = isinstance(draw, list)
-        # cond16 = isinstance(draw_scale, list) or draw_scale = None
-        if isinstance(draw_scale, list):
+        if isinstance(draw, list):
+            cond15 = True
+        elif draw is None:
+            cond15 = True
+        else:
+            cond15 = False
+        if isinstance(draw_scale, list) or isinstance(draw_scale, tuple):
             cond16 = (len(draw_scale) == 2)
         elif draw_scale == None:
             cond16 = True
@@ -547,19 +551,29 @@ class SingleObject(Object):
                 self.ax.set_ylabel('temperature (K)')
                 plt.show(block=False)
 
-    def show_figure(self, figure_type):
+    def show_figure(self, figure_type, draw_scale=None):
         """Plotting.
 
         Initializes a specific plotting. figure_type is a string identifying
-        the plotting.
+        the plotting. draw_scale defines the range of temperatures. If None,
+        this range is found automatically for every frame.
 
         """
         # check the validity of inputs
-        condition = isinstance(figure_type, str)
+        if isinstance(draw_scale, list) or isinstance(draw_scale, tuple):
+            condition = (len(draw_scale) == 2)
+        elif draw_scale is None:
+            condition = True
+        else:
+            condition = False
+        condition = condition and isinstance(figure_type, str)
         if not condition:
             raise ValueError
 
+        self.draw_scale = draw_scale
         if figure_type == 'temperature':
+            if figure_type not in self.draw:
+                self.draw.append(figure_type)
             self.figure = plt.figure()
             self.ax = self.figure.add_subplot(111)
             temp = []
@@ -649,23 +663,56 @@ class SingleObject(Object):
                         self.online.set_ydata(temp)
                     self.figure.canvas.draw()
 
-    def change_heat_power(self, Q=[], Q0=[]):
+    def change_power(self, power_type, power, initial_point, final_point):
         """Heat power source change.
 
-        Changes the coeficients for the heat power sources
+        Changes the coeficients for the heat power sources by a value of power
+        from initial_point to final_point. power_type is a string that
+        represents the type of coefficient, i.e. 'Q' or 'Q0'.
 
         """
         # check the validity of inputs
-        condition = isinstance(Q, list) and isinstance(Q0, list)
+        value = isinstance(initial_point, int)
+        if value and isinstance(final_point, int):
+            cond1 = True
+        else:
+            cond1 = False
+        cond2 = isinstance(power, int) or isinstance(power, float)
+        if isinstance(power_type, str):
+            if power_type == 'Q' or power_type == 'Q0':
+                cond3 = True
+            else:
+                cond3 = False
+        else:
+            cond3 = False
+        if not (cond1 and cond2 and cond3):
+            raise ValueError
+
+        if power_type == 'Q':
+            for j in range(initial_point, final_point):
+                self.Q[j] = power
+        if power_type == 'Q0':
+            for j in range(initial_point, final_point):
+                self.Q0[j] = power
+
+    def change_boundaries(self, boundaries):
+        """Boundary change.
+
+        Changes boundaries variable.
+
+        """
+        # check the validity of inputs
+        if isinstance(boundaries, tuple):
+            if len(boundaries) == 2:
+                condition = True
+            else:
+                condition = False
+        else:
+            condition = False
         if not condition:
             raise ValueError
 
-        for power in Q:
-            for j in range(power[1], power[2]):
-                self.Q[j] = power[0]
-        for power in Q0:
-            for j in range(power[1], power[2]):
-                self.Q0[j] = power[0]
+        self.boundaries = boundaries
 
     def compute(self, time_interval, write_interval, solver='explicit_k(x)',
                 verbose=True):
@@ -682,7 +729,15 @@ class SingleObject(Object):
         cond1 = isinstance(time_interval, float)
         cond1 = cond1 or isinstance(time_interval, int)
         cond2 = isinstance(write_interval, int)
-        cond3 = isinstance(solver, str)
+        if isinstance(solver, str):
+            all_solvers = ['implicit_general', 'implicit_k(x)',
+                           'explicit_k(x)', 'explicit_general']
+            if solver in all_solvers:
+                cond3 = True
+            else:
+                cond3 = False
+        else:
+            cond3 = False
         cond4 = isinstance(verbose, bool)
         condition = cond1 and cond2 and cond3 and cond4
         if not condition:
