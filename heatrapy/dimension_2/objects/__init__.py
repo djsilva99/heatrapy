@@ -1,8 +1,9 @@
-"""Objects.
+"""2D Objects.
 
-This submodule includes the object class for creating thermal objects,
-object system class for creating systems of thermal objects, and
-a complex single object for using in more complex thermal computing.
+This submodule includes the object class for creating two-dimensional thermal
+objects, object system class for creating systems of two-dimensional thermal
+objects, and a complex single object for using in more complex thermal
+computing.
 
 """
 

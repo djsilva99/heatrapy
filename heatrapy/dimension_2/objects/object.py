@@ -39,6 +39,7 @@ class Object:
         initial_state: initial state of the materials. True if applied field
             and False is removed field.
         heat_save: True if saving the heat at the two borders.
+        materials_path: absolute path of the materials database.
 
         """
         # check the validity of inputs
@@ -443,7 +444,7 @@ class Object:
         Adds a new material with a rectangel shape, where initial_point is the
         bottom left (x,y) tuple, length is the length along the two axis, state
         is the initial state of the material and materials_path is the absolute
-        path of the materials databse.
+        path of the materials database.
 
         """
         # check the validity of inputs

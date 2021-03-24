@@ -4,44 +4,46 @@ Used to compute two-dimensional system models
 
 """
 
-from ... import mats
-import os
 import copy
 from .. import solvers
 from . import Object
 import numpy as np
-# import time
 import matplotlib.pyplot as plt
 import matplotlib
+
 
 class SystemObjects:
     """System_objects class.
 
-    This class creates a system of thermal objects, establishes contact between
-    them and computes the respective thermal processes.
+    This class creates a system of 2D thermal objects, establishes contact
+    between them and computes the respective thermal processes.
 
     """
 
     def __init__(self, number_objects=2, materials=('Cu', 'Cu'),
-                 objects_length=((10, 10), (10, 10)), amb_temperature=293, dx=0.01, dt=0.1,
-                 file_name=None, initial_state=False,
-                 boundaries=((0, 0, 0, 0), (0, 0, 0, 0)), materials_path=False):
+                 objects_length=((10, 10), (10, 10)), amb_temperature=293,
+                 dx=0.01, dy=0.01, dt=0.1, file_name=None, initial_state=False,
+                 boundaries=((0, 0, 0, 0), (0, 0, 0, 0)),
+                 materials_path=False):
         """System object initialization.
 
         amb_temperature: ambient temperature of the whole system
-        materials: list of strings of all the used materials present in the
-            folder materials
+        materials: list of strings of all the used materials present in
+            materials_path
         number_objects: integer for the number of thermal objects
-        objects_length: list of the object lengths (spacial steps)
-        dx: the space step
-        dt: the times step
-        file_name: file name where the temperature and heat flux are saved
-        boundaries: tuple of two entries that define the boundary condition
-            for tempreture. The first corresponds to the thermal obect while
-            the second defines the temperature. If 0 the boundary condition is
-            insulation
+        objects_length: tuple of object length tuples (spacial steps)
+        dx: space step along the x-axis
+        dy: space step along the y-axis
+        dt: times step
+        file_name: file name where the temperatures are saved
+        boundaries: tuple of boundary conditions. Each entry represents the
+            conditions of the thermal object present in the order of the
+            materials parameter, and is defined by a tuple of length 4 where
+            the first, second, third and fourth entries are the left, right,
+            bottom and top condition, respectively.
         initial_state: initial state of the materials. True if applied field
             and False is removed field.
+        materials_path: absolute path of the materials database
 
         """
         # check the validity of inputs
@@ -54,13 +56,15 @@ class SystemObjects:
         cond03 = isinstance(number_objects, int)
         cond04 = isinstance(objects_length, tuple)
         cond05 = isinstance(dx, int) or isinstance(dx, float)
-        cond06 = isinstance(dt, int) or isinstance(dt, float)
-        cond07 = isinstance(file_name, str)
-        cond07 = cond07 or (file_name is None)
-        cond08 = isinstance(boundaries, tuple)
-        cond09 = isinstance(initial_state, bool)
+        cond06 = isinstance(dy, int) or isinstance(dy, float)
+        cond07 = isinstance(dt, int) or isinstance(dt, float)
+        cond08 = isinstance(file_name, str)
+        cond08 = cond08 or (file_name is None)
+        cond09 = isinstance(boundaries, tuple)
+        cond10 = isinstance(initial_state, bool)
         condition = cond01 and cond02 and cond03 and cond04 and cond05
         condition = condition and cond06 and cond07 and cond08 and cond09
+        condition = condition and cond10
         if not condition:
             raise ValueError
 
@@ -76,74 +80,99 @@ class SystemObjects:
             if file_name:
                 file_name_obj = file_name + '_' + str(i) + '.txt'
 
-            self.objects.append(Object(amb_temperature,
-                                material=materials[i],
-                                dx=dx, dt=dt,
-                                file_name=file_name_obj, boundaries=boundaries[i],
-                                Q=[], Q0=[], initial_state=initial_state,
-                                heat_save=heat_save,
-                                materials_path=materials_path))
-
+            self.objects.append(Object(amb_temperature, material=materials[i],
+                                       dx=dx, dy=dy, dt=dt,
+                                       file_name=file_name_obj,
+                                       boundaries=boundaries[i], Q=[], Q0=[],
+                                       initial_state=initial_state,
+                                       heat_save=heat_save,
+                                       materials_path=materials_path))
         self.contacts = set()
         self.boundaries = boundaries
         self.dt = dt
         self.q1 = 0.
         self.q2 = 0.
 
-        # for i in boundaries:
-        #     if i[1] != 0:
-        #         for j in range(len(self.objects[i[0]].temperature)):
-        #             self.objects[i[0]].temperature[j] = [i[1], i[1]]
-
     def contact_filter(self, object_id):
         """Filter self.contacts by thermal object id.
 
-        object: thermal object id
+        object_id: thermal object id
 
         """
+        # check the validity of inputs
+        condition = isinstance(object_id, int)
+        if not condition:
+            raise ValueError
+
+        value = object_id
         filtered = [x for x in
-                    self.contacts if (x[0][0] == object_id or x[1][0] == object_id)]
+                    self.contacts if (x[0][0] == value or x[1][0] == value)]
         return set(filtered)
 
     def contact_add(self, contact):
         """Add contact to self.contacts.
 
-        contact: thermal contact
+        contact: thermal contact tuple of length 3, where the first and second
+            entries correspond to tuples of the thermal objects and points
+            (object_id, (x,y)), and the third entry is the heat transfer
+            coefficient.
 
         """
+        # check the validity of inputs
+        if isinstance(contact, tuple):
+            if len(contact) == 3:
+                condition = True
+            else:
+                condition = False
+        else:
+            condition = False
+        if not condition:
+            raise ValueError
+
         self.contacts.add(contact)
 
     def contact_remove(self, object_one, object_two):
-        """Remove all contacts from an object.
+        """Contact removal.
 
-        contact: thermal object id
+        Remove all contacts between object_one id and object_two id.
 
         """
+        # check the validity of inputs
+        condition = isinstance(object_one, int)
+        condition = condition and isinstance(object_two, int)
+        if not condition:
+            raise ValueError
+
         contact_list = list(self.contacts)
         for i in range(len(contact_list)):
-            # print(contact_list[i][0][0])
-            # print(contact_list[i][1][0])
-            # print()
-            cond_1 = contact_list[i][0][0] == object_one and contact_list[i][1][0] == object_two
-            cond_2 = contact_list[i][0][0] == object_two and contact_list[i][1][0] == object_one
-            # print(cond_1)
-            # print(cond_2)
+            cond_1 = contact_list[i][0][0] == object_one
+            cond_1 = cond_1 and contact_list[i][1][0] == object_two
+            cond_2 = contact_list[i][0][0] == object_two
+            cond_2 = cond_2 and contact_list[i][1][0] == object_one
             if cond_1 or cond_2:
-                # print(contact_list[i])
-                # removing_contact = contact_list[i]
                 self.contacts.remove(contact_list[i])
 
     def compute(self, time_interval, write_interval, solver='explicit_k(x)',
                 verbose=True):
         """Compute the thermal process.
 
-        Computes the system for timeInterval, and writes into the file_name
-        file every write_interval time steps. Four different solvers can be
-        used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
-        and 'implicit_k(x)'.
+        Computes the system for time_interval, and writes into the file_name
+        file every write_interval time steps. Two different solvers can be
+        used: 'explicit_general', 'explicit_k(x)'. If verbose = True, then the
+        progress of the computation is shown.
 
         """
-        # number of time steps for the given timeInterval
+        # check the validity of inputs
+        cond1 = isinstance(time_interval, float)
+        cond1 = cond1 or isinstance(time_interval, int)
+        cond2 = isinstance(write_interval, int)
+        cond3 = isinstance(solver, str)
+        cond4 = isinstance(verbose, bool)
+        condition = cond1 and cond2 and cond3 and cond4
+        if not condition:
+            raise ValueError
+
+        # number of time steps for the given time_interval
         nt = int(time_interval / self.dt)
 
         # number of time steps counting from the last writing process
@@ -155,24 +184,19 @@ class SystemObjects:
                 obj.Q0 = copy.copy(obj.Q0_ref)
 
             for contact in self.contacts:
-                ind1_x = int(contact[1][1][0])
-                ind1_y = int(contact[1][1][1])
-                ind2_x = int(contact[0][1][0])
-                ind2_y = int(contact[0][1][1])
-                td1 = self.objects[contact[1][0]].temperature[ind1_x][ind1_y][0]
-                td2 = self.objects[contact[0][0]].temperature[ind2_x][ind2_y][0]
+                in1_x = int(contact[1][1][0])
+                in1_y = int(contact[1][1][1])
+                in2_x = int(contact[0][1][0])
+                in2_y = int(contact[0][1][1])
+                td1 = self.objects[contact[1][0]].temperature[in1_x][in1_y][0]
+                td2 = self.objects[contact[0][0]].temperature[in2_x][in2_y][0]
                 heat_contact_1 = contact[2] * (td1 - td2)
                 heat_contact_2 = contact[2] * (td2 - td1)
-                self.objects[contact[0][0]].Q0[ind2_x][ind2_y] = heat_contact_1
-                self.objects[contact[1][0]].Q0[ind1_x][ind2_y] = heat_contact_2
+                self.objects[contact[0][0]].Q0[in2_x][in2_y] = heat_contact_1
+                self.objects[contact[1][0]].Q0[in1_x][in2_y] = heat_contact_2
 
-            # object_number = -1
             for obj in self.objects:
-                # object_number = object_number + 1
                 obj.time_passed = obj.time_passed + obj.dt
-
-                # cond1 = object_number not in [l[0] for l in self.boundaries]
-                # if cond1 or (object_number, 0) in self.boundaries:
 
                 # defines the material properties
                 for i in range(obj.size[0]):
@@ -193,26 +217,6 @@ class SystemObjects:
                                 obj.temperature[i][j][0])
                             obj.k[i][j] = obj.materials[ind].k0(
                                 obj.temperature[i][j][0])
-
-                # SOLVERS
-
-                # # implicit k constant
-                # if solver == 'implicit_general':
-                #     value = solvers.implicit_general(obj)
-                #     obj.temperature, obj.lheat = value
-
-                # # implicit k dependent on x
-                # if solver == 'implicit_k(x)':
-                #     obj.temperature, obj.lheat = solvers.implicit_k(obj)
-
-                # # explicit k constant
-                # if solver == 'explicit_general':
-                #     value = solvers.explicit_general(obj)
-                #     obj.temperature, obj.lheat = value
-
-                # # explicit k dependent on x
-                # if solver == 'explicit_k(x)':
-                #     obj.temperature, obj.lheat = solvers.explicit_k(obj)
 
                 # explicit k constant
                 if solver == 'explicit_general':
@@ -242,17 +246,6 @@ class SystemObjects:
                         for j in range(obj.size[1]):
                             temp[-1].append(obj.temperature[i][j][0])
 
-                # writes the temperature to file_name file ...
-                # if the number of time steps is verified
-                # if obj.file_name:
-                #     if nw + 1 == write_interval or j == 0 or j == nt - 1:
-                #         line = '%f' % obj.time_passed
-                #         for i in obj.temperature:
-                #             new_line = ',%f' % i[1]
-                #             line = line + new_line
-                #         f = open(obj.file_name, 'a')
-                #         f.write(line+'\n')
-                #         f.close()
                 if obj.file_name:
                     if nw + 1 == write_interval or k == 0 or k == nt - 1:
                         line = '%f' % obj.time_passed
@@ -263,33 +256,6 @@ class SystemObjects:
                             f = open(obj.file_name, 'a')
                             f.write(line+'\n')
                             f.close()
-
-                # else:
-
-                #     heat = [p*self.dt*obj.dx for p in obj.Q0 if p is not None]
-                #     heat = sum(heat)/(len(heat)*obj.dx)
-
-                #     if object_number == self.boundaries[0][0]:
-                #         self.q1 = self.q1 + heat
-                #         q = self.q1
-                #     else:
-                #         self.q2 = self.q2 + heat
-                #         q = self.q2
-
-                #     # writes the temperature to file_name file ...
-                #     # if the number of time steps is verified
-                #     if obj.file_name:
-                #         if nw + 1 == write_interval or j == 0 or j == nt - 1:
-                #             line = '%f' % obj.time_passed
-                #             for i in obj.temperature:
-                #                 new_line = ',%f' % i[1]
-                #                 line = line + new_line
-                #             new_line = ',%f' % q
-                #             line = line + new_line
-                #             f = open(obj.file_name, 'a')
-                #             f.write(line+'\n')
-                #             f.close()
-            # print(obj.temperature)
 
             if nw == write_interval:
                 nw = 0
@@ -305,68 +271,57 @@ class SystemObjects:
 class SingleObject(Object):
     """Single_object class.
 
-    This class solves numerically the heat conduction equation for 1 dimension
-    of an active material(s). Three solvers can be used: explicit with
-    x-independent k, explicit with x-dependent k, implicit with x-independent
-    k, and implicit with x-dependent k. The class has 5 methods: activate for
-    the activation of part of the solid, deactivate for the deactivation of
-    part of the solid, and compute for solving the equation for a given period
-    of time. This class is suited for simulations involving caloric systems
-    such as magnetocaloric or electrocaloric systems.
+    This class solves numerically the two-dimensional heat conduction equation.
 
     """
 
     def __init__(self, amb_temperature, material='Cu', dx=0.01, dy=0.01,
                  dt=0.1, size=(10, 10), file_name=None,
                  boundaries=(0, 0, 0, 0), Q=[], Q0=[], initial_state=False,
-                 materials_path=False, draw=['temperature','state','materials','Q','Q0'], draw_scale=None):
+                 materials_path=False,
+                 draw=['temperature', 'state', 'materials'], draw_scale=None):
         """Object initialization.
 
         amb_temperature: ambient temperature of the whole system
-        materials: list of strings of all the used materials present in the
-            folder materials
-        borders: list of the points where there is a change of material
-        materials_order: list of the materials list indexes that defines the
-            material properties given by borders
-        dx: the space step
+        material: background material from materials_path
+        dx: space step in the x-axis
+        dy: space step in the y-axis
         dt: the times step
+        size: tuple of size of the 2D thermal object
         file_name: file name where the temperature and heat flux are saved
-        boundaries: list of two entries that define the boundary condition
-            for tempreture. If 0 the boundary condition is insulation
-        Q: list of 3 entry lists that gives the fixed heat source coeficient.
-            The first term is the initial space index where it is applies. The
-            second is the final space index where it is applies. The third is
-            the value of the coeficient.
-        Q0 is a list of 3 entry lists that gives the temperature dependent heat
-            source coefficient. The first term is the initial space index where
-            it is applies. The second is the final space index where it is
-            applies. The third is the value of the coeficient.
-        heat_points: list of the space indexes where we want to extract the
-            heat flux. Normally, the first term is the heat flux of the hot end
-            and the second term is the heat flux of the cold end
+        boundaries: list of four entries that define the boundary condition
+            for temperature (left, right, bottom, top). If 0 the boundary
+            condition is insulation
+        Q: list in the form of matrix of fixed heat source coefficient.
+        Q0: list in the form of matrix of temperature dependent heat source
+            coefficient.
         initial_state: initial state of the materials. True if applied field
             and False is removed field.
-        h_left: left heat transfer coefficient
-        h_right: right heat transfer coefficient
+        materials_path: absolute path of the materials database.
+        draw: list of strings representing the live plots, which can be
+            'temperature', 'state', 'materials', 'Q' and 'Q0'.
+        draw_scale: list of length 2 representing the minimum and maximum
+            temperatures of the temperature plot.
 
         """
         boundaries = tuple(boundaries)
-        Q = list(Q)
-        Q0 = list(Q0)
         cond01 = isinstance(amb_temperature, float)
         cond01 = cond01 or isinstance(amb_temperature, int)
         cond02 = isinstance(material, str)
         cond05 = isinstance(dx, int) or isinstance(dx, float)
-        cond06 = isinstance(dt, int) or isinstance(dt, float)
-        cond07 = isinstance(file_name, str)
-        cond07 = cond07 or (file_name is None)
-        cond08 = isinstance(boundaries, tuple)
+        cond06 = isinstance(dy, int) or isinstance(dy, float)
+        cond07 = isinstance(dt, int) or isinstance(dt, float)
+        cond08 = isinstance(file_name, str)
+        cond08 = cond08 or (file_name is None)
+        cond09 = isinstance(boundaries, tuple)
         cond10 = isinstance(initial_state, bool)
-        cond13 = isinstance(Q, list)
-        cond14 = isinstance(Q0, list)
+        cond11 = isinstance(Q, list)
+        cond12 = isinstance(Q0, list)
+        cond13 = isinstance(draw, list)
+        cond14 = isinstance(draw_scale, list)
         condition = cond01 and cond02 and cond05
-        condition = condition and cond06 and cond07 and cond08
-        condition = condition and cond10 and cond13
+        condition = condition and cond06 and cond07 and cond08 and cond09
+        condition = condition and cond10 and cond11 and cond12 and cond13
         condition = condition and cond14
         if not condition:
             raise ValueError
@@ -375,16 +330,16 @@ class SingleObject(Object):
 
         self.time_passed = 0.
         self.size = size
-        self.dt=dt
-        self.dx=dx
-        self.dy=dy
-        self.object = Object(amb_temperature,
-                             material=material,
-                             dx=dx, dy=dy, dt=dt, size=size,
-                             file_name=file_name, boundaries=boundaries,
-                             Q=[], Q0=[], initial_state=initial_state,
+        self.dt = dt
+        self.dx = dx
+        self.dy = dy
+        self.object = Object(amb_temperature, material=material, dx=dx, dy=dy,
+                             dt=dt, size=size, file_name=file_name,
+                             boundaries=boundaries, Q=[], Q0=[],
+                             initial_state=initial_state,
                              materials_path=materials_path)
 
+        # Initializes plotting
         self.draw = draw
         self.draw_scale = draw_scale
         if self.draw:
@@ -397,11 +352,11 @@ class SingleObject(Object):
                 channel = cmap._segmentdata[key]
                 data = []
                 for t in channel:
-                    data.append((1-t[0],t[2],t[1]))
+                    data.append((1-t[0], t[2], t[1]))
                 reverse.append(sorted(data))
-            LinearL = dict(zip(k,reverse))
-            my_cmap_r = matplotlib.colors.LinearSegmentedColormap(name, LinearL)
-            cmap_r = my_cmap_r  # reverse_colourmap(cmap)
+            linear = dict(zip(k, reverse))
+            my_cmap_r = matplotlib.colors.LinearSegmentedColormap(name, linear)
+            cmap_r = my_cmap_r
             for drawing in self.draw:
                 if drawing == 'temperature':
                     self.figure = plt.figure()
@@ -415,12 +370,22 @@ class SingleObject(Object):
                         vmax = max(max(temp, key=max))
                         vmin = min(min(temp, key=min))
                         temp = np.array(temp)
-                        self.im = self.ax.imshow(temp, vmax=vmax, vmin=vmin, cmap=cmap_r,extent =[0, size[0]*dx, 0, size[1]*dy],origin ='lower',interpolation='hamming')
+                        extent = [0, size[0]*dx, 0, size[1]*dy]
+                        self.im = self.ax.imshow(temp, vmax=vmax, vmin=vmin,
+                                                 cmap=cmap_r, extent=extent,
+                                                 origin='lower',
+                                                 interpolation='hamming')
                     else:
                         temp = np.array(temp)
-                        self.im = self.ax.imshow(temp, vmax=self.draw_scale[0], vmin=self.draw_scale[1], cmap=cmap_r,extent =[0, size[0]*dx, 0, size[1]*dy],origin ='lower',interpolation='hamming')
+                        extent = [0, size[0]*dx, 0, size[1]*dy]
+                        self.im = self.ax.imshow(temp, vmax=self.draw_scale[0],
+                                                 vmin=self.draw_scale[1],
+                                                 cmap=cmap_r, extent=extent,
+                                                 origin='lower',
+                                                 interpolation='hamming')
                     cbar_kw = {}
-                    cbar = self.ax.figure.colorbar(self.im, ax=self.ax, **cbar_kw)
+                    cbar = self.ax.figure.colorbar(self.im, ax=self.ax,
+                                                   **cbar_kw)
                     self.ax.set_title('Temperature (K)')
                     self.ax.set_xlabel('x axis (m)')
                     self.ax.set_ylabel('y axis (m)')
@@ -431,34 +396,61 @@ class SingleObject(Object):
                     vmax = 1
                     vmin = 0
                     state = np.array(self.object.state)
-                    self.im_state = self.ax_state.imshow(state, vmax=1.5, vmin=-0.5, cmap=plt.get_cmap("gray", 2), extent =[0, size[0]*dx, 0, size[1]*dy],origin ='lower')
+                    cmap = plt.get_cmap("gray", 2)
+                    extent = [0, size[0]*dx, 0, size[1]*dy]
+                    self.im_state = self.ax_state.imshow(state, vmax=1.5,
+                                                         vmin=-0.5,
+                                                         cmap=cmap,
+                                                         extent=extent,
+                                                         origin='lower')
                     cbar_kw = {}
-                    cbarlabel = ""  # "state"
+                    cbarlabel = ""
                     qrates = np.array(['active', 'inactive'])
-                    norm = matplotlib.colors.BoundaryNorm(np.linspace(0, 1, 2), 1)
-                    fmt = matplotlib.ticker.FuncFormatter(lambda x, pos: qrates[::-1][norm(x)])
+                    value = np.linspace(0, 1, 2)
+                    norm = matplotlib.colors.BoundaryNorm(value, 1)
+                    func = lambda x, pos: qrates[::-1][norm(x)]
+                    fmt = matplotlib.ticker.FuncFormatter(func)
                     cbar_kw = dict(ticks=np.arange(-3, 4), format=fmt)
-                    cbar_state = self.ax_state.figure.colorbar(self.im_state, ax=self.ax_state, **cbar_kw)
-                    cbar_state.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+                    cbar_stat = self.ax_state.figure.colorbar(self.im_state,
+                                                              ax=self.ax_state,
+                                                              **cbar_kw)
+                    cbar_stat.ax.set_ylabel(cbarlabel, rotation=-90,
+                                            va="bottom")
                     self.ax_state.set_title('State')
                     self.ax_state.set_xlabel('x axis (m)')
                     self.ax_state.set_ylabel('y axis (m)')
                     plt.show(block=False)
-                if drawing == 'materials' and len(self.object.materials_name) > 1:
+                    value = len(self.object.materials_name) > 1
+                if drawing == 'materials' and value:
                     self.figure_materials = plt.figure()
                     self.ax_materials = self.figure_materials.add_subplot(111)
                     vmax = len(self.object.materials)-1
                     vmin = 0
                     material_id = np.array(self.object.materials_index)
-                    self.im_materials = self.ax_materials.imshow(material_id, vmax=vmax, vmin=vmin, cmap=plt.get_cmap("gray", vmax), extent =[0, size[0]*dx, 0, size[1]*dy],origin ='lower')
+                    cmap = plt.get_cmap("gray", vmax)
+                    extent = [0, size[0]*dx, 0, size[1]*dy]
+                    origin = 'lower'
+                    self.im_materials = self.ax_materials.imshow(material_id,
+                                                                 vmax=vmax,
+                                                                 vmin=vmin,
+                                                                 cmap=cmap,
+                                                                 extent=extent,
+                                                                 origin=origin)
                     cbar_kw = {}
                     cbarlabel = ""
                     qrates = np.array(self.object.materials_name)
-                    norm = matplotlib.colors.BoundaryNorm(np.linspace(0, 1, len(self.object.materials)), len(self.object.materials)-1)
-                    fmt = matplotlib.ticker.FuncFormatter(lambda x, pos: qrates[::-1][norm(x)])
+                    value_1 = np.linspace(0, 1, len(self.object.materials))
+                    value_2 = len(self.object.materials)-1
+                    norm = matplotlib.colors.BoundaryNorm(value_1, value_2)
+                    func = lambda x, pos: qrates[::-1][norm(x)]
+                    fmt = matplotlib.ticker.FuncFormatter(func)
                     cbar_kw = dict(ticks=np.arange(-3, 4), format=fmt)
-                    cbar_materials = self.ax_materials.figure.colorbar(self.im_materials, ax=self.ax_materials, **cbar_kw)
-                    cbar_materials.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+                    value_1 = self.im_materials
+                    value_2 = self.ax_materials
+                    cbar_m = self.ax_materials.figure.colorbar(value_1,
+                                                               ax=value_2,
+                                                               **cbar_kw)
+                    cbar_m.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
                     self.ax_materials.set_title('Materials')
                     self.ax_materials.set_xlabel('x axis (m)')
                     self.ax_materials.set_ylabel('y axis (m)')
@@ -469,28 +461,51 @@ class SingleObject(Object):
                     temp = np.array(self.object.Q)
                     vmax = 1
                     vmin = 0
-                    self.im_Q = self.ax_Q.imshow(temp, vmax=vmax, vmin=vmin, cmap='inferno',extent =[0, size[0]*dx, 0, size[1]*dy],origin ='lower',interpolation='hamming')
+                    extent = [0, size[0]*dx, 0, size[1]*dy]
+                    self.im_Q = self.ax_Q.imshow(temp, vmax=vmax, vmin=vmin,
+                                                 cmap='inferno', extent=extent,
+                                                 origin='lower',
+                                                 interpolation='hamming')
                     cbar_kw = {}
-                    cbar = self.ax_Q.figure.colorbar(self.im_Q, ax=self.ax_Q, **cbar_kw)
+                    cbar = self.ax_Q.figure.colorbar(self.im_Q, ax=self.ax_Q,
+                                                     **cbar_kw)
                     self.ax_Q.set_title('Q (W/m²)')
                     self.ax_Q.set_xlabel('x axis (m)')
                     self.ax_Q.set_ylabel('y axis (m)')
                     plt.show(block=False)
-                if drawing == 'Q0':
+                    if drawing == 'Q0':
                     self.figure_Q0 = plt.figure()
                     self.ax_Q0 = self.figure_Q0.add_subplot(111)
                     temp = np.array(self.object.Q0)
                     vmax = 1
                     vmin = 0
-                    self.im_Q0 = self.ax_Q0.imshow(temp, vmax=vmax, vmin=vmin, cmap='inferno',extent =[0, size[0]*dx, 0, size[1]*dy],origin ='lower',interpolation='hamming')
+                    extent = [0, size[0]*dx, 0, size[1]*dy]
+                    self.im_Q0 = self.ax_Q0.imshow(temp, vmax=vmax, vmin=vmin,
+                                                   cmap='inferno',
+                                                   extent=extent,
+                                                   origin='lower',
+                                                   interpolation='hamming')
                     cbar_kw = {}
-                    cbar = self.ax_Q0.figure.colorbar(self.im_Q0, ax=self.ax_Q0, **cbar_kw)
+                    cbar = self.ax_Q0.figure.colorbar(self.im_Q0,
+                                                      ax=self.ax_Q0,
+                                                      **cbar_kw)
                     self.ax_Q0.set_title('Q0 (W/m²)')
                     self.ax_Q0.set_xlabel('x axis (m)')
                     self.ax_Q0.set_ylabel('y axis (m)')
                     plt.show(block=False)
 
     def show_figure(self, figure_type):
+        """Plotting.
+
+        Initializes a specific plotting. figure_type is a string identifying
+        the plotting.
+
+        """
+        # check the validity of inputs
+        condition = isinstance(figure_type, str)
+        if not condition:
+            raise ValueError
+
         if figure_type == 'temperature':
             self.ax = self.figure.add_subplot(111)
             temp = []
@@ -502,10 +517,17 @@ class SingleObject(Object):
                 vmax = max(max(temp, key=max))
                 vmin = min(min(temp, key=min))
                 temp = np.array(temp)
-                self.im = self.ax.imshow(temp, vmax=vmax, vmin=vmin, cmap='jet',extent =[0, self.size[0]*self.dx, 0, self.size[1]*self.dy],origin ='lower')
+                extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
+                self.im = self.ax.imshow(temp, vmax=vmax, vmin=vmin,
+                                         cmap='jet', extent=extent,
+                                         origin='lower')
             else:
                 temp = np.array(temp)
-                self.im = self.ax.imshow(temp, vmax=self.draw_scale[0], vmin=self.draw_scale[1], cmap='jet',extent =[0, self.size[0]*self.dx, 0, self.size[1]*self.dy],origin ='lower')
+                extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
+                self.im = self.ax.imshow(temp, vmax=self.draw_scale[0],
+                                         vmin=self.draw_scale[1],
+                                         cmap='jet', extent=extent,
+                                         origin='lower')
             cbar_kw = {}
             cbarlabel = "temperature (K)"
             cbar = self.ax.figure.colorbar(self.im, ax=self.ax, **cbar_kw)
@@ -520,14 +542,20 @@ class SingleObject(Object):
             vmax = 1
             vmin = 0
             state = np.array(self.object.state)
-            self.im_state = self.ax_state.imshow(state, vmax=1.5, vmin=-0.5, cmap=plt.get_cmap("gray", 2), extent =[0, size[0]*dx, 0, size[1]*dy],origin ='lower')
+            extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
+            self.im_state = self.ax_state.imshow(state, vmax=1.5, vmin=-0.5,
+                                                 cmap=plt.get_cmap("gray", 2),
+                                                 extent=extent, origin='lower')
             cbar_kw = {}
             cbarlabel = ""  # "state"
             qrates = np.array(['active', 'inactive'])
             norm = matplotlib.colors.BoundaryNorm(np.linspace(0, 1, 2), 1)
-            fmt = matplotlib.ticker.FuncFormatter(lambda x, pos: qrates[::-1][norm(x)])
+            func = lambda x, pos: qrates[::-1][norm(x)]
+            fmt = matplotlib.ticker.FuncFormatter(func)
             cbar_kw = dict(ticks=np.arange(-3, 4), format=fmt)
-            cbar_state = self.ax_state.figure.colorbar(self.im_state, ax=self.ax_state, **cbar_kw)
+            cbar_state = self.ax_state.figure.colorbar(self.im_state,
+                                                       ax=self.ax_state,
+                                                       **cbar_kw)
             cbar_state.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
             self.ax_state.set_title('State')
             self.ax_state.set_xlabel('x axis (m)')
@@ -539,17 +567,31 @@ class SingleObject(Object):
             vmax = len(self.object.materials)-1
             vmin = 0
             material_id = np.array(self.object.materials_index)
-            self.im_materials = self.ax_materials.imshow(material_id, vmax=vmax, vmin=vmin, cmap=plt.get_cmap("PiYG", vmax+1), extent =[0, self.size[0]*self.dx, 0, self.size[1]*self.dy],origin ='lower')
+            cmap = plt.get_cmap("PiYG", vmax+1)
+            extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
+            self.im_materials = self.ax_materials.imshow(material_id,
+                                                         vmax=vmax,
+                                                         vmin=vmin,
+                                                         cmap=cmap,
+                                                         extent=extent,
+                                                         origin='lower')
             cbar_kw = {}
             cbarlabel = ""
             materials_name_list = copy.deepcopy(self.object.materials_name)
             materials_name_list.reverse()
             qrates = np.array(materials_name_list)
-            norm = matplotlib.colors.BoundaryNorm(np.linspace(0, len(self.object.materials)-1, len(self.object.materials)), len(self.object.materials)-1)
-            fmt = matplotlib.ticker.FuncFormatter(lambda x, pos: qrates[::-1][norm(x)])
-            cbar_kw = dict(ticks=np.arange(0, len(self.object.materials)+1), format=fmt)
-            cbar_materials = self.ax_materials.figure.colorbar(self.im_materials, ax=self.ax_materials, **cbar_kw)
-            cbar_materials.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+            value = np.linspace(0, len(self.object.materials) - 1,
+                                len(self.object.materials))
+            norm = matplotlib.colors.BoundaryNorm(value,
+                                                  len(self.object.materials)-1)
+            func = lambda x, pos: qrates[::-1][norm(x)]
+            fmt = matplotlib.ticker.FuncFormatter(func)
+            cbar_kw = dict(ticks=np.arange(0, len(self.object.materials)+1),
+                           format=fmt)
+            cbar_m = self.ax_materials.figure.colorbar(self.im_materials,
+                                                       ax=self.ax_materials,
+                                                       **cbar_kw)
+            cbar_m.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
             self.ax_materials.set_title('Materials')
             self.ax_materials.set_xlabel('x axis (m)')
             self.ax_materials.set_ylabel('y axis (m)')
@@ -560,9 +602,14 @@ class SingleObject(Object):
             temp = np.array(self.object.Q)
             vmax = 1
             vmin = 0
-            self.im_Q = self.ax_Q.imshow(temp, vmax=vmax, vmin=vmin, cmap='inferno',extent =[0, self.size[0]*self.dx, 0, self.size[1]*self.dy],origin ='lower',interpolation='hamming')
+            extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
+            self.im_Q = self.ax_Q.imshow(temp, vmax=vmax, vmin=vmin,
+                                         cmap='inferno', extent=extent,
+                                         origin='lower',
+                                         interpolation='hamming')
             cbar_kw = {}
-            cbar = self.ax_Q.figure.colorbar(self.im_Q, ax=self.ax_Q, **cbar_kw)
+            cbar = self.ax_Q.figure.colorbar(self.im_Q, ax=self.ax_Q,
+                                             **cbar_kw)
             self.ax_Q.set_title('Q (W/m²)')
             self.ax_Q.set_xlabel('x axis (m)')
             self.ax_Q.set_ylabel('y axis (m)')
@@ -573,16 +620,56 @@ class SingleObject(Object):
             temp = np.array(self.object.Q0)
             vmax = 1
             vmin = 0
-            self.im_Q0 = self.ax_Q0.imshow(temp, vmax=vmax, vmin=vmin, cmap='inferno',extent =[0, self.size[0]*self.dx, 0, self.size[1]*self.dy],origin ='lower',interpolation='hamming')
+            extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
+            self.im_Q0 = self.ax_Q0.imshow(temp, vmax=vmax, vmin=vmin,
+                                           cmap='inferno',
+                                           extent=extent,
+                                           origin='lower',
+                                           interpolation='hamming')
             cbar_kw = {}
-            cbar = self.ax_Q0.figure.colorbar(self.im_Q0, ax=self.ax_Q0, **cbar_kw)
+            cbar = self.ax_Q0.figure.colorbar(self.im_Q0, ax=self.ax_Q0,
+                                              **cbar_kw)
             self.ax_Q0.set_title('Q0 (W/m²)')
             self.ax_Q0.set_xlabel('x axis (m)')
             self.ax_Q0.set_ylabel('y axis (m)')
             plt.show(block=False)
 
     def activate(self, initial_point, final_point, shape='square'):
-        self.object.activate(initial_point=initial_point, final_point=final_point, shape=shape)
+        """Activation of the material.
+
+        Activates a given piece of material. If shape is 'square', then the
+        initial_point is the tuple (x,y) of the bottom left point and the
+        final_point is the tuple (x,y) of the top right point. If the shape is
+        'circle', the initial_point is the tuple (x,y) of the center of the
+        circle and final_point is its radius.
+
+        """
+        # check the validity of inputs
+        if isinstance(shape, str):
+            if shape == 'square':
+                value = isinstance(initial_point, tuple)
+                if value and isinstance(final_point, tuple):
+                    condition = len(initial_point) == 2
+                    condition = condition and len(final_point) == 2
+                else:
+                    condition = False
+            if shape == 'circle':
+                value = isinstance(final_point, int)
+                value = value or isinstance(final_point, float)
+                value = value and isinstance(initial_point, tuple)
+                if value:
+                    condition = len(initial_point) == 2
+                else:
+                    condition = False
+            else:
+                condition = False
+        else:
+            condition = False
+        if not condition:
+            raise ValueError
+
+        self.object.activate(initial_point=initial_point,
+                             final_point=final_point, shape=shape)
         if self.draw:
             for drawing in self.draw:
                 if drawing == 'temperature':
@@ -591,7 +678,6 @@ class SingleObject(Object):
                         temp.append([])
                         for j in range(self.object.size[1]):
                             temp[-1].append(self.object.temperature[i][j][0])
-                    # print(temp)
                     self.im.set_array(temp)
                     if not self.draw_scale:
                         vmax = max(max(temp, key=max))
@@ -604,7 +690,41 @@ class SingleObject(Object):
                     self.figure_state.canvas.draw()
 
     def deactivate(self, initial_point, final_point, shape='square'):
-        self.object.deactivate(initial_point=initial_point, final_point=final_point, shape=shape)
+        """Deactivation of the material.
+
+        Deactivates a given piece of material. If shape is 'square', then the
+        initial_point is the tuple (x,y) of the bottom left point and the
+        final_point is the tuple (x,y) of the top right point. If the shape is
+        'circle', the initial_point is the tuple (x,y) of the center of the
+        circle and final_point is its radius.
+
+        """
+        # check the validity of inputs
+        if isinstance(shape, str):
+            if shape == 'square':
+                value = isinstance(initial_point, tuple)
+                if value and isinstance(final_point, tuple):
+                    condition = len(initial_point) == 2
+                    condition = condition and len(final_point) == 2
+                else:
+                    condition = False
+            if shape == 'circle':
+                value = isinstance(final_point, int)
+                value = value or isinstance(final_point, float)
+                value = value and isinstance(initial_point, tuple)
+                if value:
+                    condition = len(initial_point) == 2
+                else:
+                    condition = False
+            else:
+                condition = False
+        else:
+            condition = False
+        if not condition:
+            raise ValueError
+
+        self.object.deactivate(initial_point=initial_point,
+                               final_point=final_point, shape=shape)
         if self.draw:
             for drawing in self.draw:
                 if drawing == 'temperature':
@@ -613,7 +733,6 @@ class SingleObject(Object):
                         temp.append([])
                         for j in range(self.object.size[1]):
                             temp[-1].append(self.object.temperature[i][j][0])
-                    # print(temp)
                     self.im.set_array(temp)
                     if not self.draw_scale:
                         vmax = max(max(temp, key=max))
@@ -626,9 +745,59 @@ class SingleObject(Object):
                     self.figure_state.canvas.draw()
 
     def change_boundaries(self, boundaries):
+        """Boundary change.
+
+        Changes boundaries variable.
+
+        """
+        # check the validity of inputs
+        if isinstance(boundaries, tuple):
+            if len(boundaries) == 4:
+                condition = True
+            else:
+                condition = False
+        else:
+            condition = False
+        if not condition:
+            raise ValueError
+
         self.object.boundaries = boundaries
 
     def change_material(self, shape, material, initial_point, length, state):
+        """Material change.
+
+        Changes the material of a given piece of the background material. If
+        shape is 'square', then the initial_point is the tuple (x,y) of the
+        bottom left point and the length is the tuple (x,y) of the length. If
+        the shape is 'circle', the initial_point is the tuple (x,y) of the
+        center of the circle and length is its radius.
+
+        """
+        # check the validity of inputs
+        if isinstance(shape, str):
+            if shape == 'square':
+                value = isinstance(initial_point, tuple)
+                if value and isinstance(final_point, tuple):
+                    condition = len(initial_point) == 2
+                    condition = condition and len(final_point) == 2
+                else:
+                    condition = False
+            if shape == 'circle':
+                value = isinstance(final_point, int)
+                value = value or isinstance(final_point, float)
+                value = value and isinstance(initial_point, tuple)
+                if value:
+                    condition = len(initial_point) == 2
+                else:
+                    condition = False
+            else:
+                condition = False
+        else:
+            condition = False
+        condition = condition and isinstance(state, bool)
+        if not condition:
+            raise ValueError
+
         if shape == 'square':
             self.object.square(material=material,
                                initial_point=initial_point, length=length,
@@ -639,7 +808,6 @@ class SingleObject(Object):
                                state=state, materials_path=self.materials_path)
         try:
             plt.close(self.figure_materials)
-            # self.figure_materials.close()
         except:
             pass
 
@@ -649,28 +817,88 @@ class SingleObject(Object):
                 self.ax_materials = self.figure_materials.add_subplot(111)
                 vmax = len(self.object.materials)-1
                 vmin = 0
+                cmap = plt.get_cmap("PiYG", vmax+1)
+                extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
                 material_id = np.array(self.object.materials_index)
-                self.im_materials = self.ax_materials.imshow(material_id, vmax=vmax, vmin=vmin, cmap=plt.get_cmap("PiYG", vmax+1), extent =[0, self.size[0]*self.dx, 0, self.size[1]*self.dy],origin ='lower')
+                self.im_materials = self.ax_materials.imshow(material_id,
+                                                             vmax=vmax,
+                                                             vmin=vmin,
+                                                             cmap=cmap,
+                                                             extent=extent,
+                                                             origin='lower')
                 cbar_kw = {}
                 cbarlabel = ""
                 materials_name_list = copy.deepcopy(self.object.materials_name)
                 materials_name_list.reverse()
                 qrates = np.array(materials_name_list)
-                norm = matplotlib.colors.BoundaryNorm(np.linspace(0, len(self.object.materials)-1, len(self.object.materials)), len(self.object.materials)-1)
-                fmt = matplotlib.ticker.FuncFormatter(lambda x, pos: qrates[::-1][norm(x)])
-                cbar_kw = dict(ticks=np.arange(0, len(self.object.materials)+1), format=fmt)
-                cbar_materials = self.ax_materials.figure.colorbar(self.im_materials, ax=self.ax_materials, **cbar_kw)
-                cbar_materials.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+                value_1 = np.linspace(0, len(self.object.materials)-1,
+                                      len(self.object.materials))
+                value_2 = len(self.object.materials)-1
+                norm = matplotlib.colors.BoundaryNorm(value_1, value_2)
+                func = lambda x, pos: qrates[::-1][norm(x)]
+                fmt = matplotlib.ticker.FuncFormatter(func)
+                value = np.arange(0, len(self.object.materials)+1)
+                cbar_kw = dict(ticks=value, format=fmt)
+                cba_m = self.ax_materials.figure.colorbar(self.im_materials,
+                                                          ax=self.ax_materials,
+                                                          **cbar_kw)
+                cba_m.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
                 self.ax_materials.set_title('Materials')
                 self.ax_materials.set_xlabel('x axis (m)')
                 self.ax_materials.set_ylabel('y axis (m)')
                 plt.show(block=False)
 
     def power_add(self, shape, power_type, initial_point, final_point, power):
+        """Power adding.
+
+        Adds a power matrix to the thermal object. If shape is 'square', then
+        the initial_point is the tuple (x,y) of the bottom left point and the
+        final_point is the tuple (x,y) of the top right point. If the shape is
+        'circle', the initial_point is the tuple (x,y) of the center of the
+        circle and final_point is its radius. power is the value of the power
+        to add, and power type is the type of power to be introduced, which has
+        the value 'Q' if it is temperature dependent and 'Q0' if it is
+        temperature independent.
+
+        """
+        # check the validity of inputs
+        if isinstance(shape, str):
+            if shape == 'square':
+                value = isinstance(initial_point, tuple)
+                if value and isinstance(final_point, tuple):
+                    cond1 = len(initial_point) == 2
+                    cond1 = cond1 and len(final_point) == 2
+                else:
+                    cond1 = False
+            elif shape == 'circle':
+                value = isinstance(final_point, int)
+                value = value or isinstance(final_point, float)
+                value = value and isinstance(initial_point, tuple)
+                if value:
+                    cond1 = len(initial_point) == 2
+                else:
+                    cond1 = False
+            else:
+                cond1 = False
+        else:
+            cond1 = False
+        cond2 = isinstance(power, int) or isinstance(power, float)
+        if isinstance(power_type, str):
+            if power_type == 'Q' or power_type == 'Q0':
+                cond3 = True
+            else:
+                cond3 = False
+        else:
+            cond3 = False
+        if not cond1 and cond2 and cond3:
+            raise ValueError
+
         if shape == 'square':
-            self.object.power_add(initial_point, final_point, power, shape=shape, power_type=power_type)
+            self.object.power_add(initial_point, final_point, power,
+                                  shape=shape, power_type=power_type)
         if shape == 'circle':
-            self.object.power_add(initial_point, final_point, power, shape=shape, power_type=power_type)
+            self.object.power_add(initial_point, final_point, power,
+                                  shape=shape, power_type=power_type)
         if self.draw:
             if 'Q' in self.draw and power_type == 'Q':
                 self.im_Q.set_array(self.object.Q)
@@ -691,15 +919,22 @@ class SingleObject(Object):
                 verbose=True):
         """Compute the thermal process.
 
-        Computes the system for timeInterval, and writes into the file_name
-        file every write_interval time steps. Four different solvers can be
-        used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
-        and 'implicit_k(x)'. heat_points is a list that defines the points
-        where the heat flux are calculated if modeTemp is True the compute
-        method stops when the point modeTempPoint changes numFlag relative to
-        the initial value
+        Computes the system for time_interval, and writes into the file_name
+        file every write_interval time steps. Two different solvers can be
+        used: 'explicit_general' and 'explicit_k(x)'. If verbose = True, then
+        the progress of the computation is shown.
 
         """
+        # check the validity of inputs
+        cond1 = isinstance(time_interval, float)
+        cond1 = cond1 or isinstance(time_interval, int)
+        cond2 = isinstance(write_interval, int)
+        cond3 = isinstance(solver, str)
+        cond4 = isinstance(verbose, bool)
+        condition = cond1 and cond2 and cond3 and cond4
+        if not condition:
+            raise ValueError
+
         # number of time steps for the given timeInterval
         nt = int(time_interval / self.object.dt)
 
@@ -716,30 +951,23 @@ class SingleObject(Object):
             for i in range(self.object.size[0]):
                 for j in range(self.object.size[1]):
                     if self.object.state[i][j] is True:
-                        self.object.rho[i][j] = self.object.materials[self.object.materials_index[i][j]].rhoa(
+                        ix = self.object.materials_index[i][j]
+                        self.object.rho[i][j] = self.object.materials[ix].rhoa(
                             self.object.temperature[i][j][0])
-                        self.object.Cp[i][j] = self.object.materials[self.object.materials_index[i][j]].cpa(
+                        self.object.Cp[i][j] = self.object.materials[ix].cpa(
                             self.object.temperature[i][j][0])
-                        self.object.k[i][j] = self.object.materials[self.object.materials_index[i][j]].ka(
+                        self.object.k[i][j] = self.object.materials[ix].ka(
                             self.object.temperature[i][j][0])
                     if self.object.state[i][j] is False:
-                        self.object.rho[i][j] = self.object.materials[self.object.materials_index[i][j]].rho0(
+                        ix = self.object.materials_index[i][j]
+                        self.object.rho[i][j] = self.object.materials[ix].rho0(
                             self.object.temperature[i][j][0])
-                        self.object.Cp[i][j] = self.object.materials[self.object.materials_index[i][j]].cp0(
+                        self.object.Cp[i][j] = self.object.materials[ix].cp0(
                             self.object.temperature[i][j][0])
-                        self.object.k[i][j] = self.object.materials[self.object.materials_index[i][j]].k0(
+                        self.object.k[i][j] = self.object.materials[ix].k0(
                             self.object.temperature[i][j][0])
 
             # SOLVERS
-
-            # # implicit k constant
-            # if solver == 'implicit_general':
-            #     self.object.temperature, self.object.lheat = solvers.implicit_general(self.object)
-
-            # # implicit k dependent on x
-            # if solver == 'implicit_k(x)':
-            #     self.object.temperature, self.object.lheat = solvers.implicit_k(self.object)
-
             # explicit k constant
             if solver == 'explicit_general':
                 temp = []
@@ -747,13 +975,13 @@ class SingleObject(Object):
                     temp.append([])
                     for j in range(self.object.size[1]):
                         temp[-1].append(self.object.temperature[i][j][0])
-                self.object.temperature, self.object.lheat = solvers.explicit_general(self.object)
+                value = solvers.explicit_general(self.object)
+                self.object.temperature, self.object.lheat = value
                 temp = []
                 for i in range(self.object.size[0]):
                     temp.append([])
                     for j in range(self.object.size[1]):
                         temp[-1].append(self.object.temperature[i][j][0])
-
             # explicit k constant
             if solver == 'explicit_k(x)':
                 temp = []
@@ -761,16 +989,13 @@ class SingleObject(Object):
                     temp.append([])
                     for j in range(self.object.size[1]):
                         temp[-1].append(self.object.temperature[i][j][0])
-                self.object.temperature, self.object.lheat = solvers.explicit_k(self.object)
+                value = solvers.explicit_k(self.object)
+                self.object.temperature, self.object.lheat = value
                 temp = []
                 for i in range(self.object.size[0]):
                     temp.append([])
                     for j in range(self.object.size[1]):
                         temp[-1].append(self.object.temperature[i][j][0])
-
-            # # explicit k dependent on x
-            # if solver == 'explicit_k(x)':
-            #     self.object.temperature, self.object.lheat = solvers.explicit_k(self.object)
 
             nw = nw + 1
 
@@ -792,7 +1017,8 @@ class SingleObject(Object):
                             for i in range(self.object.size[0]):
                                 temp.append([])
                                 for j in range(self.object.size[1]):
-                                    temp[-1].append(self.object.temperature[i][j][0])
+                                    value = self.object.temperature[i][j][0]
+                                    temp[-1].append(value)
                             self.im.set_array(temp)
                             if not self.draw_scale:
                                 vmax = max(max(temp, key=max))
@@ -805,6 +1031,5 @@ class SingleObject(Object):
                 nw = 0
                 if verbose:
                     print('pogress:', int(100*k/nt), '%', end="\r")
-
         if verbose:
             print('Finished simulation')

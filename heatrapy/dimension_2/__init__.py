@@ -1,59 +1,39 @@
-"""Heatrapy.
+"""dimension_2.
 
 This module allows to create thermal objects, establish thermal contact between
 them, activate or deactivate the whole, or part, of the materials, and compute
-the respective heat transfer processes, in 1D. It includes two system models
-for the computation of caloric systems.
+the respective heat transfer processes, in 2D. It includes two system models
+for the computation of caloric systems in 1D.
 
 The package is based on three classes that create general models:
 
 ######
-object
+Object2D
 ######
 
-This class only creates a single thermal object. It includes two methods:
-material activation and material deactivation, of part of the object.
+This class only creates a single two-dimensional thermal object. It includes
+two methods: material activation and material deactivation, of part of the
+object.
 
 ##############
-system_objects
+SystemObjects2D
 ##############
 
-This class creates a system of objects that can be in contact to each other
-and computes the respective heat transfer processes. It uses the class object
-for the creation of each thermal object.
+This class creates a system of two-dimensional thermal objects that can be in
+contact to each other and computes the respective heat transfer processes. It
+uses the class Object2D for the creation of each thermal object.
 
 #############
-single_object
+SingleObject2D
 #############
 
-This class computes the heat transfer processes involved in only one thermal
-object. It uses the class object for activating and deactivating the material.
-
-At this moment there are two type of caloric systems (functions) that can be
-computed:
-
-########################
-fluid_active_regenerator
-########################
-
-This function creates and computes an active regenerative system used for
-refrigeration and heat pumps. The heat exchanger is a fluid. It can be used
-to compute caloric systems, e.g. magnetocaloric, electrocaloric, elastocaloric,
-and barocaloric.
-
-########################
-solid_active_regenerator
-########################
-
-This function creates and computes an active regenerative system used for
-refrigeration and heat pumps. The heat exchanger is the solid material itself.
-It can be used to compute caloric systems, e.g. magnetocaloric, electrocaloric,
-elastocaloric, and barocaloric.
+This class computes the heat transfer processes involved in only one
+two-dimensional thermal object. It uses the class Object1D for activating and
+deactivating the material.
 
 """
 
-from .systems import solid_active_regenerator, fluid_active_regenerator
+
 from .objects import Object, SystemObjects, SingleObject
 
-__all__ = [Object, SystemObjects, SingleObject, solid_active_regenerator,
-           fluid_active_regenerator]
+__all__ = [Object, SystemObjects, SingleObject]
