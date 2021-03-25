@@ -1,4 +1,4 @@
-"""Contains the classes system_objects and single_object.
+"""Contains the classe single_object.
 
 Used to compute system models
 

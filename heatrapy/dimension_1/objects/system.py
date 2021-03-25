@@ -1,4 +1,4 @@
-"""Contains the classes system_objects and single_object.
+"""Contains the classe system_objects.
 
 Used to compute system models
 
@@ -62,11 +62,6 @@ class SystemObjects:
         # initial definitions
         self.objects = []
         for i in range(number_objects):
-            if i not in [l[0] for l in boundaries] or (i, 0) in boundaries:
-                heat_save = False
-            else:
-                heat_save = True
-
             if file_name:
                 file_name = file_name + '_' + str(i) + '.txt'
 
@@ -76,7 +71,6 @@ class SystemObjects:
                                 materials_order=(0,), dx=dx, dt=dt,
                                 file_name=file_name, boundaries=(0, 0),
                                 Q=[], Q0=[], initial_state=initial_state,
-                                heat_save=heat_save,
                                 materials_path=materials_path))
 
         self.contacts = set()
@@ -116,7 +110,7 @@ class SystemObjects:
 
         """
         # check the validity of inputs
-        if isinstance(contact, list):
+        if isinstance(contact, list) or isinstance(contact, tuple):
             if len(contact) == 3:
                 condition = True
             else:
@@ -128,30 +122,45 @@ class SystemObjects:
 
         self.contacts.add(contact)
 
-    def contact_remove(self, contact):
-        """Remove all contacts from an object.
+    def contact_remove(self, object_one, object_two):
+        """Contact removal.
 
-        contact: thermal object id
+        Remove all contacts between object_one id and object_two id.
 
         """
         # check the validity of inputs
-        if isinstance(contact, list):
-            if len(contact) == 3:
-                condition = True
-            else:
-                condition = False
-        else:
-            condition = False
+        condition = isinstance(object_one, int)
+        condition = condition and isinstance(object_two, int)
         if not condition:
             raise ValueError
 
-        removing_contact = None
+        contact_list = list(self.contacts)
+        for i in range(len(contact_list)):
+            cond_1 = contact_list[i][0][0] == object_one
+            cond_1 = cond_1 and contact_list[i][1][0] == object_two
+            cond_2 = contact_list[i][0][0] == object_two
+            cond_2 = cond_2 and contact_list[i][1][0] == object_one
+            if cond_1 or cond_2:
+                self.contacts.remove(contact_list[i])
 
-        for i in range(len(self.contacts)):
-            if self.contacts[i][0] == contact:
-                removing_contact = self.contacts[i]
+    def change_boundaries(self, object_id, boundaries):
+        """Change boundaries.
 
-        self.contacts.remove(removing_contact)
+        Changes the boundaries of object_id.
+
+        """
+        # check the validity of inputs
+        condition = isinstance(object_id, int)
+        condition = condition and isinstance(boundaries, tuple)
+        if condition:
+            if len(boundaries) == 2:
+                condition = True
+            else:
+                condition = False
+        if not condition:
+            raise ValueError
+
+        self.objects[object_id].boundaries = boundaries
 
     def compute(self, time_interval, write_interval, solver='implicit_k(x)',
                 verbose=True):

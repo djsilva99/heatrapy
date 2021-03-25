@@ -149,6 +149,25 @@ class SystemObjects:
             if cond_1 or cond_2:
                 self.contacts.remove(contact_list[i])
 
+    def change_boundaries(self, object_id, boundaries):
+        """Change boundaries.
+
+        Changes the boundaries of object_id.
+
+        """
+        # check the validity of inputs
+        condition = isinstance(object_id, int)
+        condition = condition and isinstance(boundaries, tuple)
+        if condition:
+            if len(boundaries) == 4:
+                condition = True
+            else:
+                condition = False
+        if not condition:
+            raise ValueError
+
+        self.objects[object_id].boundaries = boundaries
+
     def compute(self, time_interval, write_interval, solver='explicit_k(x)',
                 verbose=True):
         """Compute the thermal process.

@@ -13,36 +13,36 @@ class SingleObjects1D(unittest.TestCase):
     def test_implicit_general(self):
         """Test singleObject with the implicit_general solver."""
         solution = 245
-        example = htp.SingleObject1D(300, boundaries=(0, 200))
+        example = htp.SingleObject1D(300, boundaries=(0, 200), draw=[])
         example.compute(30, 5, solver='implicit_general')
-        self.assertEqual(int(example.temperature[5][0]), solution)
+        self.assertEqual(int(example.object.temperature[5][0]), solution)
 
     def test_explicit_general(self):
         """Test singleObject with the explicit_general solver."""
         solution = 245
-        example = htp.SingleObject1D(300, boundaries=(0, 200))
+        example = htp.SingleObject1D(300, boundaries=(0, 200), draw=[])
         example.compute(30, 5, solver='explicit_general')
-        self.assertEqual(int(example.temperature[5][0]), solution)
+        self.assertEqual(int(example.object.temperature[5][0]), solution)
 
     def test_explicit_k(self):
         """Test singleObject with the explicit_k(k) solver."""
         solution = 270
         example = htp.SingleObject1D(
             300, boundaries=(0, 200), materials=('Cu', 'Gd'),
-            borders=(1, 11, 22), materials_order=(0, 1)
+            borders=(1, 11, 22), materials_order=(0, 1), draw=[]
         )
         example.compute(2000, 5, solver='explicit_k(x)')
-        self.assertEqual(int(example.temperature[5][0]), solution)
+        self.assertEqual(int(example.object.temperature[5][0]), solution)
 
     def test_implicit_k(self):
         """Test singleObject with the implicit_k(k) solver."""
         solution = 270
         example = htp.SingleObject1D(
             300, boundaries=(0, 200), materials=('Cu', 'Gd'),
-            borders=(1, 11, 22), materials_order=(0, 1)
+            borders=(1, 11, 22), materials_order=(0, 1), draw=[]
         )
         example.compute(2000, 5, solver='implicit_k(x)')
-        self.assertEqual(int(example.temperature[5][0]), solution)
+        self.assertEqual(int(example.object.temperature[5][0]), solution)
 
 
 class SystemObjects1D(unittest.TestCase):
@@ -91,16 +91,16 @@ class SingleObjects2D(unittest.TestCase):
     def test_explicit_general(self):
         """Test singleObject with the implicit_general solver."""
         solution = 245
-        example = htp.SingleObject2D(300, boundaries=(200, 0, 0, 0))
+        example = htp.SingleObject2D(300, boundaries=(200, 0, 0, 0), draw=[])
         example.compute(30, 5, solver='explicit_general')
-        self.assertEqual(int(example.temperature[5][5][0]), solution)
+        self.assertEqual(int(example.object.temperature[5][5][0]), solution)
 
     def test_explicit_k(self):
         """Test singleObject with the implicit_general solver."""
         solution = 245
-        example = htp.SingleObject2D(300, boundaries=(200, 0, 0, 0))
+        example = htp.SingleObject2D(300, boundaries=(200, 0, 0, 0), draw=[])
         example.compute(30, 5, solver='explicit_k(x)')
-        self.assertEqual(int(example.temperature[5][5][0]), solution)
+        self.assertEqual(int(example.object.temperature[5][5][0]), solution)
 
 
 class SystemObjects2D(unittest.TestCase):
@@ -121,7 +121,6 @@ class SystemObjects2D(unittest.TestCase):
         example.contact_add(((0, (4, 4)), (1, (7, 7)), 100000))
         example.compute(10, 5, solver='explicit_k(x)')
         self.assertEqual(int(example.objects[1].temperature[3][3][0]), solution)
-
 
 
 if __name__ == '__main__':
