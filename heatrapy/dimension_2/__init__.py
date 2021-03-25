@@ -2,8 +2,7 @@
 
 This module allows to create thermal objects, establish thermal contact between
 them, activate or deactivate the whole, or part, of the materials, and compute
-the respective heat transfer processes, in 2D. It includes two system models
-for the computation of caloric systems in 1D.
+the respective heat transfer processes, in 2D.
 
 The package is based on three classes that create general models:
 
