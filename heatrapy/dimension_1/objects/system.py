@@ -4,8 +4,6 @@ Used to compute system models
 
 """
 
-from ... import mats
-import os
 import copy
 from .. import solvers
 from . import Object
@@ -295,7 +293,7 @@ class SystemObjects:
             print('Finished simulation')
 
 
-class SingleObject(Object):
+class SingleObject:
     """Single_object class.
 
     This class solves numerically the heat conduction equation for 1 dimension
@@ -311,8 +309,7 @@ class SingleObject(Object):
 
     def __init__(self, amb_temperature, materials=('Cu',), borders=(1, 11),
                  materials_order=(0,), dx=0.01, dt=0.1, file_name=None,
-                 boundaries=(0, 0), Q=[], Q0=[], heat_points=(1, -2),
-                 initial_state=False, h_left=50000., h_right=50000.,
+                 boundaries=(0, 0), initial_state=False,
                  materials_path=False, draw=['temperature',], draw_scale=None):
         """Object initialization.
 
@@ -355,9 +352,6 @@ class SingleObject(Object):
         borders = tuple(borders)
         materials_order = tuple(materials_order)
         boundaries = tuple(boundaries)
-        heat_points = tuple(heat_points)
-        Q = list(Q)
-        Q0 = list(Q0)
         cond01 = isinstance(amb_temperature, float)
         cond01 = cond01 or isinstance(amb_temperature, int)
         cond02 = isinstance(materials, tuple)
@@ -368,12 +362,7 @@ class SingleObject(Object):
         cond07 = isinstance(file_name, str)
         cond07 = cond07 or (file_name is None)
         cond08 = isinstance(boundaries, tuple)
-        cond09 = isinstance(heat_points, tuple)
         cond10 = isinstance(initial_state, bool)
-        cond11 = isinstance(h_left, int) or isinstance(h_left, float)
-        cond12 = isinstance(h_right, int) or isinstance(h_right, float)
-        cond13 = isinstance(Q, list)
-        cond14 = isinstance(Q0, list)
         if isinstance(draw, list):
             cond15 = True
         elif draw is None:
@@ -382,144 +371,23 @@ class SingleObject(Object):
             cond15 = False
         if isinstance(draw_scale, list) or isinstance(draw_scale, tuple):
             cond16 = (len(draw_scale) == 2)
-        elif draw_scale == None:
+        elif draw_scale is None:
             cond16 = True
         else:
             cond16 = False
         condition = cond01 and cond02 and cond03 and cond04 and cond05
-        condition = condition and cond06 and cond07 and cond08 and cond09
-        condition = condition and cond10 and cond11 and cond12 and cond13
-        condition = condition and cond14 and cond15 and cond16
+        condition = condition and cond06 and cond07 and cond08
+        condition = condition and cond10
+        condition = condition and cond15 and cond16
         if not condition:
             raise ValueError
 
-        # initial definitions
-        self.heat_points = heat_points
-        self.borders = borders
-        self.materials = [i for i in range(len(materials))]
-        self.boundaries = boundaries
-        self.amb_temperature = amb_temperature
-        self.h_left = h_left
-        self.h_right = h_right
-
-        # loads the data for each material
-        if materials_path is False:
-            for i in range(len(materials)):
-                tadi = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'tadi.txt'
-                tadd = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'tadd.txt'
-                cpa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'cpa.txt'
-                cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'cp0.txt'
-                k0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'k0.txt'
-                ka = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'ka.txt'
-                rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'rho0.txt'
-                rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'rhoa.txt'
-                lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'lheat0.txt'
-                lheata = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + materials[i] + '/' + 'lheata.txt'
-                self.materials[i] = mats.CalMatPro(
-                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
-        else:
-            for i in range(len(materials)):
-                tadi = materials_path + materials[i] + '/' + 'tadi.txt'
-                tadd = materials_path + materials[i] + '/' + 'tadd.txt'
-                cpa = materials_path + materials[i] + '/' + 'cpa.txt'
-                cp0 = materials_path + materials[i] + '/' + 'cp0.txt'
-                k0 = materials_path + materials[i] + '/' + 'k0.txt'
-                ka = materials_path + materials[i] + '/' + 'ka.txt'
-                rho0 = materials_path + materials[i] + '/' + 'rho0.txt'
-                rhoa = materials_path + materials[i] + '/' + 'rhoa.txt'
-                lheat0 = materials_path + materials[i] + '/' + 'lheat0.txt'
-                lheata = materials_path + materials[i] + '/' + 'lheata.txt'
-                self.materials[i] = mats.CalMatPro(
-                    tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
-
-        # defines which are the properties of each material point
-        self.materials_index = [None]
-        for i in range(len(borders) - 1):
-            for j in range(borders[i], borders[i + 1]):
-                self.materials_index.append(materials_order[i])
-        self.materials_index.append(None)
-
-        # loads the inputs and creates the lists temperature, Cp, rho and k
-        self.num_points = borders[-1] + 1
-        self.file_name = file_name
-        self.dx = dx
-        self.dt = dt
-        self.temperature = [[amb_temperature, amb_temperature]]
-        self.latent_heat = [None]
-        self.lheat = [None]
-        self.Cp = [None]
-        self.rho = [None]
-        self.Q = [None]
-        self.Q0 = [None]
-        self.k = [self.materials[self.materials_index[1]].k0(amb_temperature)]
-        for i in range(1, borders[-1]):
-            self.temperature.append([amb_temperature, amb_temperature])
-            self.rho.append(self.materials[self.materials_index[i]].rho0(
-                amb_temperature))
-            self.Cp.append(
-                self.materials[self.materials_index[i]].cp0(amb_temperature))
-            self.k.append(
-                self.materials[self.materials_index[i]].k0(amb_temperature))
-            self.Q.append(0.)
-            self.Q0.append(0.)
-            self.latent_heat.append(
-                self.materials[self.materials_index[i]].lheat0()
-            )
-            self.lheat.append([])
-            for lh in self.materials[self.materials_index[i]].lheat0():
-                if self.temperature[i][1] < lh[0] and lh[1] > 0.:
-                    self.lheat[-1].append([lh[0], 0.])
-                if self.temperature[i][1] > lh[0] and lh[1] > 0.:
-                    self.lheat[-1].append([lh[0], lh[1]])
-                if self.temperature[i][1] < lh[0] and lh[1] < 0.:
-                    self.lheat[-1].append([lh[0], -lh[1]])
-                if self.temperature[i][1] > lh[0] and lh[1] < 0.:
-                    self.lheat[-1].append([lh[0], 0.])
-        self.temperature.append([amb_temperature, amb_temperature])
-        self.rho.append(None)
-        self.Cp.append(None)
-        self.Q.append(None)
-        self.Q0.append(None)
-        self.lheat.append(None)
-        self.latent_heat.append(None)
-        self.k.append(
-            self.materials[self.materials_index[-2]].k0(amb_temperature))
-
-        # creates the power sources
-        for power in Q:
-            for j in range(power[1], power[2]):
-                self.Q[j] = power[0]
-        for power in Q0:
-            for j in range(power[1], power[2]):
-                self.Q0[j] = power[0]
-
-        # initializes the state of each point (True if active and False if ...
-        # unactive), the time, heat flux from the hot side and heat flux ...
-        # from the cold side
-        self.state = [initial_state for i in range(borders[-1] + 1)]
-        self.time_passed = 0.
-        self.heatLeft = 0.
-        self.heatRight = 0.
-
-        if file_name:
-            line = 'time(s)'
-            for i in range(len(self.temperature)):
-                line = line + ',T[' + str(i) + '] (K)'
-            line = line + ',heat[' + str(self.heat_points[0]) + '](W)' + \
-                ',heat[' + str(self.heat_points[1]) + '](J)\n'
-            f = open(self.file_name, 'a')
-            f.write(line)
-            f.close()
+        self.object = Object(amb_temperature, materials=materials,
+                             borders=borders, materials_order=materials_order,
+                             dx=dx, dt=dt, file_name=file_name,
+                             boundaries=boundaries,
+                             initial_state=initial_state,
+                             materials_path=materials_path)
 
         # initializes the plotting
         self.draw = draw
@@ -529,8 +397,8 @@ class SingleObject(Object):
                 self.figure = plt.figure()
                 self.ax = self.figure.add_subplot(111)
                 temp = []
-                for i in range(len(self.temperature)):
-                    temp.append(self.temperature[i][0])
+                for i in range(len(self.object.temperature)):
+                    temp.append(self.object.temperature[i][0])
                 if not self.draw_scale:
                     vmax = max(temp)
                     vmin = min(temp)
@@ -538,12 +406,12 @@ class SingleObject(Object):
                         vmin = vmin - 0.1
                         vmax = vmax + 0.1
                     temp = np.array(temp)
-                    x_plot = [self.dx*j for j in range(len(temp))]
+                    x_plot = [self.object.dx*j for j in range(len(temp))]
                     self.online, = self.ax.plot(x_plot, temp)
                     self.ax.set_ylim([vmin, vmax])
                 else:
                     temp = np.array(temp)
-                    x_plot = [self.dx*j for j in range(len(temp))]
+                    x_plot = [self.object.dx*j for j in range(len(temp))]
                     self.online, = self.ax.plot(x_plot, temp)
                     self.ax.set_ylim(self.draw_scale)
                 self.ax.set_title('Temperature (K)')
@@ -577,8 +445,8 @@ class SingleObject(Object):
             self.figure = plt.figure()
             self.ax = self.figure.add_subplot(111)
             temp = []
-            for i in range(len(self.temperature)):
-                temp.append(self.temperature[i][0])
+            for i in range(len(self.object.temperature)):
+                temp.append(self.object.temperature[i][0])
             if not self.draw_scale:
                 vmax = max(temp)
                 vmin = min(temp)
@@ -586,12 +454,12 @@ class SingleObject(Object):
                     vmin = vmin - 0.1
                     vmax = vmax + 0.1
                 temp = np.array(temp)
-                x_plot = [self.dx*j for j in range(len(temp))]
+                x_plot = [self.object.dx*j for j in range(len(temp))]
                 self.online, = self.ax.plot(x_plot, temp)
                 self.ax.set_ylim([vmin, vmax])
             else:
                 temp = np.array(temp)
-                x_plot = [self.dx*j for j in range(len(temp))]
+                x_plot = [self.object.dx*j for j in range(len(temp))]
                 self.online, = self.ax.plot(x_plot, temp)
                 self.ax.set_ylim(self.draw_scale)
             self.ax.set_title('Temperature (K)')
@@ -610,26 +478,30 @@ class SingleObject(Object):
         if not condition:
             raise ValueError
 
-        super(SingleObject, self).activate(initial_point, final_point)
+        self.object.activate(initial_point, final_point)
+
         if self.draw:
             for drawing in self.draw:
                 if drawing == 'temperature':
-                    temp = []
-                    for i in range(len(self.temperature)):
-                        temp.append(self.temperature[i][0])
-                    if not self.draw_scale:
-                        vmax = max(temp)
-                        vmin = min(temp)
-                        if vmax == vmin:
-                            vmin = vmin - 0.1
-                            vmax = vmax + 0.1
-                        temp = np.array(temp)
-                        self.online.set_ydata(temp)
-                        self.ax.set_ylim([vmin, vmax])
-                    else:
-                        temp = np.array(temp)
-                        self.online.set_ydata(temp)
-                    self.figure.canvas.draw()
+                    try:
+                        temp = []
+                        for i in range(len(self.object.temperature)):
+                            temp.append(self.object.temperature[i][0])
+                        if not self.draw_scale:
+                            vmax = max(temp)
+                            vmin = min(temp)
+                            if vmax == vmin:
+                                vmin = vmin - 0.1
+                                vmax = vmax + 0.1
+                            temp = np.array(temp)
+                            self.online.set_ydata(temp)
+                            self.ax.set_ylim([vmin, vmax])
+                        else:
+                            temp = np.array(temp)
+                            self.online.set_ydata(temp)
+                        self.figure.canvas.draw()
+                    except:
+                        pass
 
     def deactivate(self, initial_point, final_point):
         """Deactivation.
@@ -642,26 +514,30 @@ class SingleObject(Object):
         if not condition:
             raise ValueError
 
-        super(SingleObject, self).deactivate(initial_point, final_point)
+        self.object.deactivate(initial_point, final_point)
+
         if self.draw:
             for drawing in self.draw:
                 if drawing == 'temperature':
-                    temp = []
-                    for i in range(len(self.temperature)):
-                        temp.append(self.temperature[i][0])
-                    if not self.draw_scale:
-                        vmax = max(temp)
-                        vmin = min(temp)
-                        if vmax == vmin:
-                            vmin = vmin - 0.1
-                            vmax = vmax + 0.1
-                        temp = np.array(temp)
-                        self.online.set_ydata(temp)
-                        self.ax.set_ylim([vmin, vmax])
-                    else:
-                        temp = np.array(temp)
-                        self.online.set_ydata(temp)
-                    self.figure.canvas.draw()
+                    try:
+                        temp = []
+                        for i in range(len(self.object.temperature)):
+                            temp.append(self.object.temperature[i][0])
+                        if not self.draw_scale:
+                            vmax = max(temp)
+                            vmin = min(temp)
+                            if vmax == vmin:
+                                vmin = vmin - 0.1
+                                vmax = vmax + 0.1
+                            temp = np.array(temp)
+                            self.online.set_ydata(temp)
+                            self.ax.set_ylim([vmin, vmax])
+                        else:
+                            temp = np.array(temp)
+                            self.online.set_ydata(temp)
+                        self.figure.canvas.draw()
+                    except:
+                        pass
 
     def change_power(self, power_type, power, initial_point, final_point):
         """Heat power source change.
@@ -690,10 +566,10 @@ class SingleObject(Object):
 
         if power_type == 'Q':
             for j in range(initial_point, final_point):
-                self.Q[j] = power
+                self.object.Q[j] = power
         if power_type == 'Q0':
             for j in range(initial_point, final_point):
-                self.Q0[j] = power
+                self.object.Q0[j] = power
 
     def change_boundaries(self, boundaries):
         """Boundary change.
@@ -712,7 +588,7 @@ class SingleObject(Object):
         if not condition:
             raise ValueError
 
-        self.boundaries = boundaries
+        self.object.boundaries = boundaries
 
     def compute(self, time_interval, write_interval, solver='explicit_k(x)',
                 verbose=True):
@@ -744,7 +620,7 @@ class SingleObject(Object):
             raise ValueError
 
         # number of time steps for the given timeInterval
-        nt = int(time_interval / self.dt)
+        nt = int(time_interval / self.object.dt)
 
         # number of time steps counting from the last writing process
         nw = 0
@@ -753,89 +629,82 @@ class SingleObject(Object):
         for j in range(nt):
 
             # updates the time_passed
-            self.time_passed = self.time_passed + self.dt
+            self.object.time_passed = self.object.time_passed + self.object.dt
 
             # defines the material properties accoring to the state list
-            for i in range(1, self.num_points - 1):
-                if self.state[i] is True:
-                    self.rho[i] = self.materials[self.materials_index[i]].rhoa(
-                        self.temperature[i][0])
-                    self.Cp[i] = self.materials[self.materials_index[i]].cpa(
-                        self.temperature[i][0])
-                    self.k[i] = self.materials[self.materials_index[i]].ka(
-                        self.temperature[i][0])
-                if self.state[i] is False:
-                    self.rho[i] = self.materials[self.materials_index[i]].rho0(
-                        self.temperature[i][0])
-                    self.Cp[i] = self.materials[self.materials_index[i]].cp0(
-                        self.temperature[i][0])
-                    self.k[i] = self.materials[self.materials_index[i]].k0(
-                        self.temperature[i][0])
+            for i in range(1, self.object.num_points - 1):
+                if self.object.state[i] is True:
+                    value = self.object.materials_index[i]
+                    self.object.rho[i] = self.object.materials[value].rhoa(
+                        self.object.temperature[i][0])
+                    self.object.Cp[i] = self.object.materials[value].cpa(
+                        self.object.temperature[i][0])
+                    self.object.k[i] = self.object.materials[value].ka(
+                        self.object.temperature[i][0])
+                if self.object.state[i] is False:
+                    value = self.object.materials_index[i]
+                    self.object.rho[i] = self.object.materials[value].rho0(
+                        self.object.temperature[i][0])
+                    self.object.Cp[i] = self.object.materials[value].cp0(
+                        self.object.temperature[i][0])
+                    self.object.k[i] = self.object.materials[value].k0(
+                        self.object.temperature[i][0])
 
             # SOLVERS
-
             # implicit k constant
             if solver == 'implicit_general':
-                self.temperature, self.lheat = solvers.implicit_general(self)
-
+                value = solvers.implicit_general(self.object)
+                self.object.temperature, self.object.lheat = value
             # implicit k dependent on x
             if solver == 'implicit_k(x)':
-                self.temperature, self.lheat = solvers.implicit_k(self)
-
+                value = solvers.implicit_k(self.object)
+                self.object.temperature, self.object.lheat = value
             # explicit k constant
             if solver == 'explicit_general':
-                self.temperature, self.lheat = solvers.explicit_general(self)
-
+                value = solvers.explicit_general(self.object)
+                self.object.temperature, self.object.lheat = value
             # explicit k dependent on x
             if solver == 'explicit_k(x)':
-                self.temperature, self.lheat = solvers.explicit_k(self)
-
-            # calculates the heat flux of the defined ...
-            # two points during the time step
-
-            self.heatLeft = (-self.dt * self.h_left *
-                             (self.temperature[self.heat_points[0]][1] -
-                              self.boundaries[0]) + self.heatLeft)
-            self.heatRight = (self.dt * self.h_right *
-                              (self.temperature[self.heat_points[1]][1] -
-                               self.boundaries[1]) + self.heatRight)
+                value = solvers.explicit_k(self.object)
+                self.object.temperature, self.object.lheat = value
 
             nw = nw + 1
 
             if self.draw:
                 for drawing in self.draw:
                     if drawing == 'temperature':
-                        if nw + 1 == write_interval or j == 0 or j == nt - 1:
-                            temp = []
-                            for i in range(len(self.temperature)):
-                                temp.append(self.temperature[i][0])
-                            if not self.draw_scale:
-                                vmax = max(temp)
-                                vmin = min(temp)
-                                if vmax == vmin:
-                                    vmin = vmin - 0.1
-                                    vmax = vmax + 0.1
-                                temp = np.array(temp)
-                                self.online.set_ydata(temp)
-                                self.ax.set_ylim([vmin, vmax])
-                            else:
-                                temp = np.array(temp)
-                                self.online.set_ydata(temp)
-                            self.figure.canvas.draw()
+                        try:
+                            value = nw + 1 == write_interval
+                            if value or j == 0 or j == nt - 1:
+                                temp = []
+                                for i in range(len(self.object.temperature)):
+                                    temp.append(self.object.temperature[i][0])
+                                if not self.draw_scale:
+                                    vmax = max(temp)
+                                    vmin = min(temp)
+                                    if vmax == vmin:
+                                        vmin = vmin - 0.1
+                                        vmax = vmax + 0.1
+                                    temp = np.array(temp)
+                                    self.online.set_ydata(temp)
+                                    self.ax.set_ylim([vmin, vmax])
+                                else:
+                                    temp = np.array(temp)
+                                    self.online.set_ydata(temp)
+                                self.figure.canvas.draw()
+                        except:
+                            pass
 
             # writes the temperature to file_name file ...
             # if the number of time steps is verified
-            if self.file_name:
+            if self.object.file_name:
                 if nw == write_interval or j == 0 or j == nt - 1:
-                    line = '%f,' % self.time_passed
-                    for i in self.temperature:
+                    line = '%f,' % self.object.time_passed
+                    for i in self.object.temperature:
                         new_line = '%f,' % i[1]
                         line = line + new_line
-                    new_line = '%f,' % self.heatLeft
-                    line = line + new_line
-                    new_line = '%f' % self.heatRight
-                    line = line + new_line + '\n'
-                    f = open(self.file_name, 'a')
+                    line = line[:-1] + '\n'
+                    f = open(self.object.file_name, 'a')
                     f.write(line)
                     f.close()
 

@@ -20,7 +20,7 @@ class Object:
     def __init__(self, amb_temperature, materials=('Cu',), borders=(1, 11),
                  materials_order=(0,), dx=0.01, dt=0.1, file_name=None,
                  boundaries=(0, 0), Q=[], Q0=[], initial_state=False,
-                 heat_save=False, materials_path=False):
+                 materials_path=False):
         """Thermal object initialization.
 
         amb_temperature: ambient temperature of the whole system
@@ -38,7 +38,6 @@ class Object:
         Q0: list of temperature dependent heat source coefficient.
         initial_state: initial state of the materials. True if applied field
             and False is removed field.
-        heat_save: True if saving the heat at the two borders.
 
         """
         # check the validity of inputs
@@ -61,10 +60,9 @@ class Object:
         cond09 = isinstance(Q, list)
         cond10 = isinstance(Q0, list)
         cond11 = isinstance(initial_state, bool)
-        cond12 = isinstance(heat_save, bool)
         condition = cond01 and cond02 and cond03 and cond04 and cond05
         condition = condition and cond06 and cond07 and cond08 and cond09
-        condition = condition and cond10 and cond11 and cond12
+        condition = condition and cond10 and cond11
         if not condition:
             raise ValueError
 
@@ -185,8 +183,6 @@ class Object:
             line = 'time(s)'
             for i in range(len(self.temperature)):
                 line = line + ',T[' + str(i) + '] (K)'
-            if heat_save:
-                line = line + ',Q (J/m)'
             line = line + '\n'
             f = open(self.file_name, 'a')
             f.write(line)
