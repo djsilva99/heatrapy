@@ -33,7 +33,7 @@ setup(name='heatrapy',
       license='MIT',
       packages=['heatrapy'],
       install_requires=[
-          'numpy>=1.20.1', 'matplotlib>=3.3.4'
+          'numpy>=1.20.1', 'matplotlib==3.3.4'
       ],
       include_package_data=True,
       zip_safe=False)
