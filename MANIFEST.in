@@ -1,7 +1,7 @@
 include LICENSE.txt
 recursive-include heatrapy/database *
-recursive-include heatrapy/fields *
+recursive-include heatrapy/dimension_1/objects *
+recursive-include heatrapy/dimension_1/solvers *
+recursive-include heatrapy/dimension_2/objects *
+recursive-include heatrapy/dimension_2/solvers *
 recursive-include heatrapy/mats *
-recursive-include heatrapy/objects *
-recursive-include heatrapy/solvers *
-recursive-include heatrapy/systems *

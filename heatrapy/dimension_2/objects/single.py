@@ -521,7 +521,8 @@ class SingleObject(Object):
 
         self.object.boundaries = boundaries
 
-    def change_material(self, shape, material, initial_point, length, state):
+    def change_material(self, shape, material, initial_point, length,
+                        state=False):
         """Material change.
 
         Changes the material of a given piece of the background material. If
