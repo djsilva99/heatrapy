@@ -269,9 +269,9 @@ class SystemObjects:
                             for j in range(obj.size[1]):
                                 new_line = ',%f' % obj.temperature[i][j][1]
                                 line = line + new_line
-                            f = open(obj.file_name, 'a')
-                            f.write(line+'\n')
-                            f.close()
+                        f = open(obj.file_name, 'a')
+                        f.write(line+'\n')
+                        f.close()
 
             if nw == write_interval:
                 nw = 0

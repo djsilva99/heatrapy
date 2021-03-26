@@ -72,7 +72,6 @@ class SingleObject(Object):
             raise ValueError
 
         self.materials_path = materials_path
-
         self.time_passed = 0.
         self.size = size
         self.dt = dt
@@ -116,14 +115,15 @@ class SingleObject(Object):
                         vmin = min(min(temp, key=min))
                         temp = np.array(temp)
                         extent = [0, size[0]*dx, 0, size[1]*dy]
-                        self.im = self.ax.imshow(temp, vmax=vmax, vmin=vmin,
-                                                 cmap=cmap_r, extent=extent,
-                                                 origin='lower',
+                        self.im = self.ax.imshow(np.transpose(temp), vmax=vmax,
+                                                 vmin=vmin, cmap=cmap_r,
+                                                 extent=extent, origin='lower',
                                                  interpolation='hamming')
                     else:
                         temp = np.array(temp)
                         extent = [0, size[0]*dx, 0, size[1]*dy]
-                        self.im = self.ax.imshow(temp, vmax=self.draw_scale[0],
+                        self.im = self.ax.imshow(np.transpose(temp),
+                                                 vmax=self.draw_scale[0],
                                                  vmin=self.draw_scale[1],
                                                  cmap=cmap_r, extent=extent,
                                                  origin='lower',
@@ -143,8 +143,8 @@ class SingleObject(Object):
                     state = np.array(self.object.state)
                     cmap = plt.get_cmap("gray", 2)
                     extent = [0, size[0]*dx, 0, size[1]*dy]
-                    self.im_state = self.ax_state.imshow(state, vmax=1.5,
-                                                         vmin=-0.5,
+                    self.im_state = self.ax_state.imshow(np.transpose(state),
+                                                         vmax=1.5, vmin=-0.5,
                                                          cmap=cmap,
                                                          extent=extent,
                                                          origin='lower')
@@ -175,7 +175,8 @@ class SingleObject(Object):
                     cmap = plt.get_cmap("gray", vmax)
                     extent = [0, size[0]*dx, 0, size[1]*dy]
                     origin = 'lower'
-                    self.im_materials = self.ax_materials.imshow(material_id,
+                    value = np.transpose(material_id)
+                    self.im_materials = self.ax_materials.imshow(value,
                                                                  vmax=vmax,
                                                                  vmin=vmin,
                                                                  cmap=cmap,
@@ -207,9 +208,9 @@ class SingleObject(Object):
                     vmax = 1
                     vmin = 0
                     extent = [0, size[0]*dx, 0, size[1]*dy]
-                    self.im_Q = self.ax_Q.imshow(temp, vmax=vmax, vmin=vmin,
-                                                 cmap='inferno', extent=extent,
-                                                 origin='lower',
+                    self.im_Q = self.ax_Q.imshow(np.transpose(temp), vmax=vmax,
+                                                 vmin=vmin, cmap='inferno',
+                                                 extent=extent, origin='lower',
                                                  interpolation='hamming')
                     cbar_kw = {}
                     cbar = self.ax_Q.figure.colorbar(self.im_Q, ax=self.ax_Q,
@@ -225,7 +226,8 @@ class SingleObject(Object):
                     vmax = 1
                     vmin = 0
                     extent = [0, size[0]*dx, 0, size[1]*dy]
-                    self.im_Q0 = self.ax_Q0.imshow(temp, vmax=vmax, vmin=vmin,
+                    self.im_Q0 = self.ax_Q0.imshow(np.transpose(temp),
+                                                   vmax=vmax, vmin=vmin,
                                                    cmap='inferno',
                                                    extent=extent,
                                                    origin='lower',
@@ -266,14 +268,15 @@ class SingleObject(Object):
                 vmin = min(min(temp, key=min))
                 temp = np.array(temp)
                 extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
-                self.im = self.ax.imshow(temp, vmax=vmax, vmin=vmin,
-                                         cmap='jet', extent=extent,
+                self.im = self.ax.imshow(np.transpose(temp), vmax=vmax,
+                                         vmin=vmin, cmap='jet', extent=extent,
                                          origin='lower',
                                          interpolation='hamming')
             else:
                 temp = np.array(temp)
                 extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
-                self.im = self.ax.imshow(temp, vmax=self.draw_scale[0],
+                self.im = self.ax.imshow(np.transpose(temp),
+                                         vmax=self.draw_scale[0],
                                          vmin=self.draw_scale[1],
                                          cmap='jet', extent=extent,
                                          origin='lower',
@@ -293,7 +296,8 @@ class SingleObject(Object):
             vmin = 0
             state = np.array(self.object.state)
             extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
-            self.im_state = self.ax_state.imshow(state, vmax=1.5, vmin=-0.5,
+            self.im_state = self.ax_state.imshow(np.transpose(state), vmax=1.5,
+                                                 vmin=-0.5,
                                                  cmap=plt.get_cmap("gray", 2),
                                                  extent=extent, origin='lower')
             cbar_kw = {}
@@ -319,7 +323,8 @@ class SingleObject(Object):
             material_id = np.array(self.object.materials_index)
             cmap = plt.get_cmap("PiYG", vmax+1)
             extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
-            self.im_materials = self.ax_materials.imshow(material_id,
+            value = np.transpose(material_id)
+            self.im_materials = self.ax_materials.imshow(value,
                                                          vmax=vmax,
                                                          vmin=vmin,
                                                          cmap=cmap,
@@ -346,6 +351,9 @@ class SingleObject(Object):
             self.ax_materials.set_xlabel('x axis (m)')
             self.ax_materials.set_ylabel('y axis (m)')
             plt.show(block=False)
+            print(self.object.materials_name)
+        if figure_type == 'materials' and len(self.object.materials_name) == 1:
+            print(self.object.materials_name)
         if figure_type == 'Q':
             self.figure_Q = plt.figure()
             self.ax_Q = self.figure_Q.add_subplot(111)
@@ -353,9 +361,9 @@ class SingleObject(Object):
             vmax = 1
             vmin = 0
             extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
-            self.im_Q = self.ax_Q.imshow(temp, vmax=vmax, vmin=vmin,
-                                         cmap='inferno', extent=extent,
-                                         origin='lower',
+            self.im_Q = self.ax_Q.imshow(np.transpose(temp), vmax=vmax,
+                                         vmin=vmin, cmap='inferno',
+                                         extent=extent, origin='lower',
                                          interpolation='hamming')
             cbar_kw = {}
             cbar = self.ax_Q.figure.colorbar(self.im_Q, ax=self.ax_Q,
@@ -371,8 +379,8 @@ class SingleObject(Object):
             vmax = 1
             vmin = 0
             extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
-            self.im_Q0 = self.ax_Q0.imshow(temp, vmax=vmax, vmin=vmin,
-                                           cmap='inferno',
+            self.im_Q0 = self.ax_Q0.imshow(np.transpose(temp), vmax=vmax,
+                                           vmin=vmin, cmap='inferno',
                                            extent=extent,
                                            origin='lower',
                                            interpolation='hamming')
@@ -428,7 +436,7 @@ class SingleObject(Object):
                         temp.append([])
                         for j in range(self.object.size[1]):
                             temp[-1].append(self.object.temperature[i][j][0])
-                    self.im.set_array(temp)
+                    self.im.set_array(np.transpose(temp))
                     if not self.draw_scale:
                         vmax = max(max(temp, key=max))
                         vmin = min(min(temp, key=min))
@@ -436,7 +444,7 @@ class SingleObject(Object):
                         self.im.set_clim(vmax=vmax)
                     self.figure.canvas.draw()
                 if drawing == 'state':
-                    self.im_state.set_array(self.object.state)
+                    self.im_state.set_array(np.transpose(self.object.state))
                     self.figure_state.canvas.draw()
 
     def deactivate(self, initial_point, final_point, shape='square'):
@@ -483,7 +491,7 @@ class SingleObject(Object):
                         temp.append([])
                         for j in range(self.object.size[1]):
                             temp[-1].append(self.object.temperature[i][j][0])
-                    self.im.set_array(temp)
+                    self.im.set_array(np.transpose(temp))
                     if not self.draw_scale:
                         vmax = max(max(temp, key=max))
                         vmin = min(min(temp, key=min))
@@ -491,7 +499,7 @@ class SingleObject(Object):
                         self.im.set_clim(vmax=vmax)
                     self.figure.canvas.draw()
                 if drawing == 'state':
-                    self.im_state.set_array(self.object.state)
+                    self.im_state.set_array(np.transpose(self.object.state))
                     self.figure_state.canvas.draw()
 
     def change_boundaries(self, boundaries):
@@ -570,7 +578,7 @@ class SingleObject(Object):
                 cmap = plt.get_cmap("PiYG", vmax+1)
                 extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
                 material_id = np.array(self.object.materials_index)
-                self.im_materials = self.ax_materials.imshow(material_id,
+                self.im_materials = self.ax_materials.imshow(np.transpose(material_id),
                                                              vmax=vmax,
                                                              vmin=vmin,
                                                              cmap=cmap,
@@ -652,14 +660,14 @@ class SingleObject(Object):
                                   shape=shape, power_type=power_type)
         if self.draw:
             if 'Q' in self.draw and power_type == 'Q':
-                self.im_Q.set_array(self.object.Q)
+                self.im_Q.set_array(np.transpose(self.object.Q))
                 vmax = max(max(self.object.Q, key=max))
                 vmin = min(min(self.object.Q, key=min))
                 self.im_Q.set_clim(vmin=vmin)
                 self.im_Q.set_clim(vmax=vmax)
                 self.figure_Q.canvas.draw()
             if 'Q0' in self.draw and power_type == 'Q0':
-                self.im_Q0.set_array(self.object.Q0)
+                self.im_Q0.set_array(np.transpose(self.object.Q0))
                 vmax = max(max(self.object.Q0, key=max))
                 vmin = min(min(self.object.Q0, key=min))
                 self.im_Q0.set_clim(vmin=vmin)
@@ -758,9 +766,9 @@ class SingleObject(Object):
                         for j in range(self.object.size[1]):
                             new_line = ',%f' % self.object.temperature[i][j][1]
                             line = line + new_line
-                        f = open(self.object.file_name, 'a')
-                        f.write(line+'\n')
-                        f.close()
+                    f = open(self.object.file_name, 'a')
+                    f.write(line+'\n')
+                    f.close()
             if self.draw:
                 for drawing in self.draw:
                     if drawing == 'temperature':
@@ -772,7 +780,7 @@ class SingleObject(Object):
                                     value = self.object.temperature[i][j][0]
                                     temp[-1].append(value)
                             try:
-                                self.im.set_array(temp)
+                                self.im.set_array(np.transpose(temp))
                                 if not self.draw_scale:
                                     vmax = max(max(temp, key=max))
                                     vmin = min(min(temp, key=min))

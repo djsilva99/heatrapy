@@ -18,45 +18,45 @@ def explicit_k(obj):
     # bottom boundary
     x.append([])
     temp_k.append([])
-    if obj.boundaries[3] == 0:
+    if obj.boundaries[1] == 0:
         for j in range(obj.size[1]):
             x[-1].append(obj.temperature[-1][j])
             temp_k[-1].append(obj.k[-1][j])
     else:
         for j in range(obj.size[1]):
-            x[-1].append([obj.boundaries[3], obj.boundaries[3]])
+            x[-1].append([obj.boundaries[1], obj.boundaries[1]])
             temp_k[-1].append(obj.k[-1][j])
 
     # top boundary
     x.insert(0, [])
     temp_k.insert(0, [])
-    if obj.boundaries[2] == 0:
+    if obj.boundaries[0] == 0:
         for j in range(obj.size[1]):
             x[0].append(obj.temperature[0][j])
             temp_k[0].append(obj.k[0][j])
     else:
         for j in range(obj.size[1]):
-            x[0].append([obj.boundaries[2], obj.boundaries[2]])
+            x[0].append([obj.boundaries[0], obj.boundaries[0]])
             temp_k[0].append(obj.k[0][j])
 
     # left boundary
-    if obj.boundaries[0] == 0:
+    if obj.boundaries[2] == 0:
         for i in range(obj.size[0]+2):
             x[i].insert(0, x[i][0])
             temp_k[i].insert(0, temp_k[i][0])
     else:
         for i in range(obj.size[0]+2):
-            x[i].insert(0, [obj.boundaries[0], obj.boundaries[0]])
+            x[i].insert(0, [obj.boundaries[2], obj.boundaries[2]])
             temp_k[i].insert(0, temp_k[i][0])
 
     # right boundary
-    if obj.boundaries[1] == 0:
+    if obj.boundaries[3] == 0:
         for i in range(obj.size[0]+2):
             x[i].append(x[i][-1])
             temp_k[i].append(temp_k[i][-1])
     else:
         for i in range(obj.size[0]+2):
-            x[i].append([obj.boundaries[1], obj.boundaries[1]])
+            x[i].append([obj.boundaries[3], obj.boundaries[3]])
             temp_k[i].append(temp_k[i][-1])
 
     final_x = copy.deepcopy(x)
@@ -74,13 +74,16 @@ def explicit_k(obj):
             beta = obj.dt / (obj.rho[i-1][j-1] * obj.Cp[i-1][j-1])
 
             t_new = ((1 + beta * obj.Q[i-1][j-1]) * x[i][j][0] +
-                     alpha * ((temp_k[i+1][j]+temp_k[i][j])*x[i+1][j][0] - \
-                              (temp_k[i-1][j] + 2 * temp_k[i][j] + temp_k[i+1][j])*x[i][j][0] + \
+                     alpha * ((temp_k[i+1][j]+temp_k[i][j])*x[i+1][j][0] -
+                              (temp_k[i-1][j] + 2 * temp_k[i][j] +
+                               temp_k[i+1][j])*x[i][j][0] +
                               (temp_k[i-1][j]+temp_k[i][j])*x[i-1][j][0]) +
-                     gamma * ((temp_k[i][j+1]+temp_k[i][j])*x[i][j+1][0] - \
-                              (temp_k[i][j-1] + 2 * temp_k[i][j] + temp_k[i][j+1])*x[i][j][0] + \
+                     gamma * ((temp_k[i][j+1]+temp_k[i][j])*x[i][j+1][0] -
+                              (temp_k[i][j-1] + 2 * temp_k[i][j] +
+                               temp_k[i][j+1])*x[i][j][0] +
                               (temp_k[i][j-1]+temp_k[i][j])*x[i][j-1][0]) +
-                     beta * (obj.Q0[i-1][j-1] - obj.Q[i-1][j-1] * obj.amb_temperature))
+                     beta * (obj.Q0[i-1][j-1] - obj.Q[i-1][j-1] *
+                             obj.amb_temperature))
             final_x[i][j][1] = t_new
 
     x = final_x
@@ -112,8 +115,10 @@ def explicit_k(obj):
             k = 0
             for lh in obj.latent_heat[i][j]:
                 temper = obj.temperature[i][j][0]
-                if nx[i][j] > lh[0] and temper <= lh[0] and lheat[i][j][k][1] != lh[1]:
-                    en = obj.Cp[i][j] * obj.rho[i][j] * (nx[i][j] - obj.temperature[i][j][0])
+                value = nx[i][j] < lh[0]
+                if value and temper <= lh[0] and lheat[i][j][k][1] != lh[1]:
+                    en = (obj.Cp[i][j] * obj.rho[i][j] *
+                          (nx[i][j] - obj.temperature[i][j][0]))
                     if en + lheat[i][j][k][1] >= lh[1]:
                         lheat[i][j][k][1] = lh[1]
                         energy_temp = lheat[i][j][k][1] + en - lh[1]
@@ -122,8 +127,10 @@ def explicit_k(obj):
                     else:
                         lheat[i][j][k][1] += en
                         nx[i][j] = obj.temperature[i][j][0]
-                if nx[i][j] < lh[0] and temper >= lh[0] and lheat[i][j][k][1] != 0:
-                    en = obj.Cp[i][j] * obj.rho[i][j] * (nx[i][j] - obj.temperature[i][j][0])
+                value = nx[i][j] < lh[0]
+                if value and temper >= lh[0] and lheat[i][j][k][1] != 0:
+                    en = (obj.Cp[i][j] * obj.rho[i][j] *
+                          (nx[i][j] - obj.temperature[i][j][0]))
                     if en + lheat[i][j][k][1] <= 0.:
                         lheat[i][j][k][1] = 0.
                         energy_temp = (en + lheat[i][j][k][1])

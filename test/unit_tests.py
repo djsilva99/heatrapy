@@ -28,7 +28,7 @@ class SingleObjects1D(unittest.TestCase):
         """Test singleObject with the explicit_k(k) solver."""
         solution = 270
         example = htp.SingleObject1D(
-            300, boundaries=(0, 200), materials=('Cu', 'Gd'),
+            300, boundaries=(0, 200), materials=('Cu', 'Gd_mag'),
             borders=(1, 11, 22), materials_order=(0, 1), draw=[]
         )
         example.compute(2000, 5, solver='explicit_k(x)')
@@ -38,7 +38,7 @@ class SingleObjects1D(unittest.TestCase):
         """Test singleObject with the implicit_k(k) solver."""
         solution = 270
         example = htp.SingleObject1D(
-            300, boundaries=(0, 200), materials=('Cu', 'Gd'),
+            300, boundaries=(0, 200), materials=('Cu', 'Gd_mag'),
             borders=(1, 11, 22), materials_order=(0, 1), draw=[]
         )
         example.compute(2000, 5, solver='implicit_k(x)')
