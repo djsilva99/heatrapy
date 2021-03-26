@@ -8,7 +8,7 @@ For full documentation visit the <a href='https://djsilva99.github.io/heatrapy'>
 
 author: Daniel Silva (djsilva@gmx.com) <br> current version: v2.0.0
 
-![heatrapy-example](https://github.com/djsilva99/heatrapy/blob/master/img/example.gif)
+![heatrapy-example](https://github.com/djsilva99/heatrapy/blob/develop/img/example.gif)
 
 
 ### Installation
