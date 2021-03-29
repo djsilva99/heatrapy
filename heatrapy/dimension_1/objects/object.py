@@ -1,6 +1,7 @@
 """Contains the class object.
 
-Used to create a thermal object and apply or remove fields.
+Used to create unidimensional thermal objects and apply some methods. It does
+not include the compute method.
 
 """
 
@@ -12,8 +13,8 @@ import copy
 class Object:
     """Object class.
 
-    This class creates thermal objects to be used in more complex systems.
-    It includes two methods to apply and remove fields.
+    This class creates a unidimensional thermal object. It includes two
+    methods to apply and remove fields.
 
     """
 
@@ -23,21 +24,20 @@ class Object:
                  materials_path=False):
         """Thermal object initialization.
 
-        amb_temperature: ambient temperature of the whole system
-        materials: list of strings of all the used materials present in the
-            folder materials
-        borders: list of the points where there is a change of material
-        materials_order: list of the materials list indexes that defines the
-            material properties given by borders
-        dx: the space step
-        dt: the times step
-        file_name: file name where the temperature and heat flux are saved
-        boundaries: list of two entries that define the boundary condition
-            for temperature. If 0 the boundary condition is insulation
-        Q: list of fixed heat source coefficient.
-        Q0: list of temperature dependent heat source coefficient.
-        initial_state: initial state of the materials. True if applied field
-            and False is removed field.
+        `amb_temperature` is the ambient temperature of the whole system.
+        `materials` is the list of strings of all the used materials present in
+        `material_path`. `borders` is a list of the points where there is a
+        change of material. `materials_order` is a list of the materials list
+        indexes that defines the material properties given by borders. `dx` and
+        `dt` are the space and time steps, respectively. `file_name` is the
+        file name where the temperature is saved. `boundaries` is a list of two
+        entries that define the boundary condition for temperature. If 0 the
+        boundary condition is insulation. `initial_state` is the initial state
+        of the materials. True if there are an applied field and False if them
+        field is absent. `materials_path` is absolute path of the materials
+        database. If false, then the materials database is the standard
+        heatrapy database. `Q` is a list of fixed heat source coefficient and
+        `Q0` is a list of temperature dependent heat source coefficient.
 
         """
         # check the validity of inputs
@@ -191,8 +191,8 @@ class Object:
     def activate(self, initial_point, final_point):
         """Activation of the material.
 
-        activates a given space interval of the material,
-        between the initial_point and final_point.
+        activates a given space interval of the material, between the
+        `initial_point` and `final_point`.
 
         """
         initial_point = int(initial_point)
@@ -230,8 +230,8 @@ class Object:
     def deactivate(self, initial_point, final_point):
         """Deactivation of the material.
 
-        deactivates a given space interval of the material,
-        between the initial_point and final_point.
+        deactivates a given space interval of the material, between the
+        `initial_point` and `final_point`.
 
         """
         initial_point = int(initial_point)

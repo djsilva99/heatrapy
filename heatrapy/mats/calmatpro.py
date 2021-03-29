@@ -1,6 +1,6 @@
 """Contains the class calmatpro.
 
-Used to access the properties of materials from the database
+Used to access the properties of materials from the database.
 
 """
 
@@ -16,17 +16,15 @@ class CalMatPro:
 
     def __init__(self, name_tadi, name_tadd, name_cpa, name_cp0, name_k0,
                  name_ka, name_rho0, name_rhoa, name_lheat0, name_lheata):
-        """Object initialization.
+        """Thermal properties from materials folder.
 
-        loads the physical properties of a materials
-        nameTadi is the adiabatic temperature increase file
-        nameTadd is the adiabatic temperature decrease file
-        nameCp0 is the specific heat file
-        nameCpA is the active specific heat file
-        namek0 is the thermal conductivity file
-        namekA is the active thermal conductivity file
-        namerho0 is the density file
-        namerhoA is the active density file
+        `name_tadi` is the adiabatic temperature increase file and `name_tadd`
+        is the adiabatic temperature decrease file. `name_cp0` is the specific
+        heat file and `name_cpa` is the active specific heat file. `name_k0` is
+        the thermal conductivity file and `name_ka` is the active thermal
+        conductivity file. `name_rho0` is the density file and `name_rhoa` is
+        the active density file. `name_lheat0` and `name_lheata` are the latent
+        heat files when the material status is True or False, respectively.
 
         """
         # adiabatic temperature increase

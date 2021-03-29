@@ -1,6 +1,6 @@
-"""Contains the classe single_object.
+"""Contains the class single_object.
 
-Used to compute system models
+Used to compute single thermal objects.
 
 """
 
@@ -14,13 +14,7 @@ class SingleObject:
     """Single_object class.
 
     This class solves numerically the heat conduction equation for 1 dimension
-    of an active material(s). Three solvers can be used: explicit with
-    x-independent k, explicit with x-dependent k, implicit with x-independent
-    k, and implicit with x-dependent k. The class has 5 methods: activate for
-    the activation of part of the solid, deactivate for the deactivation of
-    part of the solid, and compute for solving the equation for a given period
-    of time. This class is suited for simulations involving caloric systems
-    such as magnetocaloric or electrocaloric systems.
+    of a single material(s). The class has 6 methods.
 
     """
 
@@ -28,40 +22,25 @@ class SingleObject:
                  materials_order=(0,), dx=0.01, dt=0.1, file_name=None,
                  boundaries=(0, 0), initial_state=False,
                  materials_path=False, draw=['temperature'], draw_scale=None):
-        """Object initialization.
+        """Thermal object initialization.
 
-        amb_temperature: ambient temperature of the whole system
-        materials: list of strings of all the used materials present in the
-            folder materials
-        borders: list of the points where there is a change of material
-        materials_order: list of the materials list indexes that defines the
-            material properties given by borders
-        dx: the space step
-        dt: the times step
-        file_name: file name where the temperature and heat flux are saved
-        boundaries: list of two entries that define the boundary condition
-            for tempreture. If 0 the boundary condition is insulation
-        Q: list of 3 entry lists that gives the fixed heat source coeficient.
-            The first term is the initial space index where it is applies. The
-            second is the final space index where it is applies. The third is
-            the value of the coeficient.
-        Q0 is a list of 3 entry lists that gives the temperature dependent heat
-            source coefficient. The first term is the initial space index where
-            it is applies. The second is the final space index where it is
-            applies. The third is the value of the coeficient.
-        heat_points: list of the space indexes where we want to extract the
-            heat flux. Normally, the first term is the heat flux of the hot end
-            and the second term is the heat flux of the cold end
-        initial_state: initial state of the materials. True if applied field
-            and False is removed field.
-        h_left: left heat transfer coefficient
-        h_right: right heat transfer coefficient
-        materials_path: absolute path of the mateirals database. If false, then
-            the materials database is the standard heatrapy database.
-        draw: list of strings representing the online plots. If the list is
-            empty, then no drawing is performed.
-        draw_scale: list of two values, representing the minimum and maximum
-            temperature to be drawn. If None, there are no limits.
+        `amb_temperature` is the ambient temperature of the whole system.
+        `materials` is the list of strings of all the used materials present in
+        `material_path`. `borders` is a list of the points where there is a
+        change of material. `materials_order` is a list of the materials list
+        indexes that defines the material properties given by borders. `dx` and
+        `dt` are the space and time steps, respectively. `file_name` is the
+        file name where the temperature is saved. `boundaries` is a list of two
+        entries that define the boundary condition for temperature. If 0 the
+        boundary condition is insulation. `initial_state` is the initial state
+        of the materials. True if there are an applied field and False if them
+        field is absent. `materials_path` is absolute path of the materials
+        database. If false, then the materials database is the standard
+        heatrapy database. `draw` is a list of strings representing the online
+        plots. In this version only `'temperature'` can be potted. If the list
+        is empty, then no drawing is performed. `draw_scale` is a list of two
+        values, representing the minimum and maximum temperature to be drawn.
+        If None, there are no limits.
 
         """
         # check the validity of inputs
@@ -139,8 +118,9 @@ class SingleObject:
     def show_figure(self, figure_type, draw_scale=None):
         """Plotting.
 
-        Initializes a specific plotting. figure_type is a string identifying
-        the plotting. draw_scale defines the range of temperatures. If None,
+        Initializes a specific live plotting. `figure_type` is a string
+        identifying the plotting. This version only allows the plotting of the
+        'temperature'. `draw_scale` defines the range of temperatures. If None,
         this range is found automatically for every frame.
 
         """
@@ -187,7 +167,7 @@ class SingleObject:
     def activate(self, initial_point, final_point):
         """Activation.
 
-        Activates the thermal object between initial_point to final_point.
+        Activates the thermal object between `initial_point` to `final_point`.
         """
         # check the validity of inputs
         condition = isinstance(initial_point, int)
@@ -223,7 +203,8 @@ class SingleObject:
     def deactivate(self, initial_point, final_point):
         """Deactivation.
 
-        Deactivates the thermal object between initial_point to final_point.
+        Deactivates the thermal object between `initial_point` to
+        `final_point`.
         """
         # check the validity of inputs
         condition = isinstance(initial_point, int)
@@ -260,7 +241,7 @@ class SingleObject:
         """Heat power source change.
 
         Changes the coeficients for the heat power sources by a value of power
-        from initial_point to final_point. power_type is a string that
+        from `initial_point` to `final_point`. `power_type` is a string that
         represents the type of coefficient, i.e. 'Q' or 'Q0'.
 
         """
@@ -291,7 +272,7 @@ class SingleObject:
     def change_boundaries(self, boundaries):
         """Boundary change.
 
-        Changes boundaries variable.
+        Changes the `boundaries` variable.
 
         """
         # check the validity of inputs
@@ -311,11 +292,11 @@ class SingleObject:
                 verbose=True):
         """Compute the thermal process.
 
-        Computes the system for timeInterval, and writes into the file_name
-        file every write_interval time steps. Four different solvers can be
-        used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
-        and 'implicit_k(x)'. If verbose = True, then the progress of the
-        computation is shown.
+        Computes the system for time_interval seconds, and writes into the
+        `file_name` file every `write_interval` time steps. Four different
+        solvers can be used: `'explicit_general'`, `'explicit_k(x)'`,
+        `'implicit_general'`, and `'implicit_k(x)'`. If `verbose = True`, then
+        the progress of the computation progress is shown.
 
         """
         # check the validity of inputs

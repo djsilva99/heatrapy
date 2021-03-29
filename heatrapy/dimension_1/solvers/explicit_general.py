@@ -1,6 +1,6 @@
-"""Contains the explicit_general solver.
+"""Contains the 1D explicit_general solver.
 
-Used to compute thermal processes
+Used to compute unidimensional thermal processes
 
 """
 
@@ -10,7 +10,8 @@ import copy
 def explicit_general(obj):
     """explicit_general solver.
 
-    Used to compute one time step of systems with fixed thermal contuctivity.
+    Used to compute one time step of 1D systems with fixed thermal
+    conductivity.
 
     """
     x = copy.deepcopy(obj.temperature)
