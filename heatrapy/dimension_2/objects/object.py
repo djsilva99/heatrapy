@@ -1,6 +1,7 @@
 """Contains the class object.
 
-Used to create two-dimensional thermal objects, and apply some methods.
+Used to create two-dimensional thermal objects, and apply some methods. It does
+not include the compute method.
 
 """
 
@@ -13,33 +14,30 @@ import numpy as np
 class Object:
     """Object class.
 
-    This class creates thermal objects at 2D to be used in more complex
-    systems.
+    This class creates a two-dimensional thermal object. It includes two
+    methods to apply and remove fields.
 
     """
 
     def __init__(self, amb_temperature, material='Cu', dx=0.01, dy=0.01,
                  dt=0.1, size=(10, 10), file_name=None,
                  boundaries=(0, 0, 0, 0), Q=[], Q0=[], initial_state=False,
-                 heat_save=False, materials_path=False):
+                 materials_path=False):
         """Thermal object initialization.
 
-        amb_temperature: ambient temperature of the whole system
-        material: background material present at materials_path
-        dx: space step along the x-axis
-        dy: space step along the y-axis
-        dt: the times step
-        file_name: file name where the temperature is saved
-        boundaries: list of four entries that define the boundary condition
-            for temperature (left, right, bottom, top). If 0 the boundary
-            condition is insulation
-        Q: list in the form of matrix of fixed heat source coefficient.
-        Q0: list in the form of matrix of temperature dependent heat source
-            coefficient.
-        initial_state: initial state of the materials. True if applied field
-            and False is removed field.
-        heat_save: True if saving the heat at the two borders.
-        materials_path: absolute path of the materials database.
+        `amb_temperature` is the ambient temperature of the whole system.
+        `materials` is the background material present in `material_path`.
+        `dx`, `dy` are the space steps along the x- and y-axis, respectively.
+        `dt` is the time step. `file_name` is the file name where the
+        temperature is saved. `boundaries` is a list of four entries that
+        define the boundary condition for temperature (left, right, bottom,
+        top). If 0 the boundary condition is insulation. `initial_state` is the
+        initial state of the materials. True if there are an applied field and
+        False if them field is absent. `materials_path` is absolute path of the
+        materials database. If false, then the materials database is the
+        standard heatrapy database. `Q` is a list of fixed heat source
+        coefficient and `Q0` is a list of temperature dependent heat source
+        coefficient.
 
         """
         # check the validity of inputs
@@ -56,10 +54,9 @@ class Object:
         cond09 = isinstance(Q, list)
         cond10 = isinstance(Q0, list)
         cond11 = isinstance(initial_state, bool)
-        cond12 = isinstance(heat_save, bool)
         condition = cond01 and cond05
         condition = condition and cond06 and cond07 and cond08 and cond09
-        condition = condition and cond10 and cond11 and cond12
+        condition = condition and cond10 and cond11
         if not condition:
             raise ValueError
 
@@ -194,8 +191,6 @@ class Object:
             for i in range(size[0]):
                 for j in range(size[1]):
                     line = line + ',T[' + str(i) + '][' + str(j) + '] (K)'
-            if heat_save:
-                line = line + ',Q (J/m)'
             line = line + '\n'
             f = open(self.file_name, 'a')
             f.write(line)
@@ -204,11 +199,11 @@ class Object:
     def activate(self, initial_point, final_point, shape='square'):
         """Activation of the material.
 
-        Activates a given piece of material. If shape is 'square', then the
-        initial_point is the tuple (x,y) of the bottom left point and the
-        final_point is the tuple (x,y) of the top right point. If the shape is
-        'circle', the initial_point is the tuple (x,y) of the center of the
-        circle and final_point is its radius.
+        Activates a given piece of material. If `shape` is `'square'`, then the
+        `initial_point` is the tuple (x,y) of the bottom left point and the
+        `final_point` is the tuple (x,y) of the top right point. If the shape
+        is `'circle'`, the `initial_point` is the tuple (x,y) of the center of
+        the circle and `final_point` is its radius.
 
         """
         # check the validity of inputs
@@ -322,11 +317,11 @@ class Object:
     def deactivate(self, initial_point, final_point, shape='square'):
         """Deactivation of the material.
 
-        Deactivates a given piece of material. If shape is 'square', then the
-        initial_point is the tuple (x,y) of the bottom left point and the
-        final_point is the tuple (x,y) of the top right point. If the shape is
-        'circle', the initial_point is the tuple (x,y) of the center of the
-        circle and final_point is its radius.
+        Deactivates a given piece of material. If `shape` is `'square'`, then
+        the `initial_point` is the tuple (x,y) of the bottom left point and the
+        `final_point` is the tuple (x,y) of the top right point. If the shape
+        is `'circle'`, the `initial_point` is the tuple (x,y) of the center of
+        the circle and `final_point` is its radius.
 
         """
         # check the validity of inputs
@@ -441,10 +436,10 @@ class Object:
                state=False, materials_path=False):
         """Material adding with rectangle shape.
 
-        Adds a new material with a rectangel shape, where initial_point is the
-        bottom left (x,y) tuple, length is the length along the two axis, state
-        is the initial state of the material and materials_path is the absolute
-        path of the materials database.
+        Adds a new material with a rectangle shape, where `initial_point` is
+        the bottom left (x,y) tuple, `length` is the length along the two axis,
+        state is the initial state of the material and `materials_path` is the
+        absolute path of the materials database.
 
         """
         # check the validity of inputs
@@ -558,9 +553,9 @@ class Object:
                state=False, materials_path=False):
         """Material adding with circle shape.
 
-        Adds a new material with a circle shape, where initial_point is the
-        (x,y) tuple of the center of the circle, radius is the radius of the
-        circle, state is the initial state of the material and materials_path
+        Adds a new material with a circle shape, where `initial_point` is the
+        (x,y) tuple of the center of the circle, `radius` is the radius of the
+        circle, state is the initial state of the material and `materials_path`
         is the absolute path of the materials database.
 
         """
@@ -674,14 +669,14 @@ class Object:
                   power_type='Q'):
         """Power adding.
 
-        Adds a power matrix to the thermal object. If shape is 'square', then
-        the initial_point is the tuple (x,y) of the bottom left point and the
-        final_point is the tuple (x,y) of the top right point. If the shape is
-        'circle', the initial_point is the tuple (x,y) of the center of the
-        circle and final_point is its radius. power is the value of the power
-        to add, and power type is the type of power to be introduced, which has
-        the value 'Q' if it is temperature dependent and 'Q0' if it is
-        temperature independent.
+        Adds a power matrix to the thermal object. If `shape` is `'square'`,
+        then the `initial_point` is the tuple (x,y) of the bottom left point
+        and the `final_point` is the tuple (x,y) of the top right point. If the
+        `shape` is `'circle'`, the `initial_point` is the tuple (x,y) of the
+        center of the circle and `final_point` is its radius. `power` is the
+        value of the power to add, and `power_type` is the type of power to be
+        introduced, which has the value `'Q'` if it is temperature dependent
+        and `'Q0'` if it is temperature independent.
 
         """
         # check the validity of inputs
@@ -759,9 +754,9 @@ class Object:
     def power_reset(self, power_type='Q'):
         """Power reset.
 
-        Resets the power matrix with power_type 'Q' or 'Q0', which corresponds
-        to the power temperature dependent and temperature independent,
-        respectively.
+        Resets the power matrix with `power_type` `'Q'` or `'Q0'`, which
+        corresponds to the power temperature dependent and temperature
+        independent, respectively.
 
         """
         # check the validity of inputs

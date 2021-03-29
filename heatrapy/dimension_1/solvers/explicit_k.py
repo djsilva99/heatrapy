@@ -1,6 +1,6 @@
-"""Contains the explicit_k solver.
+"""Contains the 1D explicit_k solver.
 
-Used to compute thermal processes
+Used to compute unidimensional thermal processes.
 
 """
 
@@ -10,7 +10,7 @@ import copy
 def explicit_k(obj):
     """explicit_k solver.
 
-    Used to compute one time step of systems with x-dependent thermal
+    Used to compute one time step of 1D systems with x-dependent thermal
     conductivity.
 
     """

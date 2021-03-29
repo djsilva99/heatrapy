@@ -1,6 +1,6 @@
 """Contains the classes system_objects and single_object.
 
-Used to compute two-dimensional system models
+Used to compute two-dimensional thermal objects
 
 """
 
@@ -24,23 +24,17 @@ class SystemObjects:
                  materials_path=False):
         """System object initialization.
 
-        amb_temperature: ambient temperature of the whole system
-        materials: list of strings of all the used materials present in
-            materials_path
-        number_objects: integer for the number of thermal objects
-        objects_length: tuple of object length tuples (spacial steps)
-        dx: space step along the x-axis
-        dy: space step along the y-axis
-        dt: times step
-        file_name: file name where the temperatures are saved
-        boundaries: tuple of boundary conditions. Each entry represents the
-            conditions of the thermal object present in the order of the
-            materials parameter, and is defined by a tuple of length 4 where
-            the first, second, third and fourth entries are the left, right,
-            bottom and top condition, respectively.
-        initial_state: initial state of the materials. True if applied field
-            and False is removed field.
-        materials_path: absolute path of the materials database
+        `number_objects` is the integer number of thermal objects. `materials`
+        is the list of strings of all the used materials present in
+        `material_path`. `amb_temperature` is the ambient temperature of the
+        whole system. `object_length` is the list of thermal object lengths
+        (tuple of spacial steps). `dx` and `dy` are the space steps along the
+        x- and y-axis, respectively. dt is the time step. `file_name` is the
+        file name where the temperature is saved. `boundaries` is a list of
+        four entries that define the boundary condition for temperature (left,
+        right, bottom, top). If 0, the boundary condition is insulation.
+        `materials_path` is absolute path of the materials database. If false,
+        then the materials database is the standard heatrapy database.
 
         """
         # check the validity of inputs
@@ -69,10 +63,6 @@ class SystemObjects:
         self.objects = []
         file_name_obj = None
         for i in range(number_objects):
-            if i not in [l[0] for l in boundaries] or (i, 0) in boundaries:
-                heat_save = False
-            else:
-                heat_save = True
 
             if file_name:
                 file_name_obj = file_name + '_' + str(i) + '.txt'
@@ -82,7 +72,6 @@ class SystemObjects:
                                        file_name=file_name_obj,
                                        boundaries=boundaries[i], Q=[], Q0=[],
                                        initial_state=initial_state,
-                                       heat_save=heat_save,
                                        materials_path=materials_path))
         self.contacts = set()
         self.boundaries = boundaries
@@ -91,9 +80,9 @@ class SystemObjects:
         self.q2 = 0.
 
     def contact_filter(self, object_id):
-        """Filter self.contacts by thermal object id.
+        """Filter thermal contacts.
 
-        object_id: thermal object id
+        Filter thermal contacts by `object_id`.
 
         """
         # check the validity of inputs
@@ -109,10 +98,10 @@ class SystemObjects:
     def contact_add(self, contact):
         """Add contact to self.contacts.
 
-        contact: thermal contact tuple of length 3, where the first and second
-            entries correspond to tuples of the thermal objects and points
-            (object_id, (x,y)), and the third entry is the heat transfer
-            coefficient.
+        `contact` is a thermal contact tuple of length 3, where the first and
+        second entries correspond to tuples of the thermal objects and points
+        (object_id, (x,y)), and the third entry is the heat transfer
+        coefficient.
 
         """
         # check the validity of inputs
@@ -131,7 +120,7 @@ class SystemObjects:
     def contact_remove(self, object_one, object_two):
         """Contact removal.
 
-        Remove all contacts between object_one id and object_two id.
+        Removes all contacts between `object_one` id and `object_two` id.
 
         """
         # check the validity of inputs
@@ -152,7 +141,7 @@ class SystemObjects:
     def change_boundaries(self, object_id, boundaries):
         """Change boundaries.
 
-        Changes the boundaries of object_id.
+        Changes the `boundaries` variable of `object_id`.
 
         """
         # check the validity of inputs
@@ -172,10 +161,10 @@ class SystemObjects:
                 verbose=True):
         """Compute the thermal process.
 
-        Computes the system for time_interval, and writes into the file_name
-        file every write_interval time steps. Two different solvers can be
-        used: 'explicit_general', 'explicit_k(x)'. If verbose = True, then the
-        progress of the computation is shown.
+        Computes the system for `time_interval`, and writes into the
+        `file_name` file every `write_interval` time steps. Two different
+        solvers can be used: `'explicit_general'` and `'explicit_k(x)'`. If
+        verbose = True, then the progress of the computation is shown.
 
         """
         # check the validity of inputs

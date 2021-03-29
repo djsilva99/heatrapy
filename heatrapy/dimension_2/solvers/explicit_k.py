@@ -1,6 +1,6 @@
-"""Contains the explicit_k solver.
+"""Contains the 2D explicit_k solver.
 
-Used to compute thermal processes
+Used to compute two-dimensional thermal processes
 
 """
 
@@ -10,7 +10,8 @@ import copy
 def explicit_k(obj):
     """explicit_k solver.
 
-    Used to compute one time step of systems with fixed thermal contuctivity.
+    Used to compute one time step of 2D systems with position dependent thermal
+    conductivities.
 
     """
     x = copy.deepcopy(obj.temperature)

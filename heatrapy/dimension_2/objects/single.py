@@ -1,6 +1,6 @@
-"""Contains the classes system_objects and single_object.
+"""Contains the class single_object.
 
-Used to compute two-dimensional system models
+Used to compute single two-dimensional system models.
 
 """
 
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 
-class SingleObject(Object):
+class SingleObject:
     """Single_object class.
 
     This class solves numerically the two-dimensional heat conduction equation.
@@ -26,26 +26,24 @@ class SingleObject(Object):
                  draw=['temperature', 'materials'], draw_scale=None):
         """Object initialization.
 
-        amb_temperature: ambient temperature of the whole system
-        material: background material from materials_path
-        dx: space step in the x-axis
-        dy: space step in the y-axis
-        dt: the times step
-        size: tuple of size of the 2D thermal object
-        file_name: file name where the temperature and heat flux are saved
-        boundaries: list of four entries that define the boundary condition
-            for temperature (left, right, bottom, top). If 0 the boundary
-            condition is insulation
-        Q: list in the form of matrix of fixed heat source coefficient.
-        Q0: list in the form of matrix of temperature dependent heat source
-            coefficient.
-        initial_state: initial state of the materials. True if applied field
-            and False is removed field.
-        materials_path: absolute path of the materials database.
-        draw: list of strings representing the live plots, which can be
-            'temperature', 'state', 'materials', 'Q' and 'Q0'.
-        draw_scale: list of length 2 representing the minimum and maximum
-            temperatures of the temperature plot.
+        `amb_temperature` is the ambient temperature of the whole system.
+        `materials` is the background material present in `material_path`.
+        `dx`, `dy` are the space steps along the x- and y-axis, respectively.
+        `dt` is the time step. `file_name` is the file name where the
+        temperature is saved. `boundaries` is a list of four entries that
+        define the boundary condition for temperature (left, right, bottom,
+        top). If 0 the boundary condition is insulation. `initial_state` is the
+        initial state of the materials. True if there are an applied field and
+        False if them field is absent. `materials_path` is absolute path of the
+        materials database. If false, then the materials database is the
+        standard heatrapy database. `draw` is a list of strings representing
+        the online plots. In this version live plotting can be performed for
+        `temperature`, `materials`, `state`, `Q` and `Q0`. If the list is
+        empty, then no drawing is performed. `draw_scale` is a list of two
+        values, representing the minimum and maximum temperature to be drawn.
+        If None, there are no limits. `Q` is a list of fixed heat source
+        coefficient and `Q0` is a list of temperature dependent heat source
+        coefficient.
 
         """
         boundaries = tuple(boundaries)
@@ -244,8 +242,9 @@ class SingleObject(Object):
     def show_figure(self, figure_type):
         """Plotting.
 
-        Initializes a specific plotting. figure_type is a string identifying
-        the plotting.
+        Initializes a specific plotting. `figure_type` is a string identifying
+        the plotting. In this version live plotting can be performed for
+        `temperature`, `materials`, `state`, `Q` and `Q0`.
 
         """
         # check the validity of inputs
@@ -395,11 +394,11 @@ class SingleObject(Object):
     def activate(self, initial_point, final_point, shape='square'):
         """Activation of the material.
 
-        Activates a given piece of material. If shape is 'square', then the
-        initial_point is the tuple (x,y) of the bottom left point and the
-        final_point is the tuple (x,y) of the top right point. If the shape is
-        'circle', the initial_point is the tuple (x,y) of the center of the
-        circle and final_point is its radius.
+        Activates a given piece of material. If `shape` is `'square'`, then the
+        `initial_point` is the tuple (x,y) of the bottom left point and the
+        `final_point` is the tuple (x,y) of the top right point. If the shape
+        is `'circle'`, the `initial_point` is the tuple (x,y) of the center of
+        the circle and `final_point` is its radius.
 
         """
         # check the validity of inputs
@@ -450,11 +449,11 @@ class SingleObject(Object):
     def deactivate(self, initial_point, final_point, shape='square'):
         """Deactivation of the material.
 
-        Deactivates a given piece of material. If shape is 'square', then the
-        initial_point is the tuple (x,y) of the bottom left point and the
-        final_point is the tuple (x,y) of the top right point. If the shape is
-        'circle', the initial_point is the tuple (x,y) of the center of the
-        circle and final_point is its radius.
+        Deactivates a given piece of material. If `shape` is `'square'`, then
+        the `initial_point` is the tuple (x,y) of the bottom left point and the
+        `final_point` is the tuple (x,y) of the top right point. If the shape
+        is `'circle'`, the `initial_point` is the tuple (x,y) of the center of
+        the circle and `final_point` is its radius.
 
         """
         # check the validity of inputs
@@ -505,7 +504,7 @@ class SingleObject(Object):
     def change_boundaries(self, boundaries):
         """Boundary change.
 
-        Changes boundaries variable.
+        Changes the `boundaries` variable.
 
         """
         # check the validity of inputs
@@ -526,10 +525,10 @@ class SingleObject(Object):
         """Material change.
 
         Changes the material of a given piece of the background material. If
-        shape is 'square', then the initial_point is the tuple (x,y) of the
-        bottom left point and the length is the tuple (x,y) of the length. If
-        the shape is 'circle', the initial_point is the tuple (x,y) of the
-        center of the circle and length is its radius.
+        `shape` is `'square'`, then the initial_point is the tuple (x,y) of the
+        bottom left point and the `length` is the tuple (x,y) of the length. If
+        the shape is `'circle'`, the `initial_point` is the tuple (x,y) of the
+        center of the circle and `length` is its radius.
 
         """
         # check the validity of inputs
@@ -579,7 +578,8 @@ class SingleObject(Object):
                 cmap = plt.get_cmap("PiYG", vmax+1)
                 extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
                 material_id = np.array(self.object.materials_index)
-                self.im_materials = self.ax_materials.imshow(np.transpose(material_id),
+                value = np.transpose(material_id)
+                self.im_materials = self.ax_materials.imshow(value,
                                                              vmax=vmax,
                                                              vmin=vmin,
                                                              cmap=cmap,
@@ -611,14 +611,14 @@ class SingleObject(Object):
                      power):
         """Power change.
 
-        Changes the power matrix of the thermal object. If shape is 'square',
-        then the initial_point is the tuple (x,y) of the bottom left point and
-        the final_point is the tuple (x,y) of the top right point. If the shape
-        is 'circle', the initial_point is the tuple (x,y) of the center of the
-        circle and final_point is its radius. power is the value of the power
-        to add, and power type is the type of power to be introduced, which has
-        the value 'Q' if it is temperature dependent and 'Q0' if it is
-        temperature independent.
+        Changes the power matrix of the thermal object. If `shape` is
+        `'square'`, then the `initial_point` is the tuple (x,y) of the bottom
+        left point and the `final_point` is the tuple (x,y) of the top right
+        point. If the `shape` is `'circle'`, the `initial_point` is the tuple
+        (x,y) of the center of the circle and `final_point` is its radius.
+        `power` is the value of the power to add, and `power_type` is the type
+        of power to be introduced, which has the value `'Q'` if it is
+        temperature dependent and `'Q0'` if it is temperature independent.
 
         """
         # check the validity of inputs
@@ -679,10 +679,10 @@ class SingleObject(Object):
                 verbose=True):
         """Compute the thermal process.
 
-        Computes the system for time_interval, and writes into the file_name
-        file every write_interval time steps. Two different solvers can be
-        used: 'explicit_general' and 'explicit_k(x)'. If verbose = True, then
-        the progress of the computation is shown.
+        Computes the system for `time_interval`, and writes into the
+        `file_name` file every `write_interval` time steps. Two different
+        solvers can be used: `'explicit_general'` and `'explicit_k(x)'`. If
+        verbose = True, then the progress of the computation is shown.
 
         """
         # check the validity of inputs

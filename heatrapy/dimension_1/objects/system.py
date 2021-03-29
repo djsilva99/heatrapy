@@ -1,6 +1,6 @@
-"""Contains the classe system_objects.
+"""Contains the class system_objects.
 
-Used to compute system models
+Used to compute systems of thermal objects.
 
 """
 
@@ -12,8 +12,8 @@ from . import Object
 class SystemObjects:
     """System_objects class.
 
-    This class creates a system of thermal objects, establishes contact between
-    them and computes the respective thermal processes.
+    This class creates a system of unidimensional thermal objects, establishes
+    contact between them and computes the respective thermal processes.
 
     """
 
@@ -23,20 +23,17 @@ class SystemObjects:
                  boundaries=((2, 0), (3, 0)), materials_path=False):
         """System object initialization.
 
-        amb_temperature: ambient temperature of the whole system
-        materials: list of strings of all the used materials present in the
-            folder materials
-        number_objects: integer for the number of thermal objects
-        objects_length: list of the object lengths (spacial steps)
-        dx: the space step
-        dt: the times step
-        file_name: file name where the temperature and heat flux are saved
-        boundaries: tuple of two entries that define the boundary condition
-            for tempreture. The first corresponds to the thermal obect while
-            the second defines the temperature. If 0 the boundary condition is
-            insulation
-        initial_state: initial state of the materials. True if applied field
-            and False is removed field.
+        `number_objects` is the integer number of thermal objects. `materials`
+        is the list of strings of all the used materials present in
+        `material_path`. `amb_temperature` is the ambient temperature of the
+        whole system. `object_length` is the list of thermal object lengths
+        (spacial steps). `dx` and `dt` are the space and time steps,
+        respectively. `file_name` is the file name where the temperature is
+        saved. `boundaries` is a list of tuples of length two that define each
+        boundary condition for temperature. If 0 the boundary condition is
+        insulation. `materials_path` is absolute path of the materials
+        database. If false, then the materials database is the standard
+        heatrapy database.
 
         """
         # check the validity of inputs
@@ -102,11 +99,11 @@ class SystemObjects:
     def contact_add(self, contact):
         """Add contact to self.contacts.
 
-        contact: tuple of length 3 (one element for thermal object A, one for
-            thermal object B, and one for the heat transfer coefficient). Each
-            thermal object element is a tuple of length 2 where the first
-            element is the index of the thermal object and the second is the
-            spatial point index.
+        The `contact` parameter is a tuple of length 3 (one element for thermal
+        object A, one for thermal object B, and one for the heat transfer
+        coefficient). Each thermal object element is a tuple of length 2 where
+        the first element is the index of the thermal object and the second is
+        the spatial point index.
 
         """
         # check the validity of inputs
@@ -125,7 +122,7 @@ class SystemObjects:
     def contact_remove(self, object_one, object_two):
         """Contact removal.
 
-        Remove all contacts between object_one id and object_two id.
+        Removes all contacts between `object_one` id and `object_two` id.
 
         """
         # check the validity of inputs
@@ -146,7 +143,7 @@ class SystemObjects:
     def change_boundaries(self, object_id, boundaries):
         """Change boundaries.
 
-        Changes the boundaries of object_id.
+        Changes the `boundaries` of `object_id`.
 
         """
         # check the validity of inputs
@@ -166,11 +163,11 @@ class SystemObjects:
                 verbose=True):
         """Compute the thermal process.
 
-        Computes the system for timeInterval, and writes into the file_name
-        file every write_interval time steps. Four different solvers can be
-        used: 'explicit_general', 'explicit_k(x)', 'implicit_general',
-        and 'implicit_k(x)'. If verbose = True, then the progress of the
-        computation is shown.
+        Computes the system for `time_interval`, and writes into the
+        `file_name` file every `write_interval` time steps. Four different
+        solvers can be used: `'explicit_general'`, `'explicit_k(x)'`,
+        `'implicit_general'`, and `'implicit_k(x)'`. If `verbose = True`, then
+        the progress of the computation is shown.
 
         """
         # check the validity of inputs
