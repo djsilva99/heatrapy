@@ -1,6 +1,15 @@
 # Change Log
 All changes to this project are documented in this file, starting with version 2.0.0
 
+
+## [2.0.1] - 2021-03-29
+
+Updated docstrings.
+
+### Changed
+- all docstrings to meet v2.0.0
+
+
 ## [2.0.0] - 2021-03-26
 
 First version with two-dimensional features.
