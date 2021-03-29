@@ -43,13 +43,13 @@ As an example, the code below computes 100 s of a Cu 2D solid with a water circl
 ...     shape='square',
 ...     initial_point=(5, 2),
 ...     length=(4, 4)
-...     )
+... )
 >>> example.change_material(
 ...     material='water',
 ...     shape='circle',
 ...     initial_point=(5, 13),
 ...     length=4
-...     )
+... )
 >>> example.compute(100, 10)
 ```
 The output at the end of the computation will be the following:
@@ -57,7 +57,7 @@ The output at the end of the computation will be the following:
 
 Changelog
 ---------
-The changelog can be consulted <a href='https://github.com/djsilva99/heatrapy/tree/master/CHANGELOG.md'>here</a>
+The changelog can be consulted <a href='https://github.com/djsilva99/heatrapy/tree/master/CHANGELOG.md'>here</a>.
 
 License
 -------

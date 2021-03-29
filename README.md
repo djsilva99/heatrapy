@@ -29,6 +29,8 @@ To import the heatrapy module type in the python shell:
 ```python
 >>> import heatrapy as htp
 ```
+
+
 ### Citing heatrapy
 
-Please acknowledge heatrapy if it contributes to a project that leads to a publication by citing <a href='https://github.com/djsilva99/heatrapy/wiki'>this paper</a>.
+Please acknowledge heatrapy if it contributes to a project that leads to a publication by citing <a href='https://www.sciencedirect.com/science/article/pii/S2352711018301298'>this paper</a>.
