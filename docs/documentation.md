@@ -1,6 +1,6 @@
 # Documentation
 
-Heatrapy stands for HEAt TRAnsfer in PYthon. It simulates dynamic 1D and 2D heat transfer processes in solids using the finite difference method. Unlike the majority of software packages, heatrapy includes both the modeling of caloric effects and the incorporation of phase transitions.
+Heatrapy stands for HEAt TRAnsfer in PYthon. It simulates dynamic 1D and 2D heat transfer processes in solids using the finite difference method. Heatrapy includes both the modeling of caloric effects and the incorporation of phase transitions.
 
 author: Daniel Silva (djsilva@gmx.com) <br> current version: v2.0.1
 
@@ -66,3 +66,7 @@ Heatrapy is licensed under the terms of the <a href='https://github.com/djsilva9
 Contributing
 ------------
 Any type of contributions are welcome. A road map for future releases can be consulted in the <a href='https://github.com/djsilva99/heatrapy/wiki'>wiki pages</a>. Besides contributing by coding, feel free to report bugs and suggest new features. When contributing, please first discuss the change you wish to make via issue or email (djsilva@gmx.com), and then test the new code according to the <a href='https://github.com/djsilva99/heatrapy/tree/master/CONTRIBUTING.md'> contributing file</a>.
+
+Citing Matplotlib
+-----------------
+Please acknowledge heatrapy if it contributes to a project that leads to a publication by citing <a href='https://github.com/djsilva99/heatrapy/wiki'>this paper</a>.
