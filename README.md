@@ -2,8 +2,8 @@
 
 [![pypi](https://badge.fury.io/py/heatrapy.svg)](https://badge.fury.io/py/heatrapy)
 [![Downloads](https://pepy.tech/badge/heatrapy)](https://pepy.tech/project/heatrapy)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/neomutt/heatrapy/blob/master/LICENCE.md)
-[![issue](https://img.shields.io/badge/issue_tracking-github-blue.svg)](https://github.com/heatrapy/heatrapy/issues)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/djsilva99/heatrapy/blob/master/LICENSE)
+[![issue](https://img.shields.io/badge/issue_tracking-github-blue.svg)](https://github.com/djsilva99/heatrapy/issues)
 
 <img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v2.0.1
 
