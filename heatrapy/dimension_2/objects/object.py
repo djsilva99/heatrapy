@@ -147,13 +147,13 @@ class Object:
                     value = self.materials[self.materials_index[i][j]]
                     for lh in value.lheata():
                         if self.temperature[i][j][1] < lh[0] and lh[1] > 0.:
-                            self.lheat[-1].append([lh[0], 0.])
+                            self.lheat[-1][-1].append([lh[0], 0.])
                         if self.temperature[i][j][1] > lh[0] and lh[1] > 0.:
-                            self.lheat[-1].append([lh[0], lh[1]])
+                            self.lheat[-1][-1].append([lh[0], lh[1]])
                         if self.temperature[i][j][1] < lh[0] and lh[1] < 0.:
-                            self.lheat[-1].append([lh[0], -lh[1]])
+                            self.lheat[-1][-1].append([lh[0], -lh[1]])
                         if self.temperature[i][j][1] > lh[0] and lh[1] < 0.:
-                            self.lheat[-1].append([lh[0], 0.])
+                            self.lheat[-1][-1].append([lh[0], 0.])
                 else:
                     value = self.materials[self.materials_index[i][j]]
                     self.Cp[-1].append(value.cp0(self.amb_temperature))
@@ -168,13 +168,13 @@ class Object:
                     value = self.materials[self.materials_index[i][j]]
                     for lh in value.lheat0():
                         if self.temperature[i][j][1] < lh[0] and lh[1] > 0.:
-                            self.lheat[-1].append([lh[0], 0.])
+                            self.lheat[-1][-1].append([lh[0], 0.])
                         if self.temperature[i][j][1] > lh[0] and lh[1] > 0.:
-                            self.lheat[-1].append([lh[0], lh[1]])
+                            self.lheat[-1][-1].append([lh[0], lh[1]])
                         if self.temperature[i][j][1] < lh[0] and lh[1] < 0.:
-                            self.lheat[-1].append([lh[0], -lh[1]])
+                            self.lheat[-1][-1].append([lh[0], -lh[1]])
                         if self.temperature[i][j][1] > lh[0] and lh[1] < 0.:
-                            self.lheat[-1].append([lh[0], 0.])
+                            self.lheat[-1][-1].append([lh[0], 0.])
 
         if Q != []:
             self.Q = Q
