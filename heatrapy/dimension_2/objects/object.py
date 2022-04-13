@@ -5,6 +5,7 @@ not include the compute method.
 
 """
 
+from pathlib import Path
 from ... import mats
 import os
 import copy
@@ -66,39 +67,49 @@ class Object:
         self.amb_temperature = amb_temperature
 
         if materials_path is False:
-            tadi = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'tadi.txt'
-            tadd = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'tadd.txt'
-            cpa = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'cpa.txt'
-            cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'cp0.txt'
-            k0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'k0.txt'
-            ka = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'ka.txt'
-            rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'rho0.txt'
-            rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'rhoa.txt'
-            lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'lheat0.txt'
-            lheata = os.path.dirname(os.path.realpath(__file__)) + \
-                '/../../database/' + self.materials[0] + '/' + 'lheata.txt'
+            tadi = Path(os.path.dirname(os.path.realpath(__file__)) +
+                        '/../../database/' + self.materials[0] + '/' +
+                        'tadi.txt')
+            tadd = Path(os.path.dirname(os.path.realpath(__file__)) +
+                        '/../../database/' + self.materials[0] + '/' +
+                        'tadd.txt')
+            cpa = Path(os.path.dirname(os.path.realpath(__file__)) +
+                       '/../../database/' + self.materials[0] + '/' +
+                       'cpa.txt')
+            cp0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                       '/../../database/' + self.materials[0] + '/' +
+                       'cp0.txt')
+            k0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                      '/../../database/' + self.materials[0] + '/' + 'k0.txt')
+            ka = Path(os.path.dirname(os.path.realpath(__file__)) +
+                      '/../../database/' + self.materials[0] + '/' + 'ka.txt')
+            rho0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                        '/../../database/' + self.materials[0] + '/' +
+                        'rho0.txt')
+            rhoa = Path(os.path.dirname(os.path.realpath(__file__)) +
+                        '/../../database/' + self.materials[0] + '/' +
+                        'rhoa.txt')
+            lheat0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                          '/../../database/' + self.materials[0] + '/' +
+                          'lheat0.txt')
+            lheata = Path(os.path.dirname(os.path.realpath(__file__)) +
+                          '/../../database/' + self.materials[0] + '/' +
+                          'lheata.txt')
             self.materials[0] = mats.CalMatPro(
                 tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
         else:
-            tadi = materials_path + self.materials[0] + '/' + 'tadi.txt'
-            tadd = materials_path + self.materials[0] + '/' + 'tadd.txt'
-            cpa = materials_path + self.materials[0] + '/' + 'cpa.txt'
-            cp0 = materials_path + self.materials[0] + '/' + 'cp0.txt'
-            k0 = materials_path + self.materials[0] + '/' + 'k0.txt'
-            ka = materials_path + self.materials[0] + '/' + 'ka.txt'
-            rho0 = materials_path + self.materials[0] + '/' + 'rho0.txt'
-            rhoa = materials_path + self.materials[0] + '/' + 'rhoa.txt'
-            lheat0 = materials_path + self.materials[0] + '/' + 'lheat0.txt'
-            lheata = materials_path + self.materials[0] + '/' + 'lheata.txt'
+            tadi = Path(materials_path + self.materials[0] + '/' + 'tadi.txt')
+            tadd = Path(materials_path + self.materials[0] + '/' + 'tadd.txt')
+            cpa = Path(materials_path + self.materials[0] + '/' + 'cpa.txt')
+            cp0 = Path(materials_path + self.materials[0] + '/' + 'cp0.txt')
+            k0 = Path(materials_path + self.materials[0] + '/' + 'k0.txt')
+            ka = Path(materials_path + self.materials[0] + '/' + 'ka.txt')
+            rho0 = Path(materials_path + self.materials[0] + '/' + 'rho0.txt')
+            rhoa = Path(materials_path + self.materials[0] + '/' + 'rhoa.txt')
+            lheat0 = Path(materials_path + self.materials[0] + '/' +
+                          'lheat0.txt')
+            lheata = Path(materials_path + self.materials[0] + '/' +
+                          'lheata.txt')
             self.materials[0] = mats.CalMatPro(
                 tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
 
@@ -466,40 +477,40 @@ class Object:
             self.materials_name.append(material)
             if materials_path is False:
                 value = self.materials_name[index]
-                tadi = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'tadi.txt'
-                tadd = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'tadd.txt'
-                cpa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'cpa.txt'
-                cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'cp0.txt'
-                k0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'k0.txt'
-                ka = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'ka.txt'
-                rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'rho0.txt'
-                rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'rhoa.txt'
-                lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'lheat0.txt'
-                lheata = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'lheata.txt'
+                tadi = Path(os.path.dirname(os.path.realpath(__file__)) +
+                            '/../../database/' + value + '/' + 'tadi.txt')
+                tadd = Path(os.path.dirname(os.path.realpath(__file__)) +
+                            '/../../database/' + value + '/' + 'tadd.txt')
+                cpa = Path(os.path.dirname(os.path.realpath(__file__)) +
+                           '/../../database/' + value + '/' + 'cpa.txt')
+                cp0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                           '/../../database/' + value + '/' + 'cp0.txt')
+                k0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                          '/../../database/' + value + '/' + 'k0.txt')
+                ka = Path(os.path.dirname(os.path.realpath(__file__)) +
+                          '/../../database/' + value + '/' + 'ka.txt')
+                rho0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                            '/../../database/' + value + '/' + 'rho0.txt')
+                rhoa = Path(os.path.dirname(os.path.realpath(__file__)) +
+                            '/../../database/' + value + '/' + 'rhoa.txt')
+                lheat0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                              '/../../database/' + value + '/' + 'lheat0.txt')
+                lheata = Path(os.path.dirname(os.path.realpath(__file__)) +
+                              '/../../database/' + value + '/' + 'lheata.txt')
                 self.materials.append(mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata))
             else:
                 value = self.materials_name[index]
-                tadi = materials_path + value + '/' + 'tadi.txt'
-                tadd = materials_path + value + '/' + 'tadd.txt'
-                cpa = materials_path + value + '/' + 'cpa.txt'
-                cp0 = materials_path + value + '/' + 'cp0.txt'
-                k0 = materials_path + value + '/' + 'k0.txt'
-                ka = materials_path + value + '/' + 'ka.txt'
-                rho0 = materials_path + value + '/' + 'rho0.txt'
-                rhoa = materials_path + value + '/' + 'rhoa.txt'
-                lheat0 = materials_path + value + '/' + 'lheat0.txt'
-                lheata = materials_path + value + '/' + 'lheata.txt'
+                tadi = Path(materials_path + value + '/' + 'tadi.txt')
+                tadd = Path(materials_path + value + '/' + 'tadd.txt')
+                cpa = Path(materials_path + value + '/' + 'cpa.txt')
+                cp0 = Path(materials_path + value + '/' + 'cp0.txt')
+                k0 = Path(materials_path + value + '/' + 'k0.txt')
+                ka = Path(materials_path + value + '/' + 'ka.txt')
+                rho0 = Path(materials_path + value + '/' + 'rho0.txt')
+                rhoa = Path(materials_path + value + '/' + 'rhoa.txt')
+                lheat0 = Path(materials_path + value + '/' + 'lheat0.txt')
+                lheata = Path(materials_path + value + '/' + 'lheata.txt')
                 self.materials.append(mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata))
 
@@ -580,40 +591,40 @@ class Object:
             self.materials_name.append(material)
             if materials_path is False:
                 value = self.materials_name[index]
-                tadi = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'tadi.txt'
-                tadd = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'tadd.txt'
-                cpa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'cpa.txt'
-                cp0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'cp0.txt'
-                k0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'k0.txt'
-                ka = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'ka.txt'
-                rho0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'rho0.txt'
-                rhoa = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'rhoa.txt'
-                lheat0 = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'lheat0.txt'
-                lheata = os.path.dirname(os.path.realpath(__file__)) + \
-                    '/../../database/' + value + '/' + 'lheata.txt'
+                tadi = Path(os.path.dirname(os.path.realpath(__file__)) +
+                            '/../../database/' + value + '/' + 'tadi.txt')
+                tadd = Path(os.path.dirname(os.path.realpath(__file__)) +
+                            '/../../database/' + value + '/' + 'tadd.txt')
+                cpa = Path(os.path.dirname(os.path.realpath(__file__)) +
+                           '/../../database/' + value + '/' + 'cpa.txt')
+                cp0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                           '/../../database/' + value + '/' + 'cp0.txt')
+                k0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                          '/../../database/' + value + '/' + 'k0.txt')
+                ka = Path(os.path.dirname(os.path.realpath(__file__)) +
+                          '/../../database/' + value + '/' + 'ka.txt')
+                rho0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                            '/../../database/' + value + '/' + 'rho0.txt')
+                rhoa = Path(os.path.dirname(os.path.realpath(__file__)) +
+                            '/../../database/' + value + '/' + 'rhoa.txt')
+                lheat0 = Path(os.path.dirname(os.path.realpath(__file__)) +
+                              '/../../database/' + value + '/' + 'lheat0.txt')
+                lheata = Path(os.path.dirname(os.path.realpath(__file__)) +
+                              '/../../database/' + value + '/' + 'lheata.txt')
                 self.materials.append(mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata))
             else:
                 value = self.materials_name[index]
-                tadi = materials_path + value + '/' + 'tadi.txt'
-                tadd = materials_path + value + '/' + 'tadd.txt'
-                cpa = materials_path + value + '/' + 'cpa.txt'
-                cp0 = materials_path + value + '/' + 'cp0.txt'
-                k0 = materials_path + value + '/' + 'k0.txt'
-                ka = materials_path + value + '/' + 'ka.txt'
-                rho0 = materials_path + value + '/' + 'rho0.txt'
-                rhoa = materials_path + value + '/' + 'rhoa.txt'
-                lheat0 = materials_path + value + '/' + 'lheat0.txt'
-                lheata = materials_path + value + '/' + 'lheata.txt'
+                tadi = Path(materials_path + value + '/' + 'tadi.txt')
+                tadd = Path(materials_path + value + '/' + 'tadd.txt')
+                cpa = Path(materials_path + value + '/' + 'cpa.txt')
+                cp0 = Path(materials_path + value + '/' + 'cp0.txt')
+                k0 = Path(materials_path + value + '/' + 'k0.txt')
+                ka = Path(materials_path + value + '/' + 'ka.txt')
+                rho0 = Path(materials_path + value + '/' + 'rho0.txt')
+                rhoa = Path(materials_path + value + '/' + 'rhoa.txt')
+                lheat0 = Path(materials_path + value + '/' + 'lheat0.txt')
+                lheata = Path(materials_path + value + '/' + 'lheata.txt')
                 self.materials.append(mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata))
 
