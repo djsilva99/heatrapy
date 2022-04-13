@@ -2,6 +2,16 @@
 All changes to this project are documented in this file, starting with version 2.0.0
 
 
+## [2.0.2] - 2022-04-13
+
+Fixed latent heat and path bugs.
+
+### Fixed
+- Latent heat bug for 2D models
+- Paths for windows
+- Dependabot alerts
+
+
 ## [2.0.1] - 2021-03-29
 
 Updated docstrings.
