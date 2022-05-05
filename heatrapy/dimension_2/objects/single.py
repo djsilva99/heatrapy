@@ -675,7 +675,7 @@ class SingleObject:
                 self.im_Q0.set_clim(vmax=vmax)
                 self.figure_Q0.canvas.draw()
 
-    def compute(self, time_interval, write_interval, solver='explicit_general',
+    def compute(self, time_interval, write_interval, solver='explicit_k(x)',
                 verbose=True):
         """Compute the thermal process.
 
