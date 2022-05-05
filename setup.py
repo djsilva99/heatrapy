@@ -18,7 +18,7 @@ description += 'incorporation of phase transitions.'
 
 
 setup(name='heatrapy',
-      version='2.0.2',
+      version='2.0.3',
       description='Library for simulating 1D and 2D heat transfer processes',
       long_description=description,
       classifiers=[
