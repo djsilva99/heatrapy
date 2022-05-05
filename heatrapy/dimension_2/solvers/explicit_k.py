@@ -116,7 +116,7 @@ def explicit_k(obj):
             k = 0
             for lh in obj.latent_heat[i][j]:
                 temper = obj.temperature[i][j][0]
-                value = nx[i][j] < lh[0]
+                value = nx[i][j] > lh[0]
                 if value and temper <= lh[0] and lheat[i][j][k][1] != lh[1]:
                     en = (obj.Cp[i][j] * obj.rho[i][j] *
                           (nx[i][j] - obj.temperature[i][j][0]))
