@@ -409,7 +409,7 @@ class SingleObject:
             if nw == write_interval:
                 nw = 0
                 if verbose:
-                    print('pogress:', int(100*j/nt), '%', end="\r")
+                    print('progress:', int(100*j/nt), '%', end="\r")
 
         if verbose:
             print('Finished simulation')
