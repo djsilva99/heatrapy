@@ -1,10 +1,10 @@
 import pytest
-from heatrapy.dimension_1.objects import SingleObject as SingleObject1D
+from heatrapy.dimension_1.objects.single import SingleObject as SingleObject1D
 
 
 @pytest.fixture
 def example_single_object_implicit():
-    return SingleObject1D(300, boundaries=(0, 200), draw=[])
+    return SingleObject1D(300, boundaries=(0, 200))
 
 
 @pytest.fixture
@@ -26,6 +26,8 @@ def test_implicit_general_solver(example_single_object_implicit):
     solution = 245
 
     # when
+    example_single_object_implicit.activate(2, 3)
+    example_single_object_implicit.deactivate(2, 3)
     example_single_object_implicit.compute(
         30,
         5,
@@ -85,6 +87,7 @@ def test_implicit_k_solver(example_single_object_with_materials):
         5,
         solver='implicit_k(x)'
     )
+    example_single_object_with_materials.change_boundaries((0, 0))
 
     # then
     assert int(
