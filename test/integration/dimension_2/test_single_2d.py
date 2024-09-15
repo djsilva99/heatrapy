@@ -40,7 +40,12 @@ def test_explicit_general_single_2d(example_single_object_2d):
 
 def test_explicit_k_single_2d(example_single_object_2d_activated):
     solution = 245
+    example_single_object_2d_activated.activate((4, 4), 2, shape="circle")
+    example_single_object_2d_activated.deactivate((4, 4), 2, shape="circle")
+    example_single_object_2d_activated.activate((2, 2), (3, 3))
+    example_single_object_2d_activated.deactivate((2, 2), (3, 3))
     example_single_object_2d_activated.compute(30, 5, solver='explicit_k(x)')
+
     assert int(
         example_single_object_2d_activated.object.temperature[5][5][0]
     ) == solution
@@ -78,6 +83,12 @@ def test_explicit_k_single_2d_with_material_change(example_single_object_2d):
 
 def test_explicit_k_single_2d_with_power_change(example_single_object_2d):
     solution = 245
+    example_single_object_2d.change_power(
+        "square", "Q", (1, 1), (2, 2), 0
+    )
+    example_single_object_2d.change_power(
+        "circle", "Q", (4, 4), 2, 0
+    )
     example_single_object_2d.change_power(
         "square", "Q0", (1, 1), (2, 2), 0
     )
