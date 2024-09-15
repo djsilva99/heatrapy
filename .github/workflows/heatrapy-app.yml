@@ -18,6 +18,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Check if targeting master
+      if: github.event.pull_request.base.ref == 'master'
+      run: |
+        echo "This pull request is targeting the 'master' branch. Please change it to 'develop'."
+        exit 1
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
