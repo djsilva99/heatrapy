@@ -197,7 +197,7 @@ class SingleObject:
                             temp = np.array(temp)
                             self.online.set_ydata(temp)
                         self.figure.canvas.draw()
-                    except:
+                    except Exception:
                         pass
 
     def deactivate(self, initial_point, final_point):
@@ -234,7 +234,7 @@ class SingleObject:
                             temp = np.array(temp)
                             self.online.set_ydata(temp)
                         self.figure.canvas.draw()
-                    except:
+                    except Exception:
                         pass
 
     def change_power(self, power_type, power, initial_point, final_point):
@@ -390,7 +390,7 @@ class SingleObject:
                                     temp = np.array(temp)
                                     self.online.set_ydata(temp)
                                 self.figure.canvas.draw()
-                        except:
+                        except Exception:
                             pass
 
             # writes the temperature to file_name file ...
