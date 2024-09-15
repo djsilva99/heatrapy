@@ -51,6 +51,7 @@ def test_explicit_general_solver(example_single_object_explicit):
         5,
         solver='explicit_general'
     )
+    example_single_object_explicit.show_figure("temperature")
 
     # then
     assert int(
