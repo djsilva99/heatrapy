@@ -127,8 +127,11 @@ class SingleObject:
                                                  origin='lower',
                                                  interpolation='hamming')
                     cbar_kw = {}
-                    cbar = self.ax.figure.colorbar(self.im, ax=self.ax,
-                                                   **cbar_kw)
+                    self.ax.figure.colorbar(
+                        self.im,
+                        ax=self.ax,
+                        **cbar_kw
+                    )
                     self.ax.set_title('Temperature (K)')
                     self.ax.set_xlabel('x axis (m)')
                     self.ax.set_ylabel('y axis (m)')
@@ -151,7 +154,7 @@ class SingleObject:
                     qrates = np.array(['active', 'inactive'])
                     value = np.linspace(0, 1, 2)
                     norm = matplotlib.colors.BoundaryNorm(value, 1)
-                    func = lambda x, pos: qrates[::-1][norm(x)]
+                    func = lambda x, pos: qrates[::-1][norm(x)]  # noqa: E731
                     fmt = matplotlib.ticker.FuncFormatter(func)
                     cbar_kw = dict(ticks=np.arange(-3, 4), format=fmt)
                     cbar_stat = self.ax_state.figure.colorbar(self.im_state,
@@ -186,7 +189,7 @@ class SingleObject:
                     value_1 = np.linspace(0, 1, len(self.object.materials))
                     value_2 = len(self.object.materials)-1
                     norm = matplotlib.colors.BoundaryNorm(value_1, value_2)
-                    func = lambda x, pos: qrates[::-1][norm(x)]
+                    func = lambda x, pos: qrates[::-1][norm(x)]  # noqa: E731
                     fmt = matplotlib.ticker.FuncFormatter(func)
                     cbar_kw = dict(ticks=np.arange(-3, 4), format=fmt)
                     value_1 = self.im_materials
@@ -211,8 +214,11 @@ class SingleObject:
                                                  extent=extent, origin='lower',
                                                  interpolation='hamming')
                     cbar_kw = {}
-                    cbar = self.ax_Q.figure.colorbar(self.im_Q, ax=self.ax_Q,
-                                                     **cbar_kw)
+                    self.ax_Q.figure.colorbar(
+                        self.im_Q,
+                        ax=self.ax_Q,
+                        **cbar_kw
+                    )
                     self.ax_Q.set_title('Q (W/m²)')
                     self.ax_Q.set_xlabel('x axis (m)')
                     self.ax_Q.set_ylabel('y axis (m)')
@@ -231,9 +237,11 @@ class SingleObject:
                                                    origin='lower',
                                                    interpolation='hamming')
                     cbar_kw = {}
-                    cbar = self.ax_Q0.figure.colorbar(self.im_Q0,
-                                                      ax=self.ax_Q0,
-                                                      **cbar_kw)
+                    self.ax_Q0.figure.colorbar(
+                        self.im_Q0,
+                        ax=self.ax_Q0,
+                        **cbar_kw
+                    )
                     self.ax_Q0.set_title('Q0 (W/m²)')
                     self.ax_Q0.set_xlabel('x axis (m)')
                     self.ax_Q0.set_ylabel('y axis (m)')
@@ -303,7 +311,7 @@ class SingleObject:
             cbarlabel = ""  # "state"
             qrates = np.array(['active', 'inactive'])
             norm = matplotlib.colors.BoundaryNorm(np.linspace(0, 1, 2), 1)
-            func = lambda x, pos: qrates[::-1][norm(x)]
+            func = lambda x, pos: qrates[::-1][norm(x)]  # noqa: E731
             fmt = matplotlib.ticker.FuncFormatter(func)
             cbar_kw = dict(ticks=np.arange(-3, 4), format=fmt)
             cbar_state = self.ax_state.figure.colorbar(self.im_state,
@@ -338,7 +346,7 @@ class SingleObject:
                                 len(self.object.materials))
             norm = matplotlib.colors.BoundaryNorm(value,
                                                   len(self.object.materials)-1)
-            func = lambda x, pos: qrates[::-1][norm(x)]
+            func = lambda x, pos: qrates[::-1][norm(x)]  # noqa: E731
             fmt = matplotlib.ticker.FuncFormatter(func)
             cbar_kw = dict(ticks=np.arange(0, len(self.object.materials)+1),
                            format=fmt)
@@ -566,7 +574,7 @@ class SingleObject:
                                state=state, materials_path=self.materials_path)
         try:
             plt.close(self.figure_materials)
-        except:
+        except Exception:
             pass
 
         if self.draw:
@@ -594,7 +602,7 @@ class SingleObject:
                                       len(self.object.materials))
                 value_2 = len(self.object.materials)-1
                 norm = matplotlib.colors.BoundaryNorm(value_1, value_2)
-                func = lambda x, pos: qrates[::-1][norm(x)]
+                func = lambda x, pos: qrates[::-1][norm(x)]  # noqa: E731
                 fmt = matplotlib.ticker.FuncFormatter(func)
                 value = np.arange(0, len(self.object.materials)+1)
                 cbar_kw = dict(ticks=value, format=fmt)
@@ -788,7 +796,7 @@ class SingleObject:
                                     self.im.set_clim(vmin=vmin)
                                     self.im.set_clim(vmax=vmax)
                                 self.figure.canvas.draw()
-                            except:
+                            except Exception:
                                 pass
 
             if nw == write_interval:

@@ -206,7 +206,9 @@ class SystemObjects:
                 object_number = object_number + 1
                 obj.time_passed = obj.time_passed + obj.dt
 
-                cond1 = object_number not in [l[0] for l in self.boundaries]
+                cond1 = object_number not in [
+                    boundary[0] for boundary in self.boundaries
+                ]
                 if cond1 or (object_number, 0) in self.boundaries:
 
                     # defines the material properties

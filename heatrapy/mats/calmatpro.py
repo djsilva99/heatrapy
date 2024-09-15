@@ -133,7 +133,7 @@ class CalMatPro:
         for line in s:
             latent_values = line.split()
             self.latent_heatA.append(
-                (float(latent_values[0]),float(latent_values[1]))
+                (float(latent_values[0]), float(latent_values[1]))
             )
         input.close()
 

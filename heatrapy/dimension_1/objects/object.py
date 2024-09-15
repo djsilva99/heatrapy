@@ -74,7 +74,7 @@ class Object:
         self.amb_temperature = amb_temperature
 
         # loads the data for each material
-        if materials_path == False:
+        if not materials_path:
             for i in range(len(materials)):
                 tadi = Path(os.path.dirname(os.path.realpath(__file__)) +
                             '/../../database/' + materials[i] + '/' +
@@ -116,8 +116,9 @@ class Object:
                 rhoa = Path(materials_path + materials[i] + '/' + 'rhoa.txt')
                 lheat0 = Path(materials_path + materials[i] + '/' +
                               'lheat0.txt')
-                lheata = Path(materials_path + materials[i] + '/' +
-                                  'lheata.txt')
+                lheata = Path(
+                    materials_path + materials[i] + '/' + 'lheata.txt'
+                )
                 self.materials[i] = mats.CalMatPro(
                     tadi, tadd, cpa, cp0, k0, ka, rho0, rhoa, lheat0, lheata)
 
