@@ -8,7 +8,7 @@ def example_single_object_2d():
         300,
         boundaries=(200, 0, 0, 0),
         draw=[
-            "material", "temperature", "state", "Q", "Q0"
+            "materials", "temperature", "state", "Q", "Q0"
         ]
     )
 
@@ -19,7 +19,7 @@ def example_single_object_2d_activated():
         300,
         boundaries=(200, 0, 0, 0),
         draw=[
-            "material", "temperature", "state", "Q", "Q0"
+            "materials", "temperature", "state", "Q", "Q0"
         ],
         initial_state=True
     )
@@ -29,7 +29,7 @@ def test_explicit_general_single_2d(example_single_object_2d):
     solution = 245
     example_single_object_2d.compute(30, 5, solver='explicit_general')
     example_single_object_2d.show_figure("temperature")
-    example_single_object_2d.show_figure("material")
+    example_single_object_2d.show_figure("materials")
     example_single_object_2d.show_figure("state")
     example_single_object_2d.show_figure("Q")
     example_single_object_2d.show_figure("Q0")
