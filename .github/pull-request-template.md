@@ -1,4 +1,4 @@
-> Make sure your pull request targets the `develop` branch.
+Make sure your pull request targets the `develop` branch.
 
 # What
 
