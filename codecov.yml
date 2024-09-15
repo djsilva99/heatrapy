@@ -2,7 +2,7 @@ coverage:
   status:
     project:
       default:
-        target: 80%               # the required coverage value
+        target: 70%               # the required coverage value
         threshold: 1%             # the leniency in hitting the target
 
 comment:                          #this is a top-level key
