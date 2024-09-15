@@ -602,7 +602,7 @@ class SingleObject:
                                       len(self.object.materials))
                 value_2 = len(self.object.materials)-1
                 norm = matplotlib.colors.BoundaryNorm(value_1, value_2)
-                func = lambda x, pos: qrates[::-1][norm(x)]
+                func = lambda x, pos: qrates[::-1][norm(x)]  # noqa: E731
                 fmt = matplotlib.ticker.FuncFormatter(func)
                 value = np.arange(0, len(self.object.materials)+1)
                 cbar_kw = dict(ticks=value, format=fmt)
