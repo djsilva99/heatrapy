@@ -8,12 +8,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-# permissions:
-#   contents: read
-# permissions:
-#   pull-requests: write
-#   contents: write
-
 jobs:
   test:
 
