@@ -4,18 +4,30 @@ on:
   push:
     branches:
       - master
+      - develop
   pull_request:
     types: [opened, synchronize, reopened]
-
-permissions:
-  contents: read
 
 jobs:
   test:
 
     runs-on: ubuntu-latest
 
+    permissions:
+      pull-requests: write
+
     steps:
+    - name: Check if targeting master
+      if: github.event.pull_request.base.ref == 'master'
+      run: echo "Pull request is targeting 'master'. Changing base to 'develop'..."
+    - name: Change the pull request base to develop
+      if: github.event.pull_request.base.ref == 'master'
+      run: |
+        curl -X PATCH \
+        -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} \
+        -d '{"base": "develop"}'
     - uses: actions/checkout@v4
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
