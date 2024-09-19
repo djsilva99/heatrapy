@@ -8,13 +8,16 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-permissions:
-  contents: read
+# permissions:
+#   contents: read
 
 jobs:
   test:
 
     runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
 
     steps:
     - name: Check if targeting master
