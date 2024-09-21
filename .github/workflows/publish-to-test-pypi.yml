@@ -59,6 +59,7 @@ jobs:
         uses: heinrichreimer/action-github-changelog-generator@v2.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          sinceTag: v2.0.0
       - name: "📄 Display Changelog"
         run: |
           echo "Generated Changelog:"
