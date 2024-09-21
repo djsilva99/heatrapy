@@ -51,3 +51,15 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
+
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "✏️ Generate release changelog"
+        uses: heinrichreimer/action-github-changelog-generator@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: "📄 Display Changelog"
+        run: |
+          echo "Generated Changelog:"
+          echo "${{ steps.changelog_gen.outputs.changelog }}"
