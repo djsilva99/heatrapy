@@ -28,6 +28,52 @@ jobs:
         name: python-package-distributions
         path: dist/
 
+  publish-to-pypi:
+    name: Publish Python 🐍 distribution 📦 to PyPI
+    needs:
+    - build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/heatrapy
+
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+
+    # Generate a changelog based on the tag
+    - name: Fetch all tags
+      run: git fetch --tags --force
+    - name: Get Previous Tag
+      id: previous_tag
+      run: |
+        previous_tag=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
+        echo "previous_tag=$previous_tag" >> $GITHUB_ENV
+    - name: Generate Changelog for Release
+      id: changelog_gen
+      uses: heinrichreimer/action-github-changelog-generator@v2.3
+      with:
+        sinceTag: ${{ env.previous_tag }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Create a new release using the changelog
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body: ${{ steps.changelog_gen.outputs.changelog }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
     needs:
@@ -51,16 +97,3 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
-
-  changelog:
-    runs-on: ubuntu-latest
-    steps:
-      - name: "✏️ Generate release changelog"
-        uses: heinrichreimer/action-github-changelog-generator@v2.3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          sinceTag: v2.0.0
-      - name: "📄 Display Changelog"
-        run: |
-          echo "Generated Changelog:"
-          echo "${{ steps.changelog_gen.outputs.changelog }}"
