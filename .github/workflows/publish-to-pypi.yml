@@ -55,12 +55,20 @@ jobs:
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
 
+  create-new-release
+    name: Create new Release
+    needs:
+    - publish-to-pypi
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
     # Generate a changelog based on the tag
-    - name: Fetch all tags
-      run: git fetch --tags --force
     - name: Get Previous Tag
       id: previous_tag
       run: |
+        git fetch --tags --force
         previous_tag=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
         echo "previous_tag=$previous_tag" >> $GITHUB_ENV
     - name: Generate Changelog for Release
