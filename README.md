@@ -18,7 +18,7 @@ effects and the incorporation of phase transitions.
 
 For full documentation visit the [heatrapy website](https://djsilva99.github.io/heatrapy).
 
-author: Daniel Silva (djsilva@gmx.com) <br> current version: v2.0.3
+current version: v2.0.3
 
 ![heatrapy-example](https://github.com/djsilva99/heatrapy/blob/master/img/example.gif)
 
