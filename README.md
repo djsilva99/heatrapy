@@ -9,9 +9,14 @@
 
 <img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v2.0.3
 
-This package is a module for simulating dynamic 1D and 2D heat transfer processes by using the finite difference method. The packages is based on thermal objects. Two different approaches can be used: single thermal object and a system of thermal objects that can contact with each other. Heatrapy includes both the modeling of caloric effects and the incorporation of phase transitions.
+This package is a module for simulating dynamic 1D and 2D heat
+transfer processes by using the finite difference method. The packages
+is based on thermal objects. Two different approaches can be used:
+single thermal object and a system of thermal objects that can contact
+with each other. Heatrapy includes both the modeling of caloric
+effects and the incorporation of phase transitions.
 
-For full documentation visit the <a href='https://djsilva99.github.io/heatrapy'>heatrapy website</a>.
+For full documentation visit the [heatrapy website](https://djsilva99.github.io/heatrapy).
 
 author: Daniel Silva (djsilva@gmx.com) <br> current version: v2.0.3
 
@@ -33,6 +38,13 @@ To import the heatrapy module type in the python shell:
 ```
 
 
-### Citing heatrapy
+### Contributions
 
-Please acknowledge heatrapy if it contributes to a project that leads to a publication by citing <a href='https://www.sciencedirect.com/science/article/pii/S2352711018301298'>this paper</a>.
+Feel free to contribute to this project. You can find the development
+workflow
+[here](https://github.com/djsilva99/heatrapy/blob/master/CONTRIBUTING.md).
+
+Please acknowledge heatrapy if it contributes to a project that leads
+to a publication by citing <a
+href='https://www.sciencedirect.com/science/article/pii/S2352711018301298'>this
+paper</a>.
