@@ -41,8 +41,8 @@ class SingleObject:
         `temperature`, `materials`, `state`, `Q` and `Q0`. If the list is
         empty, then no drawing is performed. `draw_scale` is a list of two
         values, representing the minimum and maximum temperature to be drawn.
-        If None, there are no limits. `Q` is a list of fixed heat source
-        coefficient and `Q0` is a list of temperature dependent heat source
+        If None, there are no limits. `Q0` is a list of fixed heat source
+        coefficient and `Q` is a list of temperature dependent heat source
         coefficient.
 
         """
