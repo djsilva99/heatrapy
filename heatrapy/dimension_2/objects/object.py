@@ -36,8 +36,8 @@ class Object:
         initial state of the materials. True if there are an applied field and
         False if them field is absent. `materials_path` is absolute path of the
         materials database. If false, then the materials database is the
-        standard heatrapy database. `Q` is a list of fixed heat source
-        coefficient and `Q0` is a list of temperature dependent heat source
+        standard heatrapy database. `Q0` is a list of fixed heat source
+        coefficient and `Q` is a list of temperature dependent heat source
         coefficient.
 
         """
