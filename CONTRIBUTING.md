@@ -40,22 +40,40 @@ There is a workflow that validates the tests, coverage and lint before
 merging pull requests. They must all pass.
 
 
+### Documentation
+The
+[documentation](https://heatrapy.readthedocs.io/en/latest/index.html)
+is generated automatically whenever new code is merged into the master
+branch (which occurs every new release) by the read the docs
+workflow. The content of the documentation takes into account the
+information in the docs directory and the heatrapy docstrings. The
+workflow was built using [this read the docs
+tutorial](https://docs.readthedocs.io/en/stable/tutorial/index.html)
+
+
 ### Creating new releases
 
 Creating a release and publishing a new heatrapy version into pypi is
-only possible from the `master` branch. To do so, one needs to create a
-new tag, relying on [Semantic Versioning](http://semver.org/), e.g.,
+only possible from the `master` branch. To do so, one needs to create
+a new tag, relying on [Semantic Versioning](http://semver.org/), e.g.,
 v2.0.9. There is a workflow that is triggered by pushing new tags into
 the `master` branch. Merging a pull request into the `develop` branch
 also triggers a publishing release, however in the test.pypi
 repository. The publishing in test.pypi is only successful once per
-tag version.
+tag version. Do not forget to change the new version tag in the
+documentation before merging code into the master branch and creating
+the version tag, namely in the following locations:
 
+- README
+- heatrapy./\_\_init\_\_.py
+- .readthedocs.yaml
+- docs/conf.py
+- docs/index.rst
 
-### Documentation
-The [documentation](https://djsilva99.github.io/heatrapy) is generated
-by the heatrapy docstrings and pushed in the branch `gh-pages`. You
-can find how to generate the documentation and publish it in the
-[README](https://github.com/djsilva99/heatrapy/tree/gh-pages) file of
-that branch. There is also an additional branch for testing the
-generated documentation: `gh-pages-dev`.
+Thus, the steps that create a new release are the following:
+
+1. Create a PR that adds the new version tag into the locations
+   pointed out above. Merge it into the develop branch.
+2. Merge into the develop branch into the master branch.
+3. Create a tag with the new version in the master branch.
+4. Test the install of the new version using pip.

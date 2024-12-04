@@ -7,7 +7,7 @@
 [![issue](https://img.shields.io/badge/issue_tracking-github-blue.svg)](https://github.com/djsilva99/heatrapy/issues)
 [![codecov](https://codecov.io/github/djsilva99/heatrapy/graph/badge.svg?token=5UKJZ8SPVI)](https://codecov.io/github/djsilva99/heatrapy)
 
-<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v2.0.9
+<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v2.0.10
 
 This package is a module for simulating dynamic 1D and 2D heat
 transfer processes by using the finite difference method. The packages
@@ -16,9 +16,7 @@ single thermal object and a system of thermal objects that can contact
 with each other. Heatrapy includes both the modeling of caloric
 effects and the incorporation of phase transitions.
 
-For full documentation visit the [heatrapy website](https://djsilva99.github.io/heatrapy).
-
-current version: v2.0.9
+For full documentation visit the [heatrapy website](https://heatrapy.readthedocs.io/en/latest/index.html).
 
 ![heatrapy-example](https://github.com/djsilva99/heatrapy/blob/master/img/example.gif)
 
