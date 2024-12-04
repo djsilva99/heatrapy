@@ -64,7 +64,8 @@ tag version. Do not forget to change the new version tag in the
 documentation before merging code into the master branch and creating
 the version tag, namely in the following locations:
 
-- README
+- setup.py
+- README.md
 - heatrapy./\_\_init\_\_.py
 - .readthedocs.yaml
 - docs/conf.py
