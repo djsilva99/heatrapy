@@ -7,7 +7,7 @@
 [![issue](https://img.shields.io/badge/issue_tracking-github-blue.svg)](https://github.com/djsilva99/heatrapy/issues)
 [![codecov](https://codecov.io/github/djsilva99/heatrapy/graph/badge.svg?token=5UKJZ8SPVI)](https://codecov.io/github/djsilva99/heatrapy)
 
-<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v2.0.10
+<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v2.0.11
 
 This package is a module for simulating dynamic 1D and 2D heat
 transfer processes by using the finite difference method. The packages

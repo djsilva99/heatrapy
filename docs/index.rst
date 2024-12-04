@@ -13,7 +13,7 @@ incorporation of phase transitions.
 
 |icon_github|  `github repository <https://github.com/djsilva99/heatrapy>`_
 
-|icon_heatrapy|  current version: v2.0.10
+|icon_heatrapy|  current version: v2.0.11
 
 .. |icon_github| image:: https://github.githubassets.com/favicons/favicon.png
    :width: 25px
