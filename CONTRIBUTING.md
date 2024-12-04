@@ -67,7 +67,6 @@ the version tag, namely in the following locations:
 - setup.py
 - README.md
 - heatrapy./\_\_init\_\_.py
-- .readthedocs.yaml
 - docs/conf.py
 - docs/index.rst
 
