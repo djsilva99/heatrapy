@@ -1,21 +1,17 @@
 [tool.ruff]
-# Enable Flake8-like rules
+
 lint.select = [
     "E",  # Pycodestyle errors
     "W",  # Pycodestyle warnings
     "F",  # Pyflakes errors
 ]
 
-# Maximum line length (Flake8 default is 79)
 line-length = 79
 
-# Ignore rules that conflict with Black or are commonly ignored in Flake8
 lint.ignore = []
 
-# Include all Python files recursively
 include = ["**/*.py"]
 
-# Exclude common directories (same as Flake8 default)
 exclude = [
     ".git",
     "__pycache__",
