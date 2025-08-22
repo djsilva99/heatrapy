@@ -31,9 +31,9 @@ Tests rely on pytest and can be executed with
 Currently, the coverage must exceed 70%, but this value will be
 increased to 85% in a near future (according to the roadmap).
 
-Lint relies on flake8, and can be validated locally with
+Lint relies on ruff, and can be validated locally with
 ```bash
-(env) $ flake8 . --count --show-source --statistics
+(env) $ ruff check
 ```
 
 There is a workflow that validates the tests, coverage and lint before

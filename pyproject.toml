@@ -1,0 +1,21 @@
+[tool.ruff]
+
+lint.select = [
+    "E",  # Pycodestyle errors
+    "W",  # Pycodestyle warnings
+    "F",  # Pyflakes errors
+]
+
+line-length = 79
+
+lint.ignore = []
+
+include = ["**/*.py"]
+
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "venv",
+]
