@@ -31,10 +31,7 @@ and activate or deactivate the material.
 
 SystemObjects2D
 ---------------
-This class creates a system of two-dimensional thermal objects that can be in
-contact to each other and computes the respective heat transfer processes. It
-uses the class Object2D changing the state, modifying the thermal properties
-and activate or deactivate the material.
+This class creates a system of two-dimensional thermal objects that can be in contact to each other and computes the respective heat transfer processes. It uses the class Object2D changing the state, modifying the thermal properties and activate or deactivate the material.
 
 """
 
