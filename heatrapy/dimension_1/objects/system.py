@@ -17,10 +17,19 @@ class SystemObjects:
 
     """
 
-    def __init__(self, number_objects=2, materials=('Cu', 'Cu'),
-                 objects_length=(10, 10), amb_temperature=293, dx=0.01, dt=0.1,
-                 file_name=None, initial_state=False,
-                 boundaries=((2, 0), (3, 0)), materials_path=False):
+    def __init__(
+        self,
+        number_objects: int = 2,
+        materials: tuple[str] = ('Cu', 'Cu'),
+        objects_length: tuple[int] = (10, 10),
+        amb_temperature: int | float = 293,
+        dx: float = 0.01,
+        dt: float = 0.1,
+        file_name: str | None = None,
+        initial_state: bool = False,
+        boundaries: tuple[tuple[int | float]] = ((2, 0), (3, 0)),
+        materials_path: str | bool = False
+    ):
         """System object initialization.
 
         `number_objects` is the integer number of thermal objects. `materials`
@@ -62,13 +71,22 @@ class SystemObjects:
             if file_name:
                 file_name = file_name + '_' + str(i) + '.txt'
 
-            self.objects.append(Object(amb_temperature,
-                                materials=(materials[i],),
-                                borders=(1, objects_length[i]+1),
-                                materials_order=(0,), dx=dx, dt=dt,
-                                file_name=file_name, boundaries=(0, 0),
-                                Q=[], Q0=[], initial_state=initial_state,
-                                materials_path=materials_path))
+            self.objects.append(
+                Object(
+                    amb_temperature,
+                    materials=(materials[i],),
+                    borders=(1, objects_length[i]+1),
+                    materials_order=(0,),
+                    dx=dx,
+                    dt=dt,
+                    file_name=file_name,
+                    boundaries=(0, 0),
+                    Q=[],
+                    Q0=[],
+                    initial_state=initial_state,
+                    materials_path=materials_path
+                )
+            )
 
         self.contacts = set()
         self.boundaries = boundaries
@@ -81,7 +99,10 @@ class SystemObjects:
                 for j in range(len(self.objects[i[0]].temperature)):
                     self.objects[i[0]].temperature[j] = [i[1], i[1]]
 
-    def contact_filter(self, object):
+    def contact_filter(
+        self,
+        object: int
+    ):
         """Filter self.contacts by thermal object id.
 
         object: thermal object id
@@ -96,7 +117,10 @@ class SystemObjects:
                     self.contacts if (x[0][0] == object or x[1][0] == object)]
         return set(filtered)
 
-    def contact_add(self, contact):
+    def contact_add(
+        self,
+        contact: tuple | list
+    ):
         """Add contact to self.contacts.
 
         The `contact` parameter is a tuple of length 3 (one element for thermal
@@ -119,7 +143,11 @@ class SystemObjects:
 
         self.contacts.add(contact)
 
-    def contact_remove(self, object_one, object_two):
+    def contact_remove(
+        self,
+        object_one: int,
+        object_two: int
+    ):
         """Contact removal.
 
         Removes all contacts between `object_one` id and `object_two` id.
@@ -140,7 +168,11 @@ class SystemObjects:
             if cond_1 or cond_2:
                 self.contacts.remove(contact_list[i])
 
-    def change_boundaries(self, object_id, boundaries):
+    def change_boundaries(
+        self,
+        object_id: int,
+        boundaries: tuple
+    ):
         """Change boundaries.
 
         Changes the `boundaries` of `object_id`.
@@ -159,8 +191,13 @@ class SystemObjects:
 
         self.objects[object_id].boundaries = boundaries
 
-    def compute(self, time_interval, write_interval, solver='implicit_k(x)',
-                verbose=True):
+    def compute(
+        self,
+        time_interval: int | float,
+        write_interval: int,
+        solver: str = 'implicit_k(x)',
+        verbose: bool = True
+    ):
         """Compute the thermal process.
 
         Computes the system for `time_interval`, and writes into the
