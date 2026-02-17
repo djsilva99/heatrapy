@@ -18,10 +18,21 @@ class SingleObject:
 
     """
 
-    def __init__(self, amb_temperature, materials=('Cu',), borders=(1, 11),
-                 materials_order=(0,), dx=0.01, dt=0.1, file_name=None,
-                 boundaries=(0, 0), initial_state=False,
-                 materials_path=False, draw=['temperature'], draw_scale=None):
+    def __init__(
+        self,
+        amb_temperature: int | float,
+        materials: tuple[str] = ('Cu',),
+        borders: tuple[int] = (1, 11),
+        materials_order: tuple[int] = (0,),
+        dx: float = 0.01,
+        dt: float = 0.1,
+        file_name: str | None = None,
+        boundaries: tuple[int] = (0, 0),
+        initial_state: bool = False,
+        materials_path: bool = False,
+        draw: list[str] = ['temperature'],
+        draw_scale: str | None = None
+    ):
         """Thermal object initialization.
 
         `amb_temperature` is the ambient temperature of the whole system.
@@ -78,12 +89,18 @@ class SingleObject:
         if not condition:
             raise ValueError
 
-        self.object = Object(amb_temperature, materials=materials,
-                             borders=borders, materials_order=materials_order,
-                             dx=dx, dt=dt, file_name=file_name,
-                             boundaries=boundaries,
-                             initial_state=initial_state,
-                             materials_path=materials_path)
+        self.object = Object(
+            amb_temperature,
+            materials=materials,
+            borders=borders,
+            materials_order=materials_order,
+            dx=dx,
+            dt=dt,
+            file_name=file_name,
+            boundaries=boundaries,
+            initial_state=initial_state,
+            materials_path=materials_path
+        )
 
         # initializes the plotting
         self.draw = draw
@@ -115,7 +132,11 @@ class SingleObject:
                 self.ax.set_ylabel('temperature (K)')
                 plt.show(block=False)
 
-    def show_figure(self, figure_type, draw_scale=None):
+    def show_figure(
+        self,
+        figure_type: str,
+        draw_scale: str | None = None
+    ):
         """Plotting.
 
         Initializes a specific live plotting. `figure_type` is a string
@@ -164,7 +185,11 @@ class SingleObject:
             self.ax.set_ylabel('temperature (K)')
             plt.show(block=False)
 
-    def activate(self, initial_point, final_point):
+    def activate(
+        self,
+        initial_point: int,
+        final_point: int
+    ):
         """Activation.
 
         Activates the thermal object between `initial_point` to `final_point`.
@@ -200,7 +225,11 @@ class SingleObject:
                     except Exception:
                         pass
 
-    def deactivate(self, initial_point, final_point):
+    def deactivate(
+        self,
+        initial_point: int,
+        final_point: int
+    ):
         """Deactivation.
 
         Deactivates the thermal object between `initial_point` to
@@ -237,7 +266,13 @@ class SingleObject:
                     except Exception:
                         pass
 
-    def change_power(self, power_type, power, initial_point, final_point):
+    def change_power(
+        self,
+        power_type: str,
+        power: int | float,
+        initial_point: int,
+        final_point: int
+    ):
         """Heat power source change.
 
         Changes the coeficients for the heat power sources by a value of power
@@ -269,7 +304,10 @@ class SingleObject:
             for j in range(initial_point, final_point):
                 self.object.Q0[j] = power
 
-    def change_boundaries(self, boundaries):
+    def change_boundaries(
+        self,
+        boundaries: tuple[int | float]
+    ):
         """Boundary change.
 
         Changes the `boundaries` variable.
@@ -288,8 +326,13 @@ class SingleObject:
 
         self.object.boundaries = boundaries
 
-    def compute(self, time_interval, write_interval, solver='explicit_k(x)',
-                verbose=True):
+    def compute(
+        self,
+        time_interval: int | float,
+        write_interval: int,
+        solver: str = 'explicit_k(x)',
+        verbose: bool = True
+    ):
         """Compute the thermal process.
 
         Computes the system for time_interval seconds, and writes into the

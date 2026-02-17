@@ -19,10 +19,21 @@ class Object:
 
     """
 
-    def __init__(self, amb_temperature, materials=('Cu',), borders=(1, 11),
-                 materials_order=(0,), dx=0.01, dt=0.1, file_name=None,
-                 boundaries=(0, 0), Q=[], Q0=[], initial_state=False,
-                 materials_path=False):
+    def __init__(
+        self,
+        amb_temperature: int | float,
+        materials: tuple[str] = ('Cu',),
+        borders: tuple[int] = (1, 11),
+        materials_order: tuple[int] = (0,),
+        dx: float = 0.01,
+        dt: float = 0.1,
+        file_name: str = None,
+        boundaries: tuple[int] = (0, 0),
+        Q: list[int | float] = [],
+        Q0: list[int | float] = [],
+        initial_state: bool = False,
+        materials_path: bool = False
+    ):
         """Thermal object initialization.
 
         `amb_temperature` is the ambient temperature of the whole system.
@@ -198,7 +209,11 @@ class Object:
             f.write(line)
             f.close()
 
-    def activate(self, initial_point, final_point):
+    def activate(
+        self,
+        initial_point: int,
+        final_point: int
+    ):
         """Activation of the material.
 
         activates a given space interval of the material, between the
@@ -237,7 +252,11 @@ class Object:
                 message = 'point %f already activated' % float(i)
                 print(message)
 
-    def deactivate(self, initial_point, final_point):
+    def deactivate(
+        self,
+        initial_point: int,
+        final_point: int
+    ):
         """Deactivation of the material.
 
         deactivates a given space interval of the material, between the
