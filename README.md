@@ -1,4 +1,4 @@
-# heatrapy
+# 🔥 heatrapy
 
 [![pypi](https://badge.fury.io/py/heatrapy.svg)](https://badge.fury.io/py/heatrapy)
 [![Downloads](https://pepy.tech/badge/heatrapy)](https://pepy.tech/project/heatrapy)
@@ -9,19 +9,39 @@
 
 <img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v2.0.11
 
-This package is a module for simulating dynamic 1D and 2D heat
-transfer processes by using the finite difference method. The packages
-is based on thermal objects. Two different approaches can be used:
-single thermal object and a system of thermal objects that can contact
-with each other. Heatrapy includes both the modeling of caloric
-effects and the incorporation of phase transitions.
+Heatrapy is a lightweight Python framework for simulating heat transfer using
+finite-difference methods, with built-in support for phase transitions and
+caloric materials.
 
-For full documentation visit the [heatrapy website](https://heatrapy.readthedocs.io/en/latest/index.html).
+Features:
+- ✅ Easy to learn
+- ✅ Finite-difference heat transfer solver
+- ✅ 1D and 2D thermal simulations
+- ✅ Phase-change materials
+- ✅ Caloric effects modeling
+- ✅ Multi-material systems
+- ✅ Real-time visualization
+- ✅ Pure Python implementation
+
+
+### 🚀 Why Heatrapy?
+
+Heatrapy makes thermal simulations accessible without heavy FEM or CFD
+frameworks.
+
+Perfect for:
+- Research prototypes
+- Teaching heat transfer
+- Rapid thermal modeling
+- Solid-state cooling simulations
+
+
+### 🎬 Example Simulation
 
 ![heatrapy-example](https://github.com/djsilva99/heatrapy/blob/master/img/example.gif)
 
 
-### Installation
+### ⚡ Quick Installation
 
 To install heatrapy use the pip package manager:
 
@@ -35,8 +55,16 @@ To import the heatrapy module type in the python shell:
 >>> import heatrapy as htp
 ```
 
+See the example above or explore the documentation for complete tutorials.
 
-### Contributions
+
+### 📖 Documentation
+
+Full documentation available
+[here](https://heatrapy.readthedocs.io/en/latest/index.html)
+
+
+### 🤝 Contributions
 
 Feel free to contribute to this project. You can find the development
 workflow
