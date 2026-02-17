@@ -4,6 +4,7 @@ Used to compute single two-dimensional system models.
 
 """
 
+import matplotlib.colors as mcolors
 import copy
 from .. import solvers
 from . import Object
@@ -116,7 +117,7 @@ class SingleObject:
                         self.im = self.ax.imshow(np.transpose(temp), vmax=vmax,
                                                  vmin=vmin, cmap=cmap_r,
                                                  extent=extent, origin='lower',
-                                                 interpolation='hamming')
+                                                 interpolation='bicubic')
                     else:
                         temp = np.array(temp)
                         extent = [0, size[0]*dx, 0, size[1]*dy]
@@ -125,7 +126,7 @@ class SingleObject:
                                                  vmin=self.draw_scale[1],
                                                  cmap=cmap_r, extent=extent,
                                                  origin='lower',
-                                                 interpolation='hamming')
+                                                 interpolation='bicubic')
                     cbar_kw = {}
                     self.ax.figure.colorbar(
                         self.im,
@@ -212,7 +213,7 @@ class SingleObject:
                     self.im_Q = self.ax_Q.imshow(np.transpose(temp), vmax=vmax,
                                                  vmin=vmin, cmap='inferno',
                                                  extent=extent, origin='lower',
-                                                 interpolation='hamming')
+                                                 interpolation='bicubic')
                     cbar_kw = {}
                     self.ax_Q.figure.colorbar(
                         self.im_Q,
@@ -235,7 +236,7 @@ class SingleObject:
                                                    cmap='inferno',
                                                    extent=extent,
                                                    origin='lower',
-                                                   interpolation='hamming')
+                                                   interpolation='bicubic')
                     cbar_kw = {}
                     self.ax_Q0.figure.colorbar(
                         self.im_Q0,
@@ -278,7 +279,7 @@ class SingleObject:
                 self.im = self.ax.imshow(np.transpose(temp), vmax=vmax,
                                          vmin=vmin, cmap='jet', extent=extent,
                                          origin='lower',
-                                         interpolation='hamming')
+                                         interpolation='bicubic')
             else:
                 temp = np.array(temp)
                 extent = [0, self.size[0]*self.dx, 0, self.size[1]*self.dy]
@@ -287,7 +288,7 @@ class SingleObject:
                                          vmin=self.draw_scale[1],
                                          cmap='jet', extent=extent,
                                          origin='lower',
-                                         interpolation='hamming')
+                                         interpolation='bicubic')
             cbar_kw = {}
             cbarlabel = "temperature (K)"
             cbar = self.ax.figure.colorbar(self.im, ax=self.ax, **cbar_kw)
@@ -371,7 +372,7 @@ class SingleObject:
             self.im_Q = self.ax_Q.imshow(np.transpose(temp), vmax=vmax,
                                          vmin=vmin, cmap='inferno',
                                          extent=extent, origin='lower',
-                                         interpolation='hamming')
+                                         interpolation='bicubic')
             cbar_kw = {}
             cbar = self.ax_Q.figure.colorbar(self.im_Q, ax=self.ax_Q,
                                              **cbar_kw)
@@ -390,7 +391,7 @@ class SingleObject:
                                            vmin=vmin, cmap='inferno',
                                            extent=extent,
                                            origin='lower',
-                                           interpolation='hamming')
+                                           interpolation='bicubic')
             cbar_kw = {}
             cbar = self.ax_Q0.figure.colorbar(self.im_Q0, ax=self.ax_Q0,
                                               **cbar_kw)
@@ -450,6 +451,7 @@ class SingleObject:
                         self.im.set_clim(vmin=vmin)
                         self.im.set_clim(vmax=vmax)
                     self.figure.canvas.draw()
+                    self.figure.canvas.flush_events()
                 if drawing == 'state':
                     self.im_state.set_array(np.transpose(self.object.state))
                     self.figure_state.canvas.draw()
@@ -505,6 +507,7 @@ class SingleObject:
                         self.im.set_clim(vmin=vmin)
                         self.im.set_clim(vmax=vmax)
                     self.figure.canvas.draw()
+                    self.figure.canvas.flush_events()
                 if drawing == 'state':
                     self.im_state.set_array(np.transpose(self.object.state))
                     self.figure_state.canvas.draw()
@@ -598,10 +601,14 @@ class SingleObject:
                 materials_name_list = copy.deepcopy(self.object.materials_name)
                 materials_name_list.reverse()
                 qrates = np.array(materials_name_list)
-                value_1 = np.linspace(0, len(self.object.materials)-1,
-                                      len(self.object.materials))
-                value_2 = len(self.object.materials)-1
-                norm = matplotlib.colors.BoundaryNorm(value_1, value_2)
+                value_1 = np.linspace(
+                    0,
+                    len(self.object.materials) - 1, len(self.object.materials)
+                )
+                if len(value_1) < 2:
+                    value_1 = np.array([0, 0 + 1e-6])
+                ncolors = len(value_1) - 1
+                norm = mcolors.BoundaryNorm(value_1, ncolors)
                 func = lambda x, pos: qrates[::-1][norm(x)]  # noqa: E731
                 fmt = matplotlib.ticker.FuncFormatter(func)
                 value = np.arange(0, len(self.object.materials)+1)
@@ -796,6 +803,7 @@ class SingleObject:
                                     self.im.set_clim(vmin=vmin)
                                     self.im.set_clim(vmax=vmax)
                                 self.figure.canvas.draw()
+                                self.figure.canvas.flush_events()
                             except Exception:
                                 pass
 
