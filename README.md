@@ -1,4 +1,4 @@
-# heatrapy
+# <img src="https://github.com/djsilva99/heatrapy/blob/master/img/heatrapy.png" height="28" align="center"> heatrapy
 
 [![pypi](https://badge.fury.io/py/heatrapy.svg)](https://badge.fury.io/py/heatrapy)
 [![Downloads](https://pepy.tech/badge/heatrapy)](https://pepy.tech/project/heatrapy)
@@ -7,21 +7,39 @@
 [![Documentation Status](https://readthedocs.org/projects/heatrapy/badge/?version=latest)](https://heatrapy.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/github/djsilva99/heatrapy/graph/badge.svg?token=5UKJZ8SPVI)](https://codecov.io/github/djsilva99/heatrapy)
 
-<img src="https://github.com/danieljosesilva/heatrapy/blob/master/img/heatrapy.png" alt="Drawing" height="30"/> heatrapy v2.0.11
+Heatrapy is a lightweight Python framework for simulating heat transfer using
+finite-difference methods, with built-in support for phase transitions and
+caloric materials.
 
-This package is a module for simulating dynamic 1D and 2D heat
-transfer processes by using the finite difference method. The packages
-is based on thermal objects. Two different approaches can be used:
-single thermal object and a system of thermal objects that can contact
-with each other. Heatrapy includes both the modeling of caloric
-effects and the incorporation of phase transitions.
+Features:
+- ✅ Easy to learn
+- ✅ Finite-difference heat transfer solver
+- ✅ 1D and 2D thermal simulations
+- ✅ Phase-change materials
+- ✅ Caloric effects modeling
+- ✅ Multi-material systems
+- ✅ Real-time visualization
+- ✅ Pure Python implementation
 
-For full documentation visit the [heatrapy website](https://heatrapy.readthedocs.io/en/latest/index.html).
+
+### 🚀 Why Heatrapy?
+
+Heatrapy makes thermal simulations accessible without heavy FEM or CFD
+frameworks.
+
+Perfect for:
+- Research prototypes
+- Teaching heat transfer
+- Rapid thermal modeling
+- Solid-state cooling simulations
+
+
+### 🎬 Example Simulation
 
 ![heatrapy-example](https://github.com/djsilva99/heatrapy/blob/master/img/example.gif)
 
 
-### Installation
+### ⚡ Quick Installation
 
 To install heatrapy use the pip package manager:
 
@@ -35,14 +53,25 @@ To import the heatrapy module type in the python shell:
 >>> import heatrapy as htp
 ```
 
+See the example above or explore the documentation for complete tutorials.
 
-### Contributions
 
-Feel free to contribute to this project. You can find the development
-workflow
+### 📖 Documentation
+
+Full documentation available
+[here](https://heatrapy.readthedocs.io/en/latest/index.html)
+
+
+### 🤝 Contributions
+
+Contributions of all kinds are welcome!
+
+Please see the development workflow
 [here](https://github.com/djsilva99/heatrapy/blob/master/CONTRIBUTING.md).
 
-Please acknowledge heatrapy if it contributes to a project that leads
-to a publication by citing <a
+If heatrapy contributes to research that leads to a publication, please cite <a
 href='https://www.sciencedirect.com/science/article/pii/S2352711018301298'>this
 paper</a>.
+
+⭐ If you find heatrapy useful, consider starring the repository to support the
+project.
