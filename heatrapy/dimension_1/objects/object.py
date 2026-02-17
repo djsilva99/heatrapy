@@ -32,7 +32,7 @@ class Object:
         Q: list[int | float] = [],
         Q0: list[int | float] = [],
         initial_state: bool = False,
-        materials_path: bool = False
+        materials_path: str | bool = False
     ):
         """Thermal object initialization.
 

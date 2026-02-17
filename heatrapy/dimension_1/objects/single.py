@@ -29,7 +29,7 @@ class SingleObject:
         file_name: str | None = None,
         boundaries: tuple[int] = (0, 0),
         initial_state: bool = False,
-        materials_path: bool = False,
+        materials_path: str | bool = False,
         draw: list[str] = ['temperature'],
         draw_scale: str | None = None
     ):
@@ -433,6 +433,7 @@ class SingleObject:
                                     temp = np.array(temp)
                                     self.online.set_ydata(temp)
                                 self.figure.canvas.draw()
+                                self.figure.canvas.flush_events()
                         except Exception:
                             pass
 
