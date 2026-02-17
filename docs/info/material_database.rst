@@ -2,7 +2,7 @@ Material database
 =================
 
 Builtin database
----------
+----------------
 
 A built-in database of materials is provided in the database folder, although
 it is currently limited. Custom material data can be used by specifying the
@@ -22,7 +22,7 @@ opening a Pull Request in the `github repository
 <https://github.com/djsilva99/heatrapy>`_.
 
 Material Data
----------
+-------------
 
 Each material folder should have 10 files:
 
