@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(".."))
 project = 'heatrapy'
 copyright = '2024, Daniel Silva'
 author = 'Daniel Silva'
-release = '2.0.12'
+release = '2.0.13'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
