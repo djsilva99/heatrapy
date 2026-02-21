@@ -1,7 +1,7 @@
 """Heatrapy.
 
 author: Daniel Silva (djsilva@gmx.com)
-current version: v2.0.14
+current version: v2.1.0
 url: https://github.com/djsilva99/heatrapy
 
 This module allows to create thermal objects, establish thermal contact between

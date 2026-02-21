@@ -16,7 +16,7 @@ description += 'package includes the incorporation of phase transitions.'
 
 
 setup(name='heatrapy',
-      version='2.0.14',
+      version='2.1.0',
       description='Library for simulating 1D and 2D heat transfer processes',
       long_description=description,
       classifiers=[
@@ -31,7 +31,7 @@ setup(name='heatrapy',
       license='MIT',
       packages=['heatrapy'],
       install_requires=[
-          'numpy==1.26.4', 'matplotlib==3.7.5'
+          'numpy==2.2.6', 'matplotlib==3.10.8'
       ],
       include_package_data=True,
       zip_safe=False)
