@@ -16,5 +16,6 @@ pytest==9.0.2
 pytest-cov==7.0.0
 python-dateutil==2.9.0.post0
 ruff==0.15.4
+setuptools==82.0.0
 six==1.17.0
 tomli==2.4.0
