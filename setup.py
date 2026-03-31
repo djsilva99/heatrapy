@@ -34,8 +34,8 @@ setup(
     packages=['heatrapy'],
     python_requires='>=3.10',
     install_requires=[
-        'numpy>=1.22',
-        'matplotlib>=3.5',
+        'numpy>=1.22,<3',
+        'matplotlib>=3.5,<4',
     ],
     include_package_data=True,
     zip_safe=False
