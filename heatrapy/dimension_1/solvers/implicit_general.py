@@ -5,7 +5,8 @@ Used to compute unidimensional thermal processes
 """
 
 import numpy as np
-import copy
+
+from ._latent_heat import apply_latent_heat
 
 
 def implicit_general(obj):
@@ -15,9 +16,11 @@ def implicit_general(obj):
     conductivity.
 
     """
+    n = obj.num_points
+
     # initializes the matrixes for the equation systems
-    a = np.zeros((obj.num_points, obj.num_points))
-    b = np.zeros(obj.num_points)
+    a = np.zeros((n, n))
+    b = np.zeros(n)
 
     # left boundary
     a[0][0] = 1
@@ -27,15 +30,14 @@ def implicit_general(obj):
         b[0] = obj.boundaries[0]
 
     # right boundary
-    a[obj.num_points - 1][obj.num_points - 1] = 1
+    a[n - 1][n - 1] = 1
     if obj.boundaries[1] == 0:
-        value = obj.temperature[obj.num_points - 2][0]
-        b[obj.num_points - 1] = value
+        b[n - 1] = obj.temperature[n - 2][0]
     else:
-        b[obj.num_points - 1] = obj.boundaries[1]
+        b[n - 1] = obj.boundaries[1]
 
     # creates the matrixes and solves the equation systems
-    for i in range(1, obj.num_points - 1):
+    for i in range(1, n - 1):
         beta = obj.k[i] * obj.dt / \
             (2 * obj.rho[i] * obj.Cp[i] * obj.dx * obj.dx)
         sigma = obj.dt / (obj.rho[i] * obj.Cp[i])
@@ -52,38 +54,10 @@ def implicit_general(obj):
     x = np.linalg.solve(a, b)
 
     # latent heat
-    lheat = copy.copy(obj.lheat)
-    for i in range(1, obj.num_points - 1):
-        j = 0
-        for lh in obj.latent_heat[i]:
-            temper = obj.temperature[i][0]
-            if x[i] > lh[0] and temper <= lh[0] and lheat[i][j][1] != lh[1]:
-                en = obj.Cp[i] * obj.rho[i] * (x[i] - obj.temperature[i][0])
-                if en + lheat[i][j][1] >= lh[1]:
-                    lheat[i][j][1] = lh[1]
-                    energy_temp = lheat[i][j][1] + en - lh[1]
-                    x[i] = obj.temperature[i][0] + \
-                        energy_temp / (obj.Cp[i] * obj.rho[i])
-                else:
-                    lheat[i][j][1] += en
-                    x[i] = obj.temperature[i][0]
-            if x[i] < lh[0] and temper >= lh[0] and lheat[i][j][1] != 0:
-                en = obj.Cp[i] * obj.rho[i] * (x[i] - obj.temperature[i][0])
-                if en + lheat[i][j][1] <= 0.:
-                    lheat[i][j][1] = 0.
-                    energy_temp = (en + lheat[i][j][1])
-                    x[i] = obj.temperature[i][0] + \
-                        energy_temp / (obj.Cp[i] * obj.rho[i])
-                else:
-                    lheat[i][j][1] += en
-                    x[i] = obj.temperature[i][0]
-            j += 1
+    nx_list = x.tolist()
+    lheat = apply_latent_heat(nx_list, obj)
 
-    y = copy.deepcopy(obj.temperature)
-
-    # updates the temperature list
-    for i in range(obj.num_points):
-        y[i][1] = x[i]
-        y[i][0] = x[i]
+    # pack into [current, next] pairs expected by the caller
+    y = [[nx_list[i], nx_list[i]] for i in range(n)]
 
     return y, lheat

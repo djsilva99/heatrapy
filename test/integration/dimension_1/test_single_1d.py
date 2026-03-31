@@ -19,6 +19,14 @@ def example_single_object_with_materials():
         borders=(1, 11, 22), materials_order=(0, 1), draw=[]
     )
 
+@pytest.fixture
+def example_single_object_water_phase_transition():
+    return SingleObject1D(
+        263, materials=('water',), borders=(1, 11),
+        materials_order=(0,), boundaries=(0, 300), draw=[]
+    )
+
+
 
 def test_implicit_general_solver(example_single_object_implicit):
     """Test singleObject with the implicit_general solver."""
@@ -94,3 +102,29 @@ def test_implicit_k_solver(example_single_object_with_materials):
     assert int(
         example_single_object_with_materials.object.temperature[5][0]
     ) == solution
+
+
+def test_explicit_k_solver_phase_transition(
+        example_single_object_water_phase_transition
+):
+    """Test that latent heat holds temperature at the transition point."""
+    # given
+    transition_solution = 272
+    interior_solution = 266
+
+    # when
+    example_single_object_water_phase_transition.compute(
+        500,
+        10,
+        solver='explicit_k(x)'
+    )
+
+    # then — point nearest hot boundary is held at 273K by latent heat
+    assert int(
+        example_single_object_water_phase_transition.object.temperature[10][0]
+    ) == transition_solution
+
+    # interior point stays below transition temperature
+    assert int(
+        example_single_object_water_phase_transition.object.temperature[9][0]
+    ) == interior_solution
