@@ -32,9 +32,10 @@ setup(
     author_email='djsilva@gmx.com',
     license='MIT',
     packages=['heatrapy'],
+    python_requires='>=3.10',
     install_requires=[
-        'numpy==2.4.2',
-        'matplotlib==3.10.8'
+        'numpy>=1.22,<3',
+        'matplotlib>=3.5,<4',
     ],
     include_package_data=True,
     zip_safe=False
